@@ -1,0 +1,304 @@
+openapi: 3.0.0
+info:
+  title: Sample API
+  description: API for simple HTTP server that visualize machine learning process
+  version: 0.0.1
+
+components:
+  schemas:
+    Config:
+      type: object
+      properties:
+          name:
+            type: string
+      additionalProperties: true
+      required:
+        - name
+
+    Images:
+      type: array
+      description: Array with indicies of images
+      items:
+        type: integer
+
+    Labels:
+      type: array
+      description: Array with labels, supported formats are one-hot,
+        label number or string
+      items:
+        oneOf:
+          - type: integer
+          - type: string
+          - type: array
+
+    LabelledImages:
+      type: object
+      properties:
+        images:
+          $ref: '#/components/schemas/Images'
+        labels:
+          $ref: '#/components/schemas/Labels'
+      required:
+        - images
+        - labels
+
+    WrongPredictions:
+      description: Dictionary of wrong predictions for both classes.
+      type: object
+      properties:
+        class1:
+          type: array
+          items:
+            $ref: "#/components/schemas/ImagePath"
+        class2:
+          type: array
+          items:
+            $ref: "#/components/schemas/ImagePath"
+
+    ImagePath:
+      description: Path of the image
+      type: string
+      example: path/to/file01.png
+
+    TrainResult:
+      description: Set of metrics that describe training process
+      type: object
+      properties:
+        loss:
+          type: array
+          items:
+            type: number
+        accuracy:
+          type: array
+          items:
+            type: number
+            minimum: 0.0
+            maximum: 100.0
+      additionalProperties: true
+
+paths:
+  /home:
+    get:
+      summary: Home page
+      tags:
+        - main
+      responses:
+        200:
+          description: OK
+          content:
+              text/html:
+                schema:
+                  type: string
+
+  /configs/:
+    get:
+      summary: Returns all possible configuration
+      tags:
+          - extras
+      responses: 
+        '200':
+          description: List of configurations
+          content:
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  $ref: '#/components/schemas/Config'
+        '404':
+          description: Configuration not found
+
+  /configs/{name}:
+    get:
+      summary: Returns configuration with specified name
+      tags:
+          - extras
+      parameters:
+          - in: path
+            name: name
+            description: Name of the configuration to be returned
+            schema:
+              type: string
+              example: cats_vs_dogs64
+            required: true
+
+      responses: 
+        '200':
+          description: Configuration
+          content:
+            application/json:
+              schema: 
+                type: object
+                items: 
+                  $ref: '#/components/schemas/Config'
+        '404':
+          description: Configuration with specified name not found
+
+  /predictions:
+    post:
+      summary: Post labels annoted by the user.
+      tags:
+        - data
+      requestBody:
+        description: pass
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WrongPredictions'
+      responses:
+        '200':
+          description: Images with labels added to train dataset
+
+    get:
+      summary: Show sample predictions
+      tags:
+        - data
+      parameters:
+        - in: query
+          name: random
+          description: If true, show random images
+          schema:
+            type: boolean
+            default: False
+        - in: query
+          name: maxImages
+          description: Number of images to show
+          schema:
+            type: integer
+            default: 50
+        - in: query
+          name: balance
+          description: If set to True then return the same number of predictions
+            for both classes
+          schema:
+            type: boolean
+            default: True
+      # requestBody:
+      #   description: Indicies of images to show, if it is specified then 
+      #     random parameter should be set to False.
+      #   content:
+      #     application/json:
+      #       schema:
+      #         type: object
+      #         properties:
+      #           indicies:
+      #             type: array
+      #             items:
+      #               type: integer
+
+      responses:
+          '200':
+            description: Return desired number of indicies
+            content:
+              text/html:
+                schema:
+                  type: string
+
+  /csv/{name}:
+    put:
+      summary: create or update existing annotation csv file
+      tags:
+        - config
+      parameters:
+        - in: path
+          name: name
+          description: name of csv file
+          schema:
+            type: string
+          example: default-unl
+          required: true
+        - in: query
+          name: force
+          description: if set to True create parent directories
+            if they do not exist
+          schema:
+            type: boolean
+            default: True
+        - in: query
+          name: annotation
+          description: if specified then create csv file based on default
+            configuration
+          schema:
+           type: string
+           enum: [unlabelled, train, test]
+
+      requestBody:
+        description: If specified overwrite config paths.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data_dir:
+                  type: string
+                  description: Directory of files whose paths should
+                    be saved in annotation file.
+                csv_dir:
+                  type: string
+                  description: Directory of destination csv file.
+                label:
+                  type: integer
+                  description: Label which should be assinged to all images
+                append:
+                  type: boolean
+                  description: if set to True then instead of overwritting
+                    existing file append to the end of this file
+                labels_header:
+                  description: if set to True create csv with labels header
+                  type: boolean
+                  default: False
+                example: {}
+        required: false
+      responses:
+        200:
+          description: File created or updated
+        400:
+          description: Failed to create a file.
+
+  /train:
+    get:
+      summary: Train model and return train summary results
+      parameters:
+        - in: query
+          name: epochs
+          schema:
+            type: integer
+            default: 5
+        - in: query
+          name: batch_size
+          schema:
+            type: integer
+            default: 128
+      responses:
+        200:
+          description: Succesfull train
+          content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/TrainResult"
+
+  /evaluate:
+    get:
+      summary: Evaluate TODO
+      responses:
+        200:
+          description: Succesfull evaluate
+
+
+  /information:
+    get:
+      summary: information TODO
+      responses:
+        200:
+          description: Succesfull information
+
+  /prepare:
+    get:
+      summary: information TODO
+      responses:
+        200:
+          description: OK
+          content:
+              text/html:
+                schema:
+                  type: string

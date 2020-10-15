@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <script type=text/javascript src="{{
+        url_for('static', filename='jquery-3.5.1.min.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    
+    <title>{% block title %}{% endblock %} - DRAL</title>
+</head>
+<body class="normal">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">ALCNN</a>
+        <!-- use this to create collapse plugin -->
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation"> 
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav ml-auto m-1">
+                <li class="nav-item active">
+                    <a class="nav-link" href="{{ url_for('.views_HomeView_search') }}">Home<span class="sr-only"></span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('.views_PredictionsView_search') }}">Predictions</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('.views_TrainView_search') }}">Train</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('.views_EvaluateView_search') }}">Evaluate</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('.views_PrepareView_search') }}">Prepare</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('.views_InformationView_search') }}">Information</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <section class="content">
+    <header>
+        <div class="header-dark text-center m-2 p-3">
+            {% block header %}{% endblock %}
+        </div>
+    </header>
+        {% for message in get_flashed_messages() %}
+            <div class="flash">{{ message }}</div>
+        {% endfor %}
+        {% block content %}{% endblock %}
+    </section>
+</body>

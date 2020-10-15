@@ -1,0 +1,78 @@
+cats_dogs_128:
+  dataset: Dogs vs Cats
+  description: TODO
+
+  general:
+    image_size: 128
+    label_mapping:
+      Cat: 0
+      Dog: 1
+      Unknown: 255
+
+    name_class_delimiter: _  # images will be saved in format <name>_<class_number>
+
+  paths:
+    main_dir: ./data/PetImages/Unknown
+    imgs:
+      ./data/PetImages/Unknown: 255
+    save: ./server/static/images
+
+  loader:
+    shuffle: False
+    label_format: one-hot
+
+  preprocessing:
+    grayscale: False
+    rescale_with_crop: True
+    normalization: False
+    centering: False
+    standarization: False
+    strict_balance: False
+
+  preprocessing_npy:
+    grayscale: False
+    rescale_with_crop: True
+    normalization: True
+    centering: True
+    standarization: True
+    strict_balance: False
+
+testset:
+  dataset: Dogs vs Cats
+  description: TODO
+
+  general:
+    image_size: 256
+    label_mapping:
+      Cat: 0
+      Dog: 1
+
+  paths:
+    annotations: 
+      dir: ./server/static/testset/annotations/
+      unl: unl.csv
+      train: train.csv
+      test: test.csv
+    models:
+      raw: ./server/static/testset/models/testset_raw.pt
+      trained: ./server/static/testset/models/testset_trained.pt
+    images:
+      raw: ./data/PetImages/Unlabelled
+      raw_test: ./data/PetImages/Test
+      processed: ./server/static/testset/images
+      transformed: ./server/static/testset/images_tranformed
+      test:
+        dir: ./server/static/testset/images_test
+
+  train:
+    predictions: 50
+    epochs: 5
+    batch_size: 128
+
+  preprocessing:
+    grayscale: False
+    rescale_with_crop: False
+    normalization: False
+    centering: False
+    standarization: False
+    strict_balance: False

@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block header %}
+  <h1>{% block title %}Predictions{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<div class="container col-sm-10">
+    <div class="row" id="images">
+        <div class="col-sm-6 pr-5">
+            <h1 class="font-weight-light text-center text-lg-left mt-4 mb-0">{{ label1 }}</h1>
+            <hr class="mt-3 mb-5 common-light">
+            <div class="row text-center text-lg-left" id="class1">
+                {% for image in class1 %}
+                {% set full_path = image %}
+                {% set image = image[path_start_idx:] %}
+                <div class="col-lg-2 col-md-3 col-4 m-0 p-1">
+                    <img class="img-fluid img-thumbnail" data-path="{{ full_path }}" src="{{ image }}" alt="" width=128 height=128>
+                </div>
+                
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-sm-6 pl-5">
+            <h1 class="font-weight-light text-center text-lg-left mt-4 mb-0">{{ label2 }}</h1>
+            <hr class="mt-3 mb-5 common-light">
+            <div class="row text-center text-lg-left" id="class2">
+                {% for image in class2 %}
+                {% set full_path = image %}
+                {% set image = image[path_start_idx:] %}
+                <div class="col-lg-2 col-md-3 col-4 m-0 p-1">
+                    <img class="img-fluid img-thumbnail" data-path="{{ full_path }}" src="{{ image }}" alt="" width=128 height=128>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {# <div>
+        <button class="btn" type="button" onclick="sendPredictions()">Click</button>
+    </div> #}
+    
+    <div class="mt-4">
+        <div class="col-sm-12 text-center">
+            <button type="button" onclick="sendPredictions()" class="btn btn-secondary m-2">Add train samples</button>
+            <button type="button" onclick="window.location.href='{{ url_for('.views_TrainView_search') }}';" class="btn btn-secondary m-2">Train</button>
+        </div>
+    </div>
+
+    <script>
+
+        class1_node = document.getElementById("class1")
+        class2_node = document.getElementById("class2")
+
+        function removeA(arr) {
+            var what, a = arguments, L = a.length, ax;
+            while (L > 1 && arr.length) {
+                what = a[--L];
+                while ((ax= arr.indexOf(what)) !== -1) {
+                    arr.splice(ax, 1);
+                }
+            }
+            return arr;
+        }
+
+        function get_attr_from_tags(parent_node, tag, attr){
+            array = []
+            tags = parent_node.querySelectorAll(tag)
+            for (k = 0; k < tags.length; k++){
+                array.push(tags[k].getAttribute(attr))
+            }
+            return array
+        }
+        all_class1_predictions = get_attr_from_tags(class1_node, "img", "data-path")
+        all_class2_predictions = get_attr_from_tags(class2_node, "img", "data-path")
+        console.log(all_class1_predictions)
+        console.log(all_class2_predictions)
+
+        var predictions = {
+            class1: all_class1_predictions,
+            class2: all_class2_predictions,
+        }
+
+        function push_wrong_prediction(node){
+            if (class1_node.contains(node)){
+                predictions.class2.push(node.getAttribute("data-path"))
+                removeA(predictions.class1, node.getAttribute("data-path"))
+            }
+            else if (class2_node.contains(node)){
+                predictions.class1.push(node.getAttribute("data-path"))   
+                removeA(predictions.class2, node.getAttribute("data-path"))             
+            }
+            console.log(predictions)
+        }
+
+        function remove_wrong_prediction(node){
+            if (class1_node.contains(node)){
+                removeA(predictions.class2, node.getAttribute("data-path"))
+                predictions.class1.push(node.getAttribute("data-path"))   
+            }
+            else if (class2_node.contains(node)){
+                removeA(predictions.class1, node.getAttribute("data-path"))
+                predictions.class2.push(node.getAttribute("data-path"))
+            }
+            console.log(predictions)
+        }
+
+
+        function sendPredictions(){
+            $.ajax({
+                url: '/predictions',
+                type: "POST",
+                data: JSON.stringify(predictions),
+                contentType: "application/json; charset=utf-8",
+                success: function(){
+                    window.location.href = "/predictions";
+                }
+            });
+        }
+
+        window.addEventListener("click", function(event) {
+            if (event.target.tagName == "IMG") {
+                if (event.target.hasAttribute('selected')) {
+                    event.target.removeAttribute('selected')
+                    event.target.style.backgroundColor = "white";
+                    remove_wrong_prediction(event.target)
+                }
+                else {
+                    event.target.setAttribute('selected', true)
+                    event.target.style.backgroundColor = "red";
+                    push_wrong_prediction(event.target)
+                }
+            }
+        });
+        
+    </script>
+</div>
+ 
+{% endblock %}

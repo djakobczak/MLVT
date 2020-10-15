@@ -1,0 +1,26 @@
+.side-by-side{
+    display: inline-block;
+    vertical-align: top;
+}
+
+a {
+    font-size: 22px;
+}
+
+.normal {
+    background-color: #393939;
+    color: whitesmoke;
+}
+
+.header-dark {
+    background-color:#7ebc59 ;
+}
+
+li {
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+hr.common-light {
+    border-top: 1px solid whitesmoke;
+}
