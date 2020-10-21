@@ -76,6 +76,14 @@ components:
             maximum: 100.0
       additionalProperties: true
 
+    DatasetType:
+      description: dataset type
+      type: string
+      enum:
+          - unlabelled
+          - train
+          - test
+
 paths:
   /home:
     get:
@@ -194,19 +202,12 @@ paths:
                 schema:
                   type: string
 
-  /csv/{name}:
+  /annotations:
     put:
       summary: create or update existing annotation csv file
       tags:
         - config
       parameters:
-        - in: path
-          name: name
-          description: name of csv file
-          schema:
-            type: string
-          example: default-unl
-          required: true
         - in: query
           name: force
           description: if set to True create parent directories
@@ -215,40 +216,10 @@ paths:
             type: boolean
             default: True
         - in: query
-          name: annotation
-          description: if specified then create csv file based on default
-            configuration
+          name: dataset_type
           schema:
-           type: string
-           enum: [unlabelled, train, test]
-
-      requestBody:
-        description: If specified overwrite config paths.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                data_dir:
-                  type: string
-                  description: Directory of files whose paths should
-                    be saved in annotation file.
-                csv_dir:
-                  type: string
-                  description: Directory of destination csv file.
-                label:
-                  type: integer
-                  description: Label which should be assinged to all images
-                append:
-                  type: boolean
-                  description: if set to True then instead of overwritting
-                    existing file append to the end of this file
-                labels_header:
-                  description: if set to True create csv with labels header
-                  type: boolean
-                  default: False
-                example: {}
-        required: false
+            $ref: "#/components/schemas/DatasetType"
+          required: true
       responses:
         200:
           description: File created or updated
@@ -302,3 +273,20 @@ paths:
               text/html:
                 schema:
                   type: string
+
+  /transform:
+    put:
+      summary: Copy and transform images
+      description: Copy images from temporary directory to the
+        server file structure. Additionally apply initial
+        preprocessing on images in order to speed up further
+        loading.
+      parameters:
+        - in: query
+          name: dataset_type
+          schema:
+            type: string
+            enum: ['unlabelled', 'train', 'test']
+      responses:
+        200:
+          description: Images have been copied

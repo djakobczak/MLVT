@@ -16,8 +16,8 @@ class PredictionsView(MLView):
 
         paths = self._get_predictions(
             n_predictions, random=random, balance=balance)
-        return render_template("predictions.html.j2",  # !TODO change to lists (classes = [cls1, cls2, ...])
-                               path_start_idx=paths[0][0].index('static'),
+        return render_template("predictions.html.j2",
+                               path_start_idx=paths[0][0].index('static'),  # html need realative path
                                class1=paths[0], class2=paths[1],
                                label1=self.cm.get_label_name(0),
                                label2=self.cm.get_label_name(1)), 200
@@ -29,14 +29,14 @@ class PredictionsView(MLView):
                           self.cm.get_train_annotations_path(),
                           paths, class_num)
 
-        return redirect(url_for('.views_PredictionsView_search'))
+        return "success", 200
 
     def _get_predictions(self, n_predictions, random=False, balance=True):
-        self.unl_dataset.reload()
+        unl_loader = self.get_unl_loader()
         model = self.load_model()
         print(len(self.unl_dataset))
-        print(len(self.unl_loader))
-        predictions, paths = model.predict_all(self.unl_loader)
+        print(len(unl_loader))
+        predictions, paths = model.predict_all(unl_loader)
         print(f'Prediction done, load_time: {self.unl_dataset.load_time}, transform_time: {self.unl_dataset.trans_time}')
 
         if random:

@@ -24,39 +24,48 @@ class BaseView(MethodView):
 class MLView(BaseView):
     def __init__(self):
         super().__init__()
-        self.unl_dataset = UnlabelledDataset(
-            self.cm.get_unl_annotations_path(),
-            get_resnet18_default_transforms())
-        self.unl_loader = DataLoader(
-            self.unl_dataset, batch_size=self.cm.get_batch_size(),
-            shuffle=True, num_workers=2)
-        self.train_dataset = LabelledDataset(
-            self.cm.get_train_annotations_path(),
-            self.cm.get_n_labels(),
-            get_resnet18_default_transforms())
-        self.test_dataset = LabelledDataset(
-            self.cm.get_test_annotations_path(),
-            self.cm.get_n_labels(),
-            get_resnet18_default_transforms())
+        self.unl_dataset = None
+        self.train_dataset = None
+        self.test_dataset = None
+        self.unl_loader = None
         self.train_loader = None
         self.test_loader = None
 
-    # csv with annotations can not be empty
-    def get_train_loader(self):
-        self.train_dataset.reload()
-        self._fail_if_loader_is_empty(self.train_dataset)
+    def get_unl_dataset(self):
+        if not self.unl_dataset:
+            self.unl_dataset = UnlabelledDataset(
+                self.cm.get_unl_annotations_path(),
+                get_resnet18_default_transforms())
+        return self.unl_dataset
 
-        if not self.train_loader:
+    # csv with annotations can not be empty
+    def get_unl_loader(self):
+        if not self.unl_loader:
+            self.get_unl_dataset()
+            self.unl_loader = DataLoader(
+                self.unl_dataset, batch_size=self.cm.get_batch_size(),
+                shuffle=True, num_workers=0)
+        return self.unl_loader
+
+    def get_train_loader(self):
+        if not self.train_dataset:
+            self.train_dataset = LabelledDataset(
+                self.cm.get_train_annotations_path(),
+                self.cm.get_n_labels(),
+                get_resnet18_default_transforms())
+
             self.train_loader = DataLoader(
                 self.train_dataset, batch_size=self.cm.get_batch_size(),
                 shuffle=True, num_workers=0)
         return self.train_loader
 
     def get_test_loader(self):
-        self.train_dataset.reload()
-        self._fail_if_loader_is_empty(self.train_dataset)
+        if not self.test_dataset:
+            self.test_dataset = LabelledDataset(
+                self.cm.get_test_annotations_path(),
+                self.cm.get_n_labels(),
+                get_resnet18_default_transforms())
 
-        if not self.test_loader:
             self.test_loader = DataLoader(
                 self.test_dataset, batch_size=self.cm.get_batch_size(),
                 shuffle=True, num_workers=0)

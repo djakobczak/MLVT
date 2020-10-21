@@ -10,7 +10,7 @@ from torchvision import transforms
 from dral.config.config_manager import ConfigManager
 from dral.annotations import create_csv_file, label_samples
 from dral.utils import get_resnet18_default_transforms
-
+from dral.logger import LOG
 
 class DataLoader:
     def __init__(self, cm, transforms):
@@ -18,18 +18,13 @@ class DataLoader:
         self.transforms = transforms
         self.IMG_SIZE = cm.get_img_size()
 
+    def copy_multiple_paths(self, srcs, dsts):
+        for src, dst in zip(srcs, dsts):
+            self.copy_all(src, dst)
+
     def copy_all(self, src, dst):
         Path(dst).mkdir(parents=True, exist_ok=True)
-        for f in tqdm(os.listdir(src)):
-            src_path = os.path.join(src, f)
-            if os.path.isfile(src_path):
-                img = cv2.imread(src_path)
-                img = self._rescale(img)
-                dst_path = os.path.join(dst, f)
-                cv2.imwrite(dst_path, img)
-
-    def copy_with_transforms(self, src, dst):
-        Path(dst).mkdir(parents=True, exist_ok=True)
+        LOG.info(f'Start copying images from {src} to {dst}...')
         for f in tqdm(os.listdir(src)):
             src_path = os.path.join(src, f)
             if os.path.isfile(src_path):
@@ -37,6 +32,7 @@ class DataLoader:
                 img = self.transforms(img)
                 dst_path = os.path.join(dst, f)
                 img.save(dst_path)
+        LOG.info(f'Images copied form {src} to {dst}.')
 
     def _rescale(self, img):
         """Rescale image to the specified in config file size.
@@ -74,8 +70,8 @@ if __name__ == "__main__":
     dl = DataLoader(cm)
     
 
-    dl.copy_with_transforms(cm.get_raw_images(),
-                            cm.get_transformed_dir(),
+    dl.copy_with_transforms(cm.get_raw_unl_dir(),
+                            cm.get_unl_transformed_dir(),
                             transforms)
 
     # create_csv_file(cm.get_unl_annotations(),

@@ -47,24 +47,14 @@ class Model:
             batch_x = batch_x.to(self.device)
             return self(batch_x)
 
-    def predict_all(self, dataloader, batch_transforms=True):
-        print('PREDICT ALL')
-        if batch_transforms:
-            transforms = get_resnet18_batch_transforms()
+    def predict_all(self, dataloader):
         transforms_time = 0
         feedforward_time = 0
-        # predictions = np.empty((0, 2))
         predictions = torch.empty((0, 2), device=self.device)
         paths = []
         with torch.no_grad():
             for batch_x, img_paths in tqdm(dataloader):
                 batch_x = batch_x.to(self.device)
-
-                # start_transoform = time.time()
-                # if batch_transforms:
-                #     batch_x = transforms(batch_x)
-                # transofrm_time = time.time() - start_transoform
-                # transforms_time += transofrm_time
 
                 start_pred = time.time()
                 prediction = self(batch_x)

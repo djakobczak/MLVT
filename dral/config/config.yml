@@ -57,11 +57,10 @@ testset:
       raw: ./server/static/testset/models/testset_raw.pt
       trained: ./server/static/testset/models/testset_trained.pt
     images:
-      raw: ./data/PetImages/Unlabelled
+      raw_unl: ./data/PetImages/Unlabelled
+      transformed_unl: ./server/static/testset/images_tranformed
       raw_test: ./data/PetImages/Test
-      transformed: ./server/static/testset/images_tranformed
-      test:
-        dir: ./server/static/testset/images_test
+      transformed_test: ./server/static/testset/images_test
 
   train:
     predictions: 50

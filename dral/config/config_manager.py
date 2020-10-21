@@ -140,21 +140,27 @@ class ConfigManager:
         return os.path.join(
             *self.config['paths']['models']['trained'].get(str).split('/'))
 
-    def get_raw_images(self):
+    def get_raw_unl_dir(self):
         return os.path.join(
-            *self.config['paths']['images']['raw'].get(str).split('/'))
+            *self.config['paths']['images']['raw_unl'].get(str).split('/'))
 
-    def get_processed_dir(self):
+    def get_raw_test_dirs(self):
+        return self._join_with_clssses(
+            *self.config['paths']['images']['raw_test'].
+            get(str).split('/'))
+
+    def get_unl_transformed_dir(self):
         return os.path.join(
-            *self.config['paths']['images']['processed'].get(str).split('/'))
+            *self.config['paths']['images']['transformed_unl'].
+            get(str).split('/'))
 
-    def get_transformed_dir(self):
-        return os.path.join(
-            *self.config['paths']['images']['transformed'].get(str).split('/'))
+    def get_test_transformed_dirs(self):
+        return self._join_with_clssses(
+            *self.config['paths']['images']['transformed_test'].
+            get(str).split('/'))
 
-    def get_test_dirs(self):
-        test_dir = self.config['paths']['images']['test']['dir'].get(str)
-        return [os.path.join(test_dir, class_name)
+    def _join_with_clssses(self, *dirs):
+        return [os.path.join(*dirs, class_name)
                 for class_name in self.get_label_names()]
 
     # train
