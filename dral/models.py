@@ -12,6 +12,7 @@ from torchvision import transforms
 from tqdm import tqdm
 
 from dral.datasets import LabelledDataset
+from dral.utils import get_resnet18_batch_transforms
 
 
 def init_and_save(path):
@@ -46,17 +47,37 @@ class Model:
             batch_x = batch_x.to(self.device)
             return self(batch_x)
 
-    def predict_all(self, dataloader):
-        predictions = np.empty((0, 2))
+    def predict_all(self, dataloader, batch_transforms=True):
+        print('PREDICT ALL')
+        if batch_transforms:
+            transforms = get_resnet18_batch_transforms()
+        transforms_time = 0
+        feedforward_time = 0
+        # predictions = np.empty((0, 2))
+        predictions = torch.empty((0, 2), device=self.device)
         paths = []
         with torch.no_grad():
             for batch_x, img_paths in tqdm(dataloader):
                 batch_x = batch_x.to(self.device)
-                prediction = self(batch_x).cpu().numpy()
-                predictions = np.append(predictions, prediction, axis=0)
+
+                # start_transoform = time.time()
+                # if batch_transforms:
+                #     batch_x = transforms(batch_x)
+                # transofrm_time = time.time() - start_transoform
+                # transforms_time += transofrm_time
+
+                start_pred = time.time()
+                prediction = self(batch_x)
+                feedforward_time += time.time() - start_pred
+                start_transoform = time.time()
+                predictions = torch.cat((predictions, prediction), 0)
+                transforms_time += time.time() - start_transoform
                 for path in img_paths:
                     paths.append(path)
-            return predictions, paths
+        print(f"[DEBUG] loading time: {transforms_time}, feedforward time: {feedforward_time}")
+        print(f'[DEBUG] Predictions shape: {predictions.shape}')
+        
+        return predictions.cpu().numpy(), paths
 
     def train(self, dataloader, epochs):
         self.model_conv.train()  # training mode
@@ -98,16 +119,26 @@ class Model:
     def load(path):
         return torch.load(path)
 
-    def evaluate(self, testloader):
+    def evaluate(self, testloader, batch_transforms=True):
+        if batch_transforms:
+            transforms = get_resnet18_batch_transforms()
         correct = 0
         total = 0
         times_epochs = []
+
+        transforms_time = 0
         with torch.no_grad():
             epoch_start = time.time()
             epoch_tt = 0
             for samples, labels in tqdm(testloader):
                 samples, labels = samples.to(self.device), \
                                   labels.to(self.device)
+                start_transoform = time.time()
+                if batch_transforms:
+                    samples = transforms(samples)
+                transofrm_time = time.time() - start_transoform
+                transforms_time += transofrm_time
+
                 tt_start = time.time()
                 net_out = self(samples)
                 tt_end = time.time()
@@ -119,7 +150,8 @@ class Model:
                     total += 1
             epoch_end = time.time()
             epoch_res = epoch_end-epoch_start
-            print(f'Epoch overral time: {epoch_res}, feedforward time: {epoch_tt}')
+            print(f'Epoch overral time: {epoch_res},'
+                  f' feedforward time: {epoch_tt}')
             times_epochs.append(epoch_res)
         return round(correct/total, 3)
 

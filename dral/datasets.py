@@ -88,11 +88,9 @@ class LabelledDataset(Dataset):
         self.load_time += load_time
         label = torch.tensor(int(self.annotations.iloc[idx, 1]))
 
-        start_transoform = time.time()
         if self.transforms:
             img = self.transforms(img)
-        transofrm_time = time.time() - start_read
-        self.trans_time += transofrm_time
+
         return img, label
 
     def reload(self):
@@ -121,7 +119,7 @@ class UnlabelledDataset(Dataset):
         start_transoform = time.time()
         if self.transforms:
             img = self.transforms(img)
-        transofrm_time = time.time() - start_read
+        transofrm_time = time.time() - start_transoform
         self.trans_time += transofrm_time
         return img, img_path
 

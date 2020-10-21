@@ -13,8 +13,9 @@ from dral.utils import get_resnet18_default_transforms
 
 
 class DataLoader:
-    def __init__(self, cm):
+    def __init__(self, cm, transforms):
         self.cm = cm
+        self.transforms = transforms
         self.IMG_SIZE = cm.get_img_size()
 
     def copy_all(self, src, dst):
@@ -27,13 +28,13 @@ class DataLoader:
                 dst_path = os.path.join(dst, f)
                 cv2.imwrite(dst_path, img)
 
-    def copy_with_transforms(self, src, dst, transforms):
+    def copy_with_transforms(self, src, dst):
         Path(dst).mkdir(parents=True, exist_ok=True)
         for f in tqdm(os.listdir(src)):
             src_path = os.path.join(src, f)
             if os.path.isfile(src_path):
                 img = Image.open(src_path).convert('RGB')
-                img = transforms(img)
+                img = self.transforms(img)
                 dst_path = os.path.join(dst, f)
                 img.save(dst_path)
 
@@ -71,9 +72,8 @@ class DataLoader:
 if __name__ == "__main__":
     cm = ConfigManager('testset')
     dl = DataLoader(cm)
-    transforms = transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(224)])
+    
+
     dl.copy_with_transforms(cm.get_raw_images(),
                             cm.get_transformed_dir(),
                             transforms)

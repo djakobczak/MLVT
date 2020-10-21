@@ -59,15 +59,14 @@ testset:
     images:
       raw: ./data/PetImages/Unlabelled
       raw_test: ./data/PetImages/Test
-      processed: ./server/static/testset/images
       transformed: ./server/static/testset/images_tranformed
       test:
         dir: ./server/static/testset/images_test
 
   train:
     predictions: 50
-    epochs: 5
-    batch_size: 128
+    epochs: 6
+    batch_size: 64
 
   preprocessing:
     grayscale: False
