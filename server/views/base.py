@@ -32,9 +32,11 @@ class MLView(BaseView):
         self.test_loader = None
 
     def get_unl_dataset(self):
+        annotation_path = self.cm.get_unl_annotations_path()
+        self._fail_if_csv_is_empty(annotation_path)
         if not self.unl_dataset:
             self.unl_dataset = UnlabelledDataset(
-                self.cm.get_unl_annotations_path(),
+                annotation_path,
                 get_resnet18_default_transforms())
         return self.unl_dataset
 
@@ -48,9 +50,11 @@ class MLView(BaseView):
         return self.unl_loader
 
     def get_train_loader(self):
+        annotation_path = self.cm.get_train_annotations_path()
+        self._fail_if_csv_is_empty(annotation_path)
         if not self.train_dataset:
             self.train_dataset = LabelledDataset(
-                self.cm.get_train_annotations_path(),
+                annotation_path,
                 self.cm.get_n_labels(),
                 get_resnet18_default_transforms())
 
@@ -60,9 +64,11 @@ class MLView(BaseView):
         return self.train_loader
 
     def get_test_loader(self):
+        annotation_path = self.cm.get_test_annotations_path()
+        self._fail_if_csv_is_empty(annotation_path)
         if not self.test_dataset:
             self.test_dataset = LabelledDataset(
-                self.cm.get_test_annotations_path(),
+                annotation_path,
                 self.cm.get_n_labels(),
                 get_resnet18_default_transforms())
 
@@ -71,8 +77,8 @@ class MLView(BaseView):
                 shuffle=True, num_workers=0)
         return self.test_loader
 
-    def _fail_if_loader_is_empty(self, loader):  # !TODO could be static or moved somewhere
-        if not len(loader):
+    def _fail_if_csv_is_empty(self, path):  # !TODO could be static or moved somewhere
+        if not os.stat(path).st_size:
             raise AnnotationException(
                 'Annotation csv file has to contain at least one sample')
 

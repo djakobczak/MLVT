@@ -158,10 +158,16 @@ paths:
           description: Images with labels added to train dataset
 
     get:
-      summary: Show sample predictions
+      summary: Show subset of model predictions
       tags:
         - data
       parameters:
+        - in: query
+          name: new_predictions
+          description: If true load new predictions
+          schema:
+            type: boolean
+            default: False
         - in: query
           name: random
           description: If true, show random images
@@ -181,18 +187,6 @@ paths:
           schema:
             type: boolean
             default: True
-      # requestBody:
-      #   description: Indicies of images to show, if it is specified then 
-      #     random parameter should be set to False.
-      #   content:
-      #     application/json:
-      #       schema:
-      #         type: object
-      #         properties:
-      #           indicies:
-      #             type: array
-      #             items:
-      #               type: integer
 
       responses:
           '200':

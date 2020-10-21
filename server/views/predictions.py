@@ -1,26 +1,43 @@
+import json
+
 from flask import render_template, url_for, request, redirect
 import numpy as np
 
 from dral.annotations import label_samples
-from dral.utils import get_relative_paths
 from server.views.base import MLView
+from server.file_utils import save_json, load_last_predictions
+from server.exceptions import FileException
+from server.action_lock import lock
 
 
 class PredictionsView(MLView):
 
+    @lock()
     def search(self):
-        random = request.args.get('random')
-        balance = request.args.get('balance')
-        n_predictions = int(request.args.get('maxImages',
-                            self.cm.get_number_of_predictions()))
+        new_predictions = request.args.get('new_predictions')
+        if new_predictions:
+            random = request.args.get('random')
+            balance = request.args.get('balance')
+            n_predictions = int(request.args.get('maxImages',
+                                self.cm.get_number_of_predictions()))
 
-        paths = self._get_predictions(
-            n_predictions, random=random, balance=balance)
-        return render_template("predictions.html.j2",
-                               path_start_idx=paths[0][0].index('static'),  # html need realative path
-                               class1=paths[0], class2=paths[1],
-                               label1=self.cm.get_label_name(0),
-                               label2=self.cm.get_label_name(1)), 200
+            predictions = self._get_predictions(
+                n_predictions, random=random, balance=balance)
+            save_json(self.cm.get_last_predictions_file(), predictions)
+        else:
+            try:
+                path = self.cm.get_last_predictions_file()
+                predictions = load_last_predictions(path)
+            except json.JSONDecodeError:
+                raise FileException(
+                    f"Server can not find file or it is corrupted: {path}")
+
+        return render_template(
+            "predictions.html.j2",
+            path_start_idx=predictions[0][0].index('static'),  # html need realative path
+            class1=predictions[0], class2=predictions[1],
+            label1=self.cm.get_label_name(0),
+            label2=self.cm.get_label_name(1)), 200
 
     def post(self):
         payload = request.json
@@ -34,8 +51,6 @@ class PredictionsView(MLView):
     def _get_predictions(self, n_predictions, random=False, balance=True):
         unl_loader = self.get_unl_loader()
         model = self.load_model()
-        print(len(self.unl_dataset))
-        print(len(unl_loader))
         predictions, paths = model.predict_all(unl_loader)
         print(f'Prediction done, load_time: {self.unl_dataset.load_time}, transform_time: {self.unl_dataset.trans_time}')
 

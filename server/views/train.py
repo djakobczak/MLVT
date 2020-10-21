@@ -1,4 +1,4 @@
-from flask import redirect, url_for, jsonify
+from flask import jsonify
 
 from server.views.base import MLView
 

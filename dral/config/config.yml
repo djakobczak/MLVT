@@ -46,13 +46,14 @@ testset:
     label_mapping:
       Cat: 0
       Dog: 1
+    unknown: 255
 
   paths:
     annotations: 
       dir: ./server/static/testset/annotations/
-      unl: unl.csv
-      train: train.csv
-      test: test.csv
+      unl: unl.json
+      train: train.json
+      test: test.json
     models:
       raw: ./server/static/testset/models/testset_raw.pt
       trained: ./server/static/testset/models/testset_trained.pt
@@ -61,6 +62,8 @@ testset:
       transformed_unl: ./server/static/testset/images_tranformed
       raw_test: ./data/PetImages/Test
       transformed_test: ./server/static/testset/images_test
+    data:
+      last_predictions: ./data/last_predictions.json
 
   train:
     predictions: 50

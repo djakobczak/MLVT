@@ -80,9 +80,7 @@ class ConfigManager:
         return 'tmp'
 
     def get_unknown_label(self):
-        if UNKNOWN_LABEL not in self.get_label_names():
-            raise ValueError(f'There is no {UNKNOWN_LABEL} in labels names')
-        return self.get_label_mapping()[UNKNOWN_LABEL]
+        return self.config['general']['unknown'].get(int)
 
     def get_one_hot_labels(self):
         labels = []
@@ -162,6 +160,10 @@ class ConfigManager:
     def _join_with_clssses(self, *dirs):
         return [os.path.join(*dirs, class_name)
                 for class_name in self.get_label_names()]
+
+    # data paths
+    def get_last_predictions_file(self):
+        return self.config['paths']['data']['last_predictions'].get(str)
 
     # train
     def get_batch_size(self):

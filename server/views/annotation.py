@@ -5,6 +5,7 @@ from connexion import request
 from dral.annotations import create_csv_file
 from server.views.base import BaseView
 from server.utils import DatasetType
+from server.file_utils import update_annotation_file
 
 
 class AnnotationsView(BaseView):
@@ -19,9 +20,10 @@ class AnnotationsView(BaseView):
             data_dir = self.cm.get_unl_transformed_dir()
             name = self.cm.get_unl_annotations_filename()
             annotation_file = os.path.join(csv_dir, name)
-            exc = create_csv_file(annotation_file, data_dir,
-                                  force=force, header='paths',
-                                  mode=mode)
+            # exc = create_csv_file(annotation_file, data_dir,
+            #                       force=force, header='paths',
+            #                       mode=mode)
+            update_annotation_file(annotation_file, data_dir, self.cm.get_unknown_label())
 
         elif annotation == DatasetType.TRAIN.value:
             name = self.cm.get_train_annotations_filename()
@@ -46,5 +48,4 @@ class AnnotationsView(BaseView):
                 if exc:
                     break
 
-        return (f'File {annotation_file} has been created', 200) \
-            if exc is None else (exc, 400)
+        return f'File {annotation_file} has been created', 200

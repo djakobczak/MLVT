@@ -110,24 +110,16 @@ class Model:
         return torch.load(path)
 
     def evaluate(self, testloader, batch_transforms=True):
-        if batch_transforms:
-            transforms = get_resnet18_batch_transforms()
         correct = 0
         total = 0
         times_epochs = []
 
-        transforms_time = 0
         with torch.no_grad():
             epoch_start = time.time()
             epoch_tt = 0
             for samples, labels in tqdm(testloader):
                 samples, labels = samples.to(self.device), \
                                   labels.to(self.device)
-                start_transoform = time.time()
-                if batch_transforms:
-                    samples = transforms(samples)
-                transofrm_time = time.time() - start_transoform
-                transforms_time += transofrm_time
 
                 tt_start = time.time()
                 net_out = self(samples)
