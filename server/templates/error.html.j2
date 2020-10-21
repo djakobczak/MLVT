@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block header %}
+    {% block title %}
+        Error
+    {% endblock title %}
+{% endblock header %}
+
+{% block content %}
+    <div class="m-4" style="text-align: center;">
+        <h2>
+            {{ code }} : {{ msg }}
+        </h2>
+    </div>
+{% endblock content %}
