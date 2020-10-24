@@ -2,19 +2,18 @@ import torch
 import time
 from torch.utils.data import Dataset, DataLoader
 from dral.logger import LOG
-import pandas as pd
 import os
 import cv2
 from tqdm import tqdm
 from torchvision import transforms
-import PIL
 from PIL import Image
 
-import torch.optim as optim
 import torch.nn as nn
 
 import numpy as np
 import torchvision
+
+from server.file_utils import load_labels
 
 
 def remove_corrupted_images(path):
@@ -69,39 +68,53 @@ def create_csv_file_without_label(target_file, data_dir, labels=None,
 
 class LabelledDataset(Dataset):
 
-    def __init__(self, csv_path, n_labels, transforms=None):
-        self.csv_path = csv_path
-        self.annotations = pd.read_csv(csv_path)
+    def __init__(self, path, transforms=None):
+        print('[DEBUG] INIT LABELLED')
+        self.path = path
+        self.load()
+        self.n_class1 = len(self.all_annotations)
         self.transforms = transforms
-        self.n_labels = n_labels
+        self.n_labels = len(self.annotations)
         self.load_time = 0
         self.trans_time = 0
 
     def __len__(self):
-        return len(self.annotations)
+        return len(self.all_annotations)
 
     def __getitem__(self, idx):
         start_read = time.time()
-        img_path = self.annotations.iloc[idx, 0]
+        img_path = self.all_annotations[idx]
         img = Image.open(img_path).convert('RGB')
         load_time = time.time() - start_read
         self.load_time += load_time
-        label = torch.tensor(int(self.annotations.iloc[idx, 1]))
+
+        target_label = self._get_label(img_path)
 
         if self.transforms:
             img = self.transforms(img)
 
-        return img, label
+        # print(img_path, target_label)
+        return img, target_label
 
-    def reload(self):
-        self.annotations = pd.read_csv(self.csv_path)
+    def load(self):
+        self.annotations = load_labels(self.path)
+        self.all_annotations = []
+        for label, paths in self.annotations.items():
+            self.all_annotations.extend(paths)
+
+    def _get_label(self, img_path):
+        for label, paths in self.annotations.items():
+            if img_path in paths:
+                return torch.tensor(label)
 
 
 class UnlabelledDataset(Dataset):
 
-    def __init__(self, csv_path, transforms=None):
-        self.csv_path = csv_path
-        self.annotations = pd.read_csv(csv_path)
+    def __init__(self, path, transforms=None, unl_label=255):
+        print('[DEBUG] INIT UNLABELLED')
+        self.path = path  # should be an list
+        self.unl_label = unl_label
+        self.load()
         self.transforms = transforms
         self.load_time = 0
         self.trans_time = 0
@@ -111,23 +124,20 @@ class UnlabelledDataset(Dataset):
 
     def __getitem__(self, idx):
         start_read = time.time()
-        img_path = self.annotations.iloc[idx, 0]
+        img_path = self.annotations[idx]
         img = Image.open(img_path)
-        load_time = time.time() - start_read
-        self.load_time += load_time
+        self.load_time += time.time() - start_read
 
         start_transoform = time.time()
         if self.transforms:
             img = self.transforms(img)
         transofrm_time = time.time() - start_transoform
         self.trans_time += transofrm_time
+
         return img, img_path
 
-    def get_path(self, idx):
-        return self.annotations.iloc[idx, 0]
-
-    def reload(self):
-        self.annotations = pd.read_csv(self.csv_path)
+    def load(self):
+        self.annotations = load_labels(self.path)[self.unl_label]
 
 
 def train(csv_file, root_dir):

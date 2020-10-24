@@ -101,7 +101,7 @@ class ConfigManager:
         """
         self.preprocessing = 'preprocessing_npy' if enable else 'preprocessing'
 
-    # paths
+    # annotation files paths
     def get_annotation_dir(self):
         return os.path.join(
             *self.config['paths']['annotations']['dir'].get(str).split('/'))
@@ -130,6 +130,7 @@ class ConfigManager:
     def get_test_annotations_filename(self):
         return self.config['paths']['annotations']['test'].get(str)
 
+    # model paths
     def get_model_raw(self):
         return os.path.join(
             *self.config['paths']['models']['raw'].get(str).split('/'))
@@ -138,18 +139,30 @@ class ConfigManager:
         return os.path.join(
             *self.config['paths']['models']['trained'].get(str).split('/'))
 
+    # raw paths
     def get_raw_unl_dir(self):
         return os.path.join(
             *self.config['paths']['images']['raw_unl'].get(str).split('/'))
+
+    def get_raw_train_dirs(self):
+        return self._join_with_clssses(
+            *self.config['paths']['images']['raw_train'].
+            get(str).split('/'))
 
     def get_raw_test_dirs(self):
         return self._join_with_clssses(
             *self.config['paths']['images']['raw_test'].
             get(str).split('/'))
 
+    # transformed dirs
     def get_unl_transformed_dir(self):
         return os.path.join(
             *self.config['paths']['images']['transformed_unl'].
+            get(str).split('/'))
+
+    def get_train_transformed_dirs(self):
+        return self._join_with_clssses(
+            *self.config['paths']['images']['transformed_train'].
             get(str).split('/'))
 
     def get_test_transformed_dirs(self):

@@ -62,11 +62,13 @@ testset:
       transformed_unl: ./server/static/testset/images_tranformed
       raw_test: ./data/PetImages/Test
       transformed_test: ./server/static/testset/images_test
+      raw_train: ./data/PetImages/Train
+      transformed_train: ./server/static/testset/images_train
     data:
       last_predictions: ./data/last_predictions.json
 
   train:
-    predictions: 50
+    predictions: 60
     epochs: 6
     batch_size: 64
 

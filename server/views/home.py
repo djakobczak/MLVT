@@ -10,7 +10,4 @@ class HomeView(BaseView):
         return render_template('home.html.j2')
 
     def post(self):
-        print("I am inside post")
-        post_body = request.json
-        print(post_body)
         return redirect(url_for('.views_HomeView_search'))

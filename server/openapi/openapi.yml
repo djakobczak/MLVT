@@ -1,8 +1,8 @@
-openapi: 3.0.0
+openapi: 3.0.1
 info:
   title: Sample API
   description: API for simple HTTP server that visualize machine learning process
-  version: 0.0.1
+  version: 3.0.1
 
 components:
   schemas:
@@ -83,6 +83,7 @@ components:
           - unlabelled
           - train
           - test
+          - all
 
 paths:
   /home:
@@ -212,8 +213,15 @@ paths:
         - in: query
           name: dataset_type
           schema:
-            $ref: "#/components/schemas/DatasetType"
+              $ref: "#/components/schemas/DatasetType"
           required: true
+        - in: query
+          name: prune
+          description: if set to true then firstly prune the file and
+            then save the annotations
+          schema:
+            type: boolean
+            default: True
       responses:
         200:
           description: File created or updated
@@ -228,12 +236,10 @@ paths:
           name: epochs
           schema:
             type: integer
-            default: 5
         - in: query
           name: batch_size
           schema:
             type: integer
-            default: 128
       responses:
         200:
           description: Succesfull train
@@ -284,3 +290,17 @@ paths:
       responses:
         200:
           description: Images have been copied
+
+  /model:
+    get:
+      summary: Get model summary
+      responses:
+        200:
+          description: Model summary information
+
+    delete:
+      summary: Delete current model and overwrite it with
+        new untrained model
+      responses:
+          200:
+            description: Model deleted

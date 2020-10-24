@@ -1,51 +1,57 @@
-import os
-
-from connexion import request
-
-from dral.annotations import create_csv_file
 from server.views.base import BaseView
 from server.utils import DatasetType
-from server.file_utils import update_annotation_file
+from server.file_utils import update_annotation_file, prune_annotation_file
 
 
 class AnnotationsView(BaseView):
-    def put(self):
-        annotation = request.args.get('dataset_type')
-        force = request.args.get('force')
-        return self._handle_annotation_type(annotation, force, "w+")
+    def put(self, force, dataset_type, prune):
+        return self._handle_annotation_type(dataset_type, force, prune)
 
-    def _handle_annotation_type(self, annotation, force, mode):
-        csv_dir = self.cm.get_annotation_dir()
-        if annotation == DatasetType.UNLABELLED.value:
-            data_dir = self.cm.get_unl_transformed_dir()
-            name = self.cm.get_unl_annotations_filename()
-            annotation_file = os.path.join(csv_dir, name)
-            # exc = create_csv_file(annotation_file, data_dir,
-            #                       force=force, header='paths',
-            #                       mode=mode)
-            update_annotation_file(annotation_file, data_dir, self.cm.get_unknown_label())
+    def _handle_annotation_type(self, annotation, force, prune):
+        if annotation == 'all':
+            self._create_unl_annotation(prune)
+            self._create_train_annotaion(prune)
+            self._create_test_annotation(prune)
+
+        elif annotation == DatasetType.UNLABELLED.value:
+            self._create_unl_annotation(prune)
 
         elif annotation == DatasetType.TRAIN.value:
-            name = self.cm.get_train_annotations_filename()
-            annotation_file = os.path.join(csv_dir, name)
-            exc = create_csv_file(annotation_file, None,
-                                  force=force, mode=mode)
+            self._create_train_annotaion(prune)
 
         elif annotation == DatasetType.TEST.value:
-            test_dirs = self.cm.get_test_transformed_dirs()
-            name = self.cm.get_test_annotations_filename()
-            labels = self.cm.get_numeric_labels()
-            annotation_file = os.path.join(csv_dir, name)
+            self._create_test_annotation(prune)
 
-            # clear the file
-            with open(annotation_file, "w") as f:
-                f.write('paths,label\n')
+        return 'Annotation file has been created', 200
 
-            for label, test_dir in zip(labels, test_dirs):
-                exc = create_csv_file(annotation_file, test_dir,
-                                      force=force, header=None,
-                                      mode="a+", label=label)
-                if exc:
-                    break
+    # !TODO could written better
+    def _create_unl_annotation(self, prune):
+        data_dir = self.cm.get_unl_transformed_dir()
+        annotation_path = self.cm.get_unl_annotations_path()
+        if prune:
+            prune_annotation_file(annotation_path)
+        update_annotation_file(annotation_path,
+                               data_dir,
+                               self.cm.get_unknown_label())
 
-        return f'File {annotation_file} has been created', 200
+    def _create_train_annotaion(self, prune):
+        train_dirs = self.cm.get_train_transformed_dirs()
+        labels = self.cm.get_numeric_labels()
+        annotation_path = self.cm.get_train_annotations_path()
+        if prune:
+            prune_annotation_file(annotation_path)
+        for train_dir, label in zip(train_dirs, labels):
+            update_annotation_file(annotation_path,
+                                   train_dir,
+                                   label)
+
+    def _create_test_annotation(self, prune):
+        test_dirs = self.cm.get_test_transformed_dirs()
+        labels = self.cm.get_numeric_labels()  # labels hould correspond to dirs
+        annotation_path = self.cm.get_test_annotations_path()
+        if prune:
+            prune_annotation_file(annotation_path)
+        for test_dir, label in zip(test_dirs, labels):
+            update_annotation_file(annotation_path,
+                                   test_dir,
+                                   label)

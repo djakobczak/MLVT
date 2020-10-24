@@ -3,9 +3,9 @@ import json
 from flask import render_template, url_for, request, redirect
 import numpy as np
 
-from dral.annotations import label_samples
+from dral.logger import LOG
 from server.views.base import MLView
-from server.file_utils import save_json, load_last_predictions
+from server.file_utils import save_json, load_labels, label_samples
 from server.exceptions import FileException
 from server.action_lock import lock
 
@@ -13,21 +13,21 @@ from server.action_lock import lock
 class PredictionsView(MLView):
 
     @lock()
-    def search(self):
-        new_predictions = request.args.get('new_predictions')
+    def search(self, new_predictions, random, balance, maxImages):
+        n_predictions = maxImages if maxImages else \
+                            self.cm.get_number_of_predictions()
         if new_predictions:
-            random = request.args.get('random')
-            balance = request.args.get('balance')
-            n_predictions = int(request.args.get('maxImages',
-                                self.cm.get_number_of_predictions()))
-
             predictions = self._get_predictions(
                 n_predictions, random=random, balance=balance)
             save_json(self.cm.get_last_predictions_file(), predictions)
         else:
             try:
                 path = self.cm.get_last_predictions_file()
-                predictions = load_last_predictions(path)
+                predictions = load_labels(path)
+                if not predictions:
+                    predictions = self._get_predictions(
+                        n_predictions, random=random, balance=balance)
+                    save_json(self.cm.get_last_predictions_file(), predictions)
             except json.JSONDecodeError:
                 raise FileException(
                     f"Server can not find file or it is corrupted: {path}")
@@ -46,10 +46,14 @@ class PredictionsView(MLView):
                           self.cm.get_train_annotations_path(),
                           paths, class_num)
 
-        return "success", 200
+        return redirect(url_for('.views_PredictionsView_search',
+                                new_predictions=True))
 
     def _get_predictions(self, n_predictions, random=False, balance=True):
+        LOG.info(f'Get {n_predictions} predictions with parameters: '
+                 f'random={random}, balance={balance}')
         unl_loader = self.get_unl_loader()
+        self.unl_dataset.load()
         model = self.load_model()
         predictions, paths = model.predict_all(unl_loader)
         print(f'Prediction done, load_time: {self.unl_dataset.load_time}, transform_time: {self.unl_dataset.trans_time}')
@@ -98,5 +102,5 @@ class PredictionsView(MLView):
 
             if sum(len(arr) for arr in label_paths_mapping.values()) >= n:
                 break
-
+        print(label_paths_mapping)
         return label_paths_mapping

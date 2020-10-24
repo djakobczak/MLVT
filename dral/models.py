@@ -1,9 +1,6 @@
 import os
 import time
 
-import cv2
-import numpy as np
-import PIL
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -12,7 +9,7 @@ from torchvision import transforms
 from tqdm import tqdm
 
 from dral.datasets import LabelledDataset
-from dral.utils import get_resnet18_batch_transforms
+from dral.logger import LOG
 
 
 def init_and_save(path):
@@ -22,15 +19,20 @@ def init_and_save(path):
 
 class Model:
     def __init__(self, model=None):
+        LOG.info('Model initialization starts...')
         self.device = torch.device(
             "cuda:0" if torch.cuda.is_available() else "cpu")
-        print(f'CUDA: {self.device}')
+        LOG.info(f'CUDA: {self.device}')
         if model is None:
             model = torchvision.models.resnet18(pretrained=True)
+            # freeze conv layers
+            for param in model.parameters():
+                param.requires_grad = False
             num_ftrs = model.fc.in_features
             model.fc = nn.Sequential(
                 nn.Linear(num_ftrs, 256),
                 nn.Linear(256, 2))
+            LOG.info('New model created')
         self.model_conv = model.to(self.device)
 
         self.criterion = nn.CrossEntropyLoss()
@@ -65,8 +67,7 @@ class Model:
                 for path in img_paths:
                     paths.append(path)
         print(f"[DEBUG] loading time: {transforms_time}, feedforward time: {feedforward_time}")
-        print(f'[DEBUG] Predictions shape: {predictions.shape}')
-        
+
         return predictions.cpu().numpy(), paths
 
     def train(self, dataloader, epochs):
@@ -93,8 +94,8 @@ class Model:
             pred = torch.argmax(output, dim=1)
             correct = pred.eq(labels)
             acc = torch.mean(correct.float())
-            print('[Epoch {}/{}] Iteration {} -> Train Loss: {:.4f}, '
-                  'Accuracy: {:.3f}'.format(
+            LOG.info('[Epoch {}/{}] Iteration {} -> Train Loss: {:.4f}, '
+                     'Accuracy: {:.3f}'.format(
                         epoch+1, epochs, itr, total_loss/p_itr, acc))
             loss_list.append(total_loss/p_itr)
             acc_list.append(float(acc.cpu()))
@@ -132,8 +133,8 @@ class Model:
                     total += 1
             epoch_end = time.time()
             epoch_res = epoch_end-epoch_start
-            print(f'Epoch overral time: {epoch_res},'
-                  f' feedforward time: {epoch_tt}')
+            LOG.info(f'Epoch overral time: {epoch_res},'
+                     f' feedforward time: {epoch_tt}')
             times_epochs.append(epoch_res)
         return round(correct/total, 3)
 
@@ -149,8 +150,6 @@ def main():
     csv_test_file = os.path.join('data', 'test_annotations.csv')
 
     preprocessed = transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
@@ -181,14 +180,6 @@ if __name__ == "__main__":
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
-    img1 = cv2.imread(path1)
-    img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)
-    img2 = cv2.imread(path2)
-    img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2RGB)
-    img1 = PIL.Image.fromarray(img1)
-    img2 = PIL.Image.fromarray(img2)
-    img1 = preprocessed(img1).unsqueeze(0).to(device)
-    img2 = preprocessed(img2).unsqueeze(0).to(device)
 
     model = torch.load(MODEL_NAME)
     predictions = model(img1)
@@ -201,13 +192,3 @@ if __name__ == "__main__":
     model_conv.fc = nn.Sequential(
         nn.Linear(num_ftrs, 256),
         nn.Linear(256, 2))
-    # model_conv = model_conv.to(device)
-    # torch.save(model_conv, 'model_test.pt')
-    # model = torch.load('model_test.pt')
-    # img1 = img1.unsqueeze(0)
-    # img1 = img1.to(device)
-    # predictions = model(img1)
-    # print(predictions)
-
-    # model2 = torch.load(MODEL_NAME)
-    # print(model2)

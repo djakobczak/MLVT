@@ -9,7 +9,8 @@ from dral.config.config_manager import ConfigManager
 from dral.datasets import UnlabelledDataset, LabelledDataset
 from dral.utils import get_resnet18_default_transforms
 
-from server.exceptions import AnnotationException
+from server.exceptions import AnnotationException, ModelException
+from server.file_utils import load_labels
 
 
 MODEL_PATH = os.path.join('data', 'saved_models', 'test_model.pt')
@@ -31,19 +32,15 @@ class MLView(BaseView):
         self.train_loader = None
         self.test_loader = None
 
-    def get_unl_dataset(self):
-        annotation_path = self.cm.get_unl_annotations_path()
-        self._fail_if_csv_is_empty(annotation_path)
-        if not self.unl_dataset:
-            self.unl_dataset = UnlabelledDataset(
-                annotation_path,
-                get_resnet18_default_transforms())
-        return self.unl_dataset
-
     # csv with annotations can not be empty
     def get_unl_loader(self):
         if not self.unl_loader:
-            self.get_unl_dataset()
+            annotation_path = self.cm.get_unl_annotations_path()
+            self._fail_if_file_is_empty(annotation_path)
+            self.unl_dataset = UnlabelledDataset(
+                annotation_path,
+                get_resnet18_default_transforms())
+
             self.unl_loader = DataLoader(
                 self.unl_dataset, batch_size=self.cm.get_batch_size(),
                 shuffle=True, num_workers=0)
@@ -51,11 +48,10 @@ class MLView(BaseView):
 
     def get_train_loader(self):
         annotation_path = self.cm.get_train_annotations_path()
-        self._fail_if_csv_is_empty(annotation_path)
+        self._fail_if_file_is_empty(annotation_path)
         if not self.train_dataset:
             self.train_dataset = LabelledDataset(
                 annotation_path,
-                self.cm.get_n_labels(),
                 get_resnet18_default_transforms())
 
             self.train_loader = DataLoader(
@@ -65,11 +61,10 @@ class MLView(BaseView):
 
     def get_test_loader(self):
         annotation_path = self.cm.get_test_annotations_path()
-        self._fail_if_csv_is_empty(annotation_path)
+        self._fail_if_file_is_empty(annotation_path)
         if not self.test_dataset:
             self.test_dataset = LabelledDataset(
                 annotation_path,
-                self.cm.get_n_labels(),
                 get_resnet18_default_transforms())
 
             self.test_loader = DataLoader(
@@ -77,14 +72,17 @@ class MLView(BaseView):
                 shuffle=True, num_workers=0)
         return self.test_loader
 
-    def _fail_if_csv_is_empty(self, path):  # !TODO could be static or moved somewhere
-        if not os.stat(path).st_size:
+    def _fail_if_file_is_empty(self, path):  # !TODO could be static or moved somewhere
+        if not os.path.isfile(path) or not os.stat(path).st_size:
             raise AnnotationException(
-                'Annotation csv file has to contain at least one sample')
+                'Annotation file does not exist or is empty')
 
     def load_model(self):
-        model = Model.load(MODEL_PATH)
+        try:
+            model = Model.load(self.cm.get_model_trained())
+        except FileNotFoundError:
+            raise ModelException('Error while loading trained model')
         return Model(model)
 
     def save_model(self, model):
-        torch.save(model, MODEL_PATH)
+        torch.save(model, self.cm.get_model_trained())

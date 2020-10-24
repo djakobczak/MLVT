@@ -144,3 +144,4 @@ testset/*
 *.png
 *.jpeg
 *.csv
+*.json

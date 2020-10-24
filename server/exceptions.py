@@ -13,6 +13,10 @@ class FileException(Exception):
     pass
 
 
+class ModelException(Exception):
+    pass
+
+
 errors = Blueprint('errors', __name__)
 
 PLAIN = 'ContentType: text/plain'
@@ -31,6 +35,12 @@ def handle_lock(error):
 
 
 @errors.app_errorhandler(FileException)
-def handle_currupted_fille(error):
+def handle_currupted_file(error):
+    return render_template(
+        "error.html.j2", code=400, msg=str(error)), 400
+
+
+@errors.app_errorhandler(ModelException)
+def handle_model(error):
     return render_template(
         "error.html.j2", code=400, msg=str(error)), 400
