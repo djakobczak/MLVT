@@ -13,7 +13,7 @@ from server.action_lock import lock
 class PredictionsView(MLView):
 
     @lock()
-    def search(self, new_predictions, random, balance, maxImages):
+    def search(self, new_predictions, random, balance, maxImages=None):
         n_predictions = maxImages if maxImages else \
                             self.cm.get_number_of_predictions()
         if new_predictions:
@@ -65,8 +65,8 @@ class PredictionsView(MLView):
             return self._get_most_uncertain(
                 predictions, paths, n_predictions)
 
-    def _get_most_uncertain(self, predictions, paths, n, balance=True):  # !TODO let it works for more then 2 classes
-        labels = [np.argmin(el) for el in predictions]
+    def _get_most_uncertain(self, predictions, paths, n, balance=True):
+        labels = [np.argmax(el) for el in predictions]
         diffs = [abs(el[0] - el[1]) for el in predictions]
         paths_with_labels = [(path, label) for path, _, label
                              in sorted(zip(paths, diffs, labels),
@@ -74,7 +74,7 @@ class PredictionsView(MLView):
         return self._create_mapping(paths_with_labels, n, balance)
 
     def _get_random(self, predictions, paths, n, balance=True):
-        labels = [np.argmin(el) for el in predictions]
+        labels = [np.argmax(el) for el in predictions]
         return self._create_mapping(list(zip(paths, labels)), n, balance)
 
     def _create_mapping(self, paths_with_labels, n, balance=True):
@@ -102,5 +102,4 @@ class PredictionsView(MLView):
 
             if sum(len(arr) for arr in label_paths_mapping.values()) >= n:
                 break
-        print(label_paths_mapping)
         return label_paths_mapping

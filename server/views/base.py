@@ -84,5 +84,7 @@ class MLView(BaseView):
             raise ModelException('Error while loading trained model')
         return Model(model)
 
-    def save_model(self, model):
-        torch.save(model, self.cm.get_model_trained())
+    def save_model(self, model=None, path=None):
+        model = model if model else self.load_model()
+        path = path if path else self.cm.get_model_trained()
+        torch.save(model.model_conv, path)

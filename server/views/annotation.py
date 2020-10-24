@@ -24,7 +24,7 @@ class AnnotationsView(BaseView):
 
         return 'Annotation file has been created', 200
 
-    # !TODO could written better
+    # !TODO could be written better
     def _create_unl_annotation(self, prune):
         data_dir = self.cm.get_unl_transformed_dir()
         annotation_path = self.cm.get_unl_annotations_path()

@@ -180,7 +180,6 @@ paths:
           description: Number of images to show
           schema:
             type: integer
-            default: 50
         - in: query
           name: balance
           description: If set to True then return the same number of predictions
@@ -304,3 +303,27 @@ paths:
       responses:
           200:
             description: Model deleted
+
+    put:
+      summary: save current model at the specified path
+      parameters:
+        - in: query
+          name: force
+          description: if set to True then force creation
+            subdirectories
+          schema:
+            type: boolean
+            default: False
+      requestBody:
+        description: filesystem location where the model should
+          be saved
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+            example: /path/to/model/model.pt
+              
+      responses:
+        200:
+          description: Model has been saved  

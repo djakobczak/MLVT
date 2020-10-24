@@ -15,5 +15,5 @@ class TrainView(MLView):
             self.get_train_loader(),
             self.cm.get_epochs())
         LOG.info(f'losses: {losses}, accs: {accs}')
-        self.save_model(model.model_conv)
+        self.save_model(model)
         return jsonify(losses=losses, accuracy=accs)

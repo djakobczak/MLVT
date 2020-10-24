@@ -3,6 +3,15 @@
     vertical-align: top;
 }
 
+.header-basic {
+    text-align: center;
+    font-size: 36px;
+    letter-spacing: 5px;
+    background-color: #575757;
+    margin-left: 10%;
+    margin-right: 10%;
+}
+
 a {
     font-size: 22px;
 }
@@ -13,7 +22,7 @@ a {
 }
 
 .header-dark {
-    background-color:#7ebc59 ;
+    background-color:#cc7400;
 }
 
 li {
@@ -24,3 +33,9 @@ li {
 hr.common-light {
     border-top: 1px solid whitesmoke;
 }
+
+.custom-control-input:checked ~ .custom-control-label::before {
+    color: #fff;
+    border-color:#007808 !important;
+    background-color: #007808 !important;
+  }

@@ -1,42 +1,3 @@
-cats_dogs_128:
-  dataset: Dogs vs Cats
-  description: TODO
-
-  general:
-    image_size: 128
-    label_mapping:
-      Cat: 0
-      Dog: 1
-      Unknown: 255
-
-    name_class_delimiter: _  # images will be saved in format <name>_<class_number>
-
-  paths:
-    main_dir: ./data/PetImages/Unknown
-    imgs:
-      ./data/PetImages/Unknown: 255
-    save: ./server/static/images
-
-  loader:
-    shuffle: False
-    label_format: one-hot
-
-  preprocessing:
-    grayscale: False
-    rescale_with_crop: True
-    normalization: False
-    centering: False
-    standarization: False
-    strict_balance: False
-
-  preprocessing_npy:
-    grayscale: False
-    rescale_with_crop: True
-    normalization: True
-    centering: True
-    standarization: True
-    strict_balance: False
-
 testset:
   dataset: Dogs vs Cats
   description: TODO
@@ -68,10 +29,11 @@ testset:
       last_predictions: ./data/last_predictions.json
 
   train:
-    predictions: 60
-    epochs: 6
+    predictions: 48
+    epochs: 10
     batch_size: 64
 
+  # currently not used
   preprocessing:
     grayscale: False
     rescale_with_crop: False

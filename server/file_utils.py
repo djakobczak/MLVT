@@ -1,13 +1,16 @@
 import json
 import os
+from pathlib import Path
 
 from tqdm import tqdm
 
 from dral.logger import LOG
+from server.exceptions import PathException
 
 
 def save_json(path, data):
     with open(path, "w+") as f:
+        print('[DEBUG] save')
         json.dump(data, f, indent=4, sort_keys=True)
 
 
@@ -49,9 +52,18 @@ def label_samples(unl_json_file, label_json_file, paths,
     unl_samples = unl_json[unl_label]
     labelled_list = label_json[label]
     for path in paths:
-        print(f'[DEBUG] path: {path}')
-        print(f'[DEBUG] {path in unl_samples}')
         unl_samples.remove(path)
         labelled_list.append(path)
     save_json(unl_json_file, unl_json)
     save_json(label_json_file, label_json)
+
+
+def create_subdirs_if_not_exist(path):
+    head, tail = os.path.split(path)
+    Path(head).mkdir(parents=True, exist_ok=True)
+
+
+def fail_if_headpath_not_exist(path):
+    head, tail = os.path.split(path)
+    if not os.path.exists(head):
+        raise PathException(f'({path}) does not exist.')

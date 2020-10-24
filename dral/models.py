@@ -24,14 +24,14 @@ class Model:
             "cuda:0" if torch.cuda.is_available() else "cpu")
         LOG.info(f'CUDA: {self.device}')
         if model is None:
-            model = torchvision.models.resnet18(pretrained=True)
+            model = torchvision.models.resnet34(pretrained=True)
             # freeze conv layers
             for param in model.parameters():
                 param.requires_grad = False
             num_ftrs = model.fc.in_features
             model.fc = nn.Sequential(
-                nn.Linear(num_ftrs, 256),
-                nn.Linear(256, 2))
+                nn.Linear(num_ftrs, 2),
+                nn.Softmax())
             LOG.info('New model created')
         self.model_conv = model.to(self.device)
 

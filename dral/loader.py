@@ -247,9 +247,6 @@ class DataLoader:
             np.save(os.path.join(path, filename.format('y'), self._y))
         LOG.info(f'Data was saved in directory {path}')
 
-    def _create_path_if_does_not_exists(self, path):
-        Path(path).mkdir(parents=True, exist_ok=True)
-
     def print_balance_counter(self):
         if sum(self.balance_counter.values()):
             for label in self.cm.get_label_names():
