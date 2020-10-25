@@ -180,6 +180,8 @@ paths:
           description: Number of images to show
           schema:
             type: integer
+            minimum: 1
+            maximum: 100
         - in: query
           name: balance
           description: If set to True then return the same number of predictions

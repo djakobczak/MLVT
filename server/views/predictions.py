@@ -79,7 +79,7 @@ class PredictionsView(MLView):
 
     def _create_mapping(self, paths_with_labels, n, balance=True):
         """Get tuple (paths, labels) and create dictionary label: array of
-        apths.
+        paths.
 
         Args:
             paths_with_labels (tuple): paths corresponding labels tuple

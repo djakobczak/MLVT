@@ -5,37 +5,40 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container col-sm-10 mt-3 mb-3 border rounded border-secondary p-3">
-        <form>
-            <div class="row">
-            <div class="col-md-8">
+    <div class="container col-sm-10 mt-3 mb-4 border rounded border-secondary p-3">
+        <div class="row">
+            <div class="col-md-5">
                 <div class="row m-1">
                     <div class="custom-control custom-checkbox m-2">
-                        <input type="checkbox" class="custom-control-input" id="customCheck1" name="example1">
-                        <label class="custom-control-label" for="customCheck1">New predictions</label>
+                        <input type="checkbox" class="custom-control-input" id="randomCheckbox" name="random">
+                        <label class="custom-control-label" for="randomCheckbox">Random</label>
                     </div>
                     <div class="custom-control custom-checkbox m-2">
-                        <input type="checkbox" class="custom-control-input" id="customCheck2" name="example2">
-                        <label class="custom-control-label" for="customCheck2">Random</label>
-                    </div>
-                    <div class="custom-control custom-checkbox m-2">
-                        <input type="checkbox" class="custom-control-input" id="customCheck3" name="example3" checked>
-                        <label class="custom-control-label" for="customCheck3">Balance</label>
+                        <input type="checkbox" class="custom-control-input" id="balanceCheckbox" name="balance" checked>
+                        <label class="custom-control-label" for="balanceCheckbox">Balance</label>
                     </div>
                 </div>
                 <div class="form-group m-1 p-2">
-                    <label for="usr">Number of predicted images:</label>
-                    <input type="text" class="form-control col-sm-4" id="n_predictions">
+                    <div class="pr-2">
+                        Number of images to show:
+                        <span class="font-weight-bold ml-2 p-0" id="maxImagesValue"></span>
+                    </div>
+                    <div class="slidecontainer pt-2">
+                        <input type="range" class="custom-range p-1 slider" id="maxImagesSlider" min="0" max="100" value="48">
+                    </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <button type="button" class="btn btn-secondary m-3">Show new prediction</button>
+            <div class="col-md-3">
+                {# empty #}
             </div>
+            <div class="col-md-4 pr-4">
+                <button class="btn btn-success float-right" type="button" id="new_predictions" onclick="showNewPredictions()">Show new predictions</button>
             </div>
-        </form>
+        </div>
     </div>
 
-<div class="container mt-3 col-sm-10 border rounded border-secondary p-3">
+
+<div class="container mt-3 col-sm-10 border rounded border-secondary p-3 mb-5">
     <div class="font-weight-light text-center p-2 header-basic">
         Select wrong predicted images.
     </div>
@@ -73,8 +76,8 @@
     
     <div class="mt-4">
         <div class="col-sm-12 text-center">
-            <button type="button" onclick="sendPredictions()" class="btn btn-secondary btn-lg m-3">Add annotation</button>
-            <button type="button" onclick="window.location.href='{{ url_for('.views_TrainView_search') }}';" class="btn btn-lg btn-secondary m-3">Train</button>
+            <button type="button" onclick="sendPredictions()" class="btn btn-success btn-lg m-3">Add annotation</button>
+            <button type="button" onclick="window.location.href='{{ url_for('.views_TrainView_search') }}';" class="btn btn-lg btn-success m-3">Train</button>
         </div>
     </div>
 
@@ -162,6 +165,40 @@
                     push_wrong_prediction(event.target)
                 }
             }
+        });
+        function showNewPredictions(){
+            $.ajax({
+                url: '/predictions',
+                type: "GET",
+                data: {
+                    new_predictions: true,
+                    random: $("#randomCheckbox").is(":checked"),
+                    balance: $("#balanceCheckbox").is(":checked"),
+                    maxImages: $("#maxImagesValue").text()
+                },
+                contentType: "application/json; charset=utf-8",
+                success: function(){
+                    window.location.href = "/predictions";
+                },
+                error: function(xhr) {
+                    console.log(xhr.status)
+                    switch (xhr.status) {
+                        case 409:
+                            alert("Wait for the server to end action");
+                        default:
+                            alert("Unknown error, please try again");
+                    }
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            const $valueSpan = $('#maxImagesValue');
+            const $value = $('#maxImagesSlider');
+            $valueSpan.html($value.val());
+            $value.on('input change', () => {
+                $valueSpan.html($value.val());
+            });
         });
         
     </script>

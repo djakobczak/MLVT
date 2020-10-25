@@ -34,29 +34,30 @@ class MLView(BaseView):
 
     # csv with annotations can not be empty
     def get_unl_loader(self):
-        if not self.unl_loader:
-            annotation_path = self.cm.get_unl_annotations_path()
-            self._fail_if_file_is_empty(annotation_path)
-            self.unl_dataset = UnlabelledDataset(
-                annotation_path,
-                get_resnet18_default_transforms())
+        # if not self.unl_loader:
+        annotation_path = self.cm.get_unl_annotations_path()
+        self._fail_if_file_is_empty(annotation_path)
+        self.unl_dataset = UnlabelledDataset(
+            annotation_path,
+            get_resnet18_default_transforms())
 
-            self.unl_loader = DataLoader(
-                self.unl_dataset, batch_size=self.cm.get_batch_size(),
-                shuffle=True, num_workers=0)
+        self.unl_loader = DataLoader(
+            self.unl_dataset, batch_size=self.cm.get_batch_size(),
+            shuffle=True, num_workers=0)
         return self.unl_loader
 
     def get_train_loader(self):
         annotation_path = self.cm.get_train_annotations_path()
+        print(annotation_path)
         self._fail_if_file_is_empty(annotation_path)
-        if not self.train_dataset:
-            self.train_dataset = LabelledDataset(
-                annotation_path,
-                get_resnet18_default_transforms())
+        # if not self.train_dataset:
+        self.train_dataset = LabelledDataset(
+            annotation_path,
+            get_resnet18_default_transforms())
 
-            self.train_loader = DataLoader(
-                self.train_dataset, batch_size=self.cm.get_batch_size(),
-                shuffle=True, num_workers=0)
+        self.train_loader = DataLoader(
+            self.train_dataset, batch_size=self.cm.get_batch_size(),
+            shuffle=True, num_workers=0)
         return self.train_loader
 
     def get_test_loader(self):
