@@ -51,9 +51,19 @@
             <h1>{% block header %}{% endblock %}</h1>
         </div>
     </header>
-        {% for message in get_flashed_messages() %}
-            <div class="flash">{{ message }}</div>
-        {% endfor %}
-        {% block content %}{% endblock %}
+    <div class="container mt-3 text-center">
+        <!-- with_categories allows us to get the bootstrap class e.g. success, due to use of that we get 2 values to loop through -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {{ category }}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+    {% block content %}{% endblock %}
     </section>
 </body>

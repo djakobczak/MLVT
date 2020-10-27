@@ -70,14 +70,11 @@
             </div>
         </div>
     </div>
-    {# <div>
-        <button class="btn" type="button" onclick="sendPredictions()">Click</button>
-    </div> #}
     
     <div class="mt-4">
         <div class="col-sm-12 text-center">
             <button type="button" onclick="sendPredictions()" class="btn btn-success btn-lg m-3">Add annotation</button>
-            <button type="button" onclick="window.location.href='{{ url_for('.views_TrainView_search') }}';" class="btn btn-lg btn-success m-3">Train</button>
+            <button type="button" onclick="train()" class="btn btn-lg btn-success m-3">Train</button>
         </div>
     </div>
 
@@ -148,6 +145,16 @@
                 contentType: "application/json; charset=utf-8",
                 success: function(){
                     window.location.href = "/predictions";
+                }
+            });
+        }
+
+        function train(){
+            $.ajax({
+                url: '/train',
+                type: "POST",
+                success: function(){
+                    window.location.href = "/train";
                 }
             });
         }

@@ -31,13 +31,13 @@ class Model:
             num_ftrs = model.fc.in_features
             model.fc = nn.Sequential(
                 nn.Linear(num_ftrs, 2),
-                nn.Softmax())
+                nn.Softmax(dim=0))
             LOG.info('New model created')
         self.model_conv = model.to(self.device)
 
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = torch.optim.Adam(
-            self.model_conv.parameters(), lr=0.002, amsgrad=True)
+            self.model_conv.parameters(), lr=0.0005, amsgrad=True)
         self.scheduler = torch.optim.lr_scheduler.MultiStepLR(
             self.optimizer, milestones=[100, 200, 300], gamma=0.5)
 
@@ -45,11 +45,13 @@ class Model:
         return self.model_conv(batch_x)
 
     def predict(self, batch_x):
+        self.model_conv.eval()
         with torch.no_grad():
             batch_x = batch_x.to(self.device)
             return self(batch_x)
 
     def predict_all(self, dataloader):
+        self.model_conv.eval()
         transforms_time = 0
         feedforward_time = 0
         predictions = torch.empty((0, 2), device=self.device)
@@ -77,7 +79,6 @@ class Model:
         total_loss = 0
         loss_list = []
         acc_list = []
-
         for epoch in range(epochs):
             for samples, labels in tqdm(dataloader):
                 samples, labels = samples.to(self.device), \
@@ -108,12 +109,13 @@ class Model:
 
     @staticmethod
     def load(path):
+        print(f'load from path: {path}')
         return torch.load(path)
 
-    def evaluate(self, testloader, batch_transforms=True):
+    def evaluate(self, testloader):
         correct = 0
         total = 0
-        times_epochs = []
+        self.model_conv.eval()
 
         with torch.no_grad():
             epoch_start = time.time()
@@ -124,18 +126,15 @@ class Model:
 
                 tt_start = time.time()
                 net_out = self(samples)
-                tt_end = time.time()
-                epoch_tt += (tt_end - tt_start)
+                epoch_tt += (time.time() - tt_start)
                 for label, net_out in zip(labels, net_out):
                     predicted = torch.argmax(net_out)
                     if label == predicted:
                         correct += 1
                     total += 1
-            epoch_end = time.time()
-            epoch_res = epoch_end-epoch_start
+            epoch_res = time.time()-epoch_start
             LOG.info(f'Epoch overral time: {epoch_res},'
                      f' feedforward time: {epoch_tt}')
-            times_epochs.append(epoch_res)
         return round(correct/total, 3)
 
 

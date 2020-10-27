@@ -231,7 +231,27 @@ paths:
 
   /train:
     get:
-      summary: Train model and return train summary results
+      parameters:
+        - in: query
+          name: number
+          description: Tells which test result should be returned,
+            0 indicates the most recent one
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+            
+      summary: Get last training result
+      responses:
+          200:
+            description: Success
+            content:
+              text/html:
+                schema:
+                  type: string
+
+    post:
+      summary: Train model and save train summary results
       parameters:
         - in: query
           name: epochs
@@ -242,12 +262,10 @@ paths:
           schema:
             type: integer
       responses:
-        200:
-          description: Succesfull train
-          content:
-              application/json:
-                schema:
-                  $ref: "#/components/schemas/TrainResult"
+        202:
+          description: Action started
+        409:
+          description: ongoing action exists
 
   /evaluate:
     get:

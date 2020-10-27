@@ -27,6 +27,8 @@ testset:
       transformed_train: ./server/static/testset/images_train
     data:
       last_predictions: ./data/last_predictions.json
+      train_results: ./data/train_results.json
+      test_results: ./data/test_results.json
 
   train:
     predictions: 48

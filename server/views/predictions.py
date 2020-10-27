@@ -15,7 +15,7 @@ class PredictionsView(MLView):
     @lock()
     def search(self, new_predictions, random, balance, maxImages=None):
         n_predictions = maxImages if maxImages else \
-                            self.cm.get_number_of_predictions()
+            self.cm.get_number_of_predictions()
         if new_predictions:
             predictions = self._get_predictions(
                 n_predictions, random=random, balance=balance)

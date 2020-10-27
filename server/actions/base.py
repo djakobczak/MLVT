@@ -1,6 +1,5 @@
 import os
 
-from flask.views import MethodView
 import torch
 from torch.utils.data import DataLoader
 
@@ -14,16 +13,15 @@ from server.exceptions import AnnotationException, ModelException
 from server.file_utils import is_json_empty
 
 
-MODEL_PATH = os.path.join('data', 'saved_models', 'test_model.pt')
 CONFIG_NAME = 'testset'
 
 
-class BaseView(MethodView):
+class BaseAction:
     def __init__(self):
         self.cm = ConfigManager(CONFIG_NAME)
 
 
-class MLView(BaseView):
+class MLAction(BaseAction):
     def __init__(self):
         super().__init__()
         self.unl_dataset = None
@@ -35,7 +33,6 @@ class MLView(BaseView):
 
     # csv with annotations can not be empty
     def get_unl_loader(self):
-        # if not self.unl_loader:
         annotation_path = self.cm.get_unl_annotations_path()
         self._fail_if_file_is_empty(annotation_path)
         self.unl_dataset = UnlabelledDataset(
@@ -50,7 +47,6 @@ class MLView(BaseView):
     def get_train_loader(self):
         annotation_path = self.cm.get_train_annotations_path()
         self._fail_if_file_is_empty(annotation_path)
-        # if not self.train_dataset:
         self.train_dataset = LabelledDataset(
             annotation_path,
             get_resnet_train_transforms())

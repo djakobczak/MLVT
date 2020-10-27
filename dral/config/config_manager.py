@@ -178,6 +178,12 @@ class ConfigManager:
     def get_last_predictions_file(self):
         return self.config['paths']['data']['last_predictions'].get(str)
 
+    def get_train_results_file(self):
+        return self.config['paths']['data']['train_results'].get(str)
+
+    def get_test_results_file(self):
+        return self.config['paths']['data']['test_results'].get(str)
+
     # train
     def get_batch_size(self):
         return self.config['train']['batch_size'].get(int)

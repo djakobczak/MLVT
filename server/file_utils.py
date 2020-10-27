@@ -5,18 +5,20 @@ from pathlib import Path
 from tqdm import tqdm
 
 from dral.logger import LOG
-from server.exceptions import PathException
+from server.exceptions import PathException, FileException
 
 
 def save_json(path, data):
     with open(path, "w+") as f:
-        print('[DEBUG] save')
         json.dump(data, f, indent=4, sort_keys=True)
 
 
-def load_json(path):
+def load_json(path, parse_keys_to=None):  # !TODO change load_labels to laod_json with parse
     with open(path) as f:
-        return json.load(f)
+        dict_data = json.load(f)
+        if parse_keys_to:
+            return {parse_keys_to(key): val for key, val in dict_data.items()}
+        return dict_data
 
 
 def load_labels(path):
@@ -24,7 +26,32 @@ def load_labels(path):
     return {int(key): val for key, val in mapping.items()}
 
 
-def update_annotation_file(path, data_dir, label, prune=False):
+def append_to_json_file(path, values):
+    try:
+        dict_data = load_json(path, parse_keys_to=float)
+    except FileNotFoundError:
+        dict_data = {}
+
+    for key, value in values.items():
+        dict_data[key] = value
+
+    save_json(path, dict_data)
+
+
+def is_json_empty(path):  # path must contain iterable keys
+    """Returns sum of the elements in json file specified by path
+
+    Args:
+        path (str): path to json file
+
+    Returns:
+        int: sum of all values lengths
+    """
+    dict_ = load_json(path)
+    return sum(len(dict_[value]) for value in dict_)
+
+
+def update_annotation_file(path, data_dir, label):
     try:
         annotations = load_labels(path)
     except FileNotFoundError:
@@ -40,7 +67,7 @@ def update_annotation_file(path, data_dir, label, prune=False):
     LOG.info(f'{path} file has been updated.')
 
 
-def prune_annotation_file(path):
+def prune_json_file(path):
     LOG.info(f'Prune file: {path}')
     save_json(path, {})
 
