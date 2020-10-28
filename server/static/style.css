@@ -22,7 +22,7 @@ a {
 }
 
 .header-dark {
-    background-color:#0e721f;
+    background-color:#0d9424;
 }
 
 li {
@@ -36,8 +36,8 @@ hr.common-light {
 
 .custom-control-input:checked ~ .custom-control-label::before {
     color: #fff;
-    border-color:#0e721f !important;
-    background-color: #0e721f !important;
+    border-color:#0d9424 !important;
+    background-color: #0d9424 !important;
   }
 
 

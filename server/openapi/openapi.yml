@@ -85,6 +85,10 @@ components:
           - test
           - all
 
+  responses:
+    Ongoing:
+      description: There is ongoing action
+
 paths:
   /home:
     get:
@@ -238,8 +242,8 @@ paths:
             0 indicates the most recent one
           schema:
             type: integer
-            default: 0
-            minimum: 0
+            default: -1
+            minimum: -1
             
       summary: Get last training result
       responses:
@@ -265,15 +269,45 @@ paths:
         202:
           description: Action started
         409:
-          description: ongoing action exists
+          $ref: "#/components/responses/Ongoing"
 
-  /evaluate:
-    get:
-      summary: Evaluate TODO
+    delete:
+      summary: remove training history
       responses:
         200:
-          description: Succesfull evaluate
+          description: Deleted
 
+  /test:
+    get:
+      summary: Test model against test dataset
+      parameters:
+          - in: query
+            name: max_results
+            schema:
+              type: integer
+              minimum: 0
+              default: 10
+      responses:
+        200:
+          description: Succesfull test
+          content:
+              text/html:
+                schema:
+                  type: string
+  
+    post:
+      summary: Start testing action
+      responses:
+        202:
+          description: Test action started
+        409:
+          $ref: "#/components/responses/Ongoing"
+
+    delete:
+      summary: remove training history
+      responses:
+        200:
+          description: Deleted
 
   /information:
     get:

@@ -13,7 +13,7 @@ import torch.nn as nn
 import numpy as np
 import torchvision
 
-from server.file_utils import load_labels
+from server.file_utils import load_json
 
 
 def remove_corrupted_images(path):
@@ -69,7 +69,6 @@ def create_csv_file_without_label(target_file, data_dir, labels=None,
 class LabelledDataset(Dataset):
 
     def __init__(self, path, transforms=None):
-        print('[DEBUG] INIT LABELLED')
         self.path = path
         self.load()
         self.n_class1 = len(self.all_annotations)
@@ -97,7 +96,7 @@ class LabelledDataset(Dataset):
         return img, target_label
 
     def load(self):
-        self.annotations = load_labels(self.path)
+        self.annotations = load_json(self.path, parse_keys_to=int)
         self.all_annotations = []
         for label, paths in self.annotations.items():
             self.all_annotations.extend(paths)
@@ -111,7 +110,6 @@ class LabelledDataset(Dataset):
 class UnlabelledDataset(Dataset):
 
     def __init__(self, path, transforms=None, unl_label=255):
-        print('[DEBUG] INIT UNLABELLED')
         self.path = path  # should be an list
         self.unl_label = unl_label
         self.load()
@@ -137,7 +135,8 @@ class UnlabelledDataset(Dataset):
         return img, img_path
 
     def load(self):
-        self.annotations = load_labels(self.path)[self.unl_label]
+        self.annotations = \
+            load_json(self.path, parse_keys_to=int)[self.unl_label]
 
 
 def train(csv_file, root_dir):
@@ -210,7 +209,6 @@ def evaluate(csv_file, root_dir):
 
     testloader = DataLoader(td, batch_size=128,
                             shuffle=True, num_workers=0)
-    return
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     correct = 0

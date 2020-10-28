@@ -7,11 +7,13 @@ from torch.utils.data import DataLoader
 from dral.models import Model
 from dral.config.config_manager import ConfigManager
 from dral.datasets import UnlabelledDataset, LabelledDataset
+from dral.logger import LOG
 from dral.utils import get_resnet18_default_transforms, \
     get_resnet_train_transforms
-
 from server.exceptions import AnnotationException, ModelException
 from server.file_utils import is_json_empty
+from server.exceptions import ActionLockedException
+from server.extensions import executor
 
 
 MODEL_PATH = os.path.join('data', 'saved_models', 'test_model.pt')
@@ -21,6 +23,19 @@ CONFIG_NAME = 'testset'
 class BaseView(MethodView):
     def __init__(self):
         self.cm = ConfigManager(CONFIG_NAME)
+
+
+class ActionView(BaseView):
+    def run_action(self, action, executable):
+        self._fail_if_ongoing_action(action)
+        executor.submit_stored(action, executable)
+        LOG.info(f"New action ({action.value}) added to execution")
+
+    def _fail_if_ongoing_action(self, action):
+        if action in executor.futures._futures:
+            if not executor.futures.done(action):
+                raise ActionLockedException("Ongoing action!")
+            executor.futures.pop(action)  # !TODO check it
 
 
 class MLView(BaseView):

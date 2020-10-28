@@ -5,7 +5,7 @@ from pathlib import Path
 from tqdm import tqdm
 
 from dral.logger import LOG
-from server.exceptions import PathException, FileException
+from server.exceptions import PathException
 
 
 def save_json(path, data):
@@ -14,11 +14,23 @@ def save_json(path, data):
 
 
 def load_json(path, parse_keys_to=None):  # !TODO change load_labels to laod_json with parse
-    with open(path) as f:
-        dict_data = json.load(f)
-        if parse_keys_to:
-            return {parse_keys_to(key): val for key, val in dict_data.items()}
-        return dict_data
+    try:
+        with open(path) as f:
+            dict_data = json.load(f)
+            if parse_keys_to:
+                return {parse_keys_to(key): val
+                        for key, val in dict_data.items()}
+            return dict_data
+    except FileNotFoundError:
+        return {}
+
+
+def get_last_n_images_key(path):
+    train_results = load_json(path, parse_keys_to=int)
+    if not train_results:
+        return 0
+    last_result = train_results[len(train_results) - 1]
+    return last_result['n_images']
 
 
 def load_labels(path):
@@ -27,14 +39,8 @@ def load_labels(path):
 
 
 def append_to_json_file(path, values):
-    try:
-        dict_data = load_json(path, parse_keys_to=float)
-    except FileNotFoundError:
-        dict_data = {}
-
-    for key, value in values.items():
-        dict_data[key] = value
-
+    dict_data = load_json(path, parse_keys_to=int)
+    dict_data[len(dict_data)] = values
     save_json(path, dict_data)
 
 
@@ -53,7 +59,7 @@ def is_json_empty(path):  # path must contain iterable keys
 
 def update_annotation_file(path, data_dir, label):
     try:
-        annotations = load_labels(path)
+        annotations = load_json(path, parse_keys_to=int)
     except FileNotFoundError:
         annotations = {}
     annotations.setdefault(label, [])

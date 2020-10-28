@@ -12,28 +12,29 @@
 <div class="container">
     <div class="container col-sm-10 mt-3 mb-4 border rounded border-secondary p-3">
         <div class="m-3">
-            <h2>Training history:</h2>
+            <h2>Test history:</h2>
         </div>
         <table class="table">
             <thead>
                 <tr>
-                    <th scope="col">Epoch</th>
+                    <th scope="col">#</th>
                     <th scope="col">Accuracy</th>
-                    <th scope="col">Loss</th>
+                    <th scope="col">Number of training images</th>
                 </tr>
             </thead>
                 <tbody>
-                {% for acc, loss in results %}
+                {% for result in results %}
                 <tr>
                     <th scope="row">{{ loop.index }}</th>
-                    <td>{{ acc|round(3) }}</td>
-                    <td>{{ loss|round(5) }}</td>
+                    <td>{{ result.acc|round(3) }}</td>
+                    <td>{{ result.n_images }}</td>
+                    <td></td>
                 </tr>
                 {% endfor %}
                 </tbody>
             </table>
             <div class="d-flex justify-content-center">
-                <button type="button" onclick="post_train()" class="btn btn-success btn-lg m-3">Train</button>
+                <button type="button" onclick="post_test()" class="btn btn-success btn-lg m-3">Test</button>
                 <button type="button" class="btn btn-danger btn-lg m-3" data-toggle="modal" data-target="#exampleModal">
                     Delete training history
                 </button>
@@ -57,16 +58,16 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button"  onclick="delete_train()" class="btn btn-danger">Delete</button>
+        <button type="button"  onclick="delete_test()" class="btn btn-danger">Delete</button>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-    function post_train(){
+    function post_test(){
         $.ajax({
-            url: '/train',
+            url: '/test',
             type: "POST",
             success: function(){
                 location.reload(); 
@@ -77,9 +78,9 @@
             });
         }
     
-    function delete_train(){
+    function delete_test(){
         $.ajax({
-            url: '/train',
+            url: '/test',
             type: "DELETE",
             success: function(){
                 location.reload(); 
