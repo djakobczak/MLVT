@@ -3,14 +3,14 @@ from torch.utils.data import DataLoader
 from server.actions.base import MLAction
 from server.actions.main import ActionStatus
 from server.file_utils import append_to_json_file, \
-    get_last_n_images_key
+    get_last_n_images_key, save_json
 from dral.datasets import LabelledDataset
 from dral.logger import LOG
 from dral.utils import get_resnet18_default_transforms
 
 
-# !TODO decorator
-def train():
+# !TODO decorator for saving?
+def train(**kwargs):
     try:
         ml_action = MLAction()
         model = ml_action.load_model()
@@ -32,7 +32,7 @@ def train():
     return ActionStatus.SUCCESS
 
 
-def test():
+def test(**kwargs):
     ml_action = MLAction()
     model = ml_action.load_model()
     test_ds = LabelledDataset(
@@ -53,3 +53,19 @@ def test():
              ml_action.cm.get_train_results_file())
          })
     return ActionStatus.SUCCESS
+
+
+def predict(**kwargs):
+    n_predictions = kwargs.get('n_predictions')
+    random = kwargs.get('random')
+    balance = kwargs.get('balance')
+    ml_action = MLAction()
+    model = ml_action.load_model()
+    unl_loader = ml_action.get_unl_loader()
+
+    LOG.info('Ask model to predict images with parameters: '
+             f'random={random}, balance={balance}')
+    predictions = model.get_predictions(
+        unl_loader, n_predictions, ml_action.cm.get_predictions_file(),
+        random=random, balance=balance, from_file=False)
+    save_json(ml_action.cm.get_last_predictions_file(), predictions)

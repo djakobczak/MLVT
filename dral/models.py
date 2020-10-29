@@ -1,6 +1,7 @@
 import os
 import time
 
+import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -10,6 +11,7 @@ from tqdm import tqdm
 
 from dral.datasets import LabelledDataset
 from dral.logger import LOG
+from server.file_utils import save_json, load_json
 
 
 def init_and_save(path):
@@ -18,10 +20,11 @@ def init_and_save(path):
 
 
 class Model:
-    def __init__(self, model=None):
+    def __init__(self, model=None, n_out=2):
         LOG.info('Model initialization starts...')
         self.device = torch.device(
             "cuda:0" if torch.cuda.is_available() else "cpu")
+        self.n_out = n_out
         LOG.info(f'CUDA: {self.device}')
         if model is None:
             model = torchvision.models.resnet34(pretrained=True)
@@ -30,7 +33,7 @@ class Model:
                 param.requires_grad = False
             num_ftrs = model.fc.in_features
             model.fc = nn.Sequential(
-                nn.Linear(num_ftrs, 2),
+                nn.Linear(num_ftrs, self.n_out),
                 nn.Softmax(dim=0))
             LOG.info('New model created')
         self.model_conv = model.to(self.device)
@@ -70,13 +73,92 @@ class Model:
                     paths.append(path)
         print(f"[DEBUG] loading time: {transforms_time}, feedforward time: {feedforward_time}")
 
-        return predictions.cpu().numpy(), paths
+        return predictions.cpu().numpy(), np.array(paths)
+
+    def get_predictions(self, dataloader, n_predictions, predictions_path,
+                        random, balance=True, from_file=False):
+        if from_file:
+            LOG.info('Load predictions from file.')
+            predictions, paths = self._load_predictions(predictions_path)
+        else:
+            LOG.info('Predict images.')
+            predictions, paths = self.predict_all(dataloader)
+            self._save_predictions(
+                predictions_path, predictions.tolist(), paths.tolist())
+
+        if random:
+            return self._get_random(
+                predictions, paths, n_predictions, balance)
+        else:
+            return self._get_most_uncertain(
+                predictions, paths, n_predictions, balance)
+
+    def _save_predictions(self, path, predictions, paths):
+        save_json(path, {
+            'predictions': predictions,
+            'paths': paths
+        })
+
+    def _load_predictions(self, path):  # !TODO
+        json_data = load_json(path)
+        return json_data.get('predictions'), json_data.get('paths')
+
+    def _get_most_uncertain(self, predictions, paths, n, balance=True):
+        diffs = np.apply_along_axis(lambda x: np.absolute(x[0] - x[1]),
+                                    1, predictions)
+        labels = np.apply_along_axis(lambda x: np.argmax(x),
+                                     1, predictions)
+        idxs = np.argsort(diffs, axis=0)
+        labels = labels[idxs]
+        paths = paths[idxs]
+
+        if balance:
+            out_idxs = self._get_balanced_predictions(labels, n)
+        else:
+            out_idxs = range(2*n)
+
+        out_labels = labels[out_idxs]
+        out_paths = paths[out_idxs]
+        out_mapping = {label: [] for label in range(self.n_out)}
+        for out_label, out_path in zip(out_labels, out_paths):
+            out_mapping[out_label].append(out_path)
+
+        return out_mapping
+
+    def _get_random(self, predictions, paths, n, balance=True):
+        labels = np.apply_along_axis(lambda x: np.argmax(x),
+                                     1, predictions)
+        if balance:
+            out_idxs = self._get_balanced_predictions(labels, n)
+        else:
+            out_idxs = range(2*n)
+        out_labels = labels[out_idxs]
+        out_paths = paths[out_idxs]
+
+        return self._create_mapping(out_labels, out_paths)
+
+    def _get_balanced_predictions(self, labels, n):
+        out_idx = []
+        ctr = {label: 0 for label in range(self.n_out)}
+        for idx, label in enumerate(labels):
+            if ctr[label] < n:
+                out_idx.append(idx)
+            if len(out_idx) >= 2 * n:
+                return out_idx
+            ctr[label] += 1
+        return out_idx
+
+    def _create_mapping(self, labels, paths):
+        label_paths_mapping = {label: [] for label in range(self.n_out)}
+        for label, path in zip(labels, paths):
+            label_paths_mapping[label].append(path)
+
+        return label_paths_mapping
 
     def train(self, dataloader, epochs):
         self.model_conv.train()  # training mode
-        itr = 1
-        p_itr = 200
         total_loss = 0
+        itr = 0
         loss_list = []
         acc_list = []
         for epoch in range(epochs):
@@ -97,8 +179,8 @@ class Model:
             acc = torch.mean(correct.float())
             LOG.info('[Epoch {}/{}] Iteration {} -> Train Loss: {:.4f}, '
                      'Accuracy: {:.3f}'.format(
-                        epoch+1, epochs, itr, total_loss/p_itr, acc))
-            loss_list.append(total_loss/p_itr)
+                        epoch+1, epochs, itr, total_loss/itr, acc))
+            loss_list.append(total_loss/itr)
             acc_list.append(float(acc.cpu()))
             total_loss = 0
 

@@ -68,7 +68,6 @@ class DataLoader:
 if __name__ == "__main__":
     cm = ConfigManager('testset')
     dl = DataLoader(cm)
-    
 
     dl.copy_with_transforms(cm.get_raw_unl_dir(),
                             cm.get_unl_transformed_dir(),

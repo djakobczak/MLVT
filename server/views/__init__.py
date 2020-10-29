@@ -8,3 +8,4 @@ from .information import InformationView
 from .prepare import PrepareView
 from .transformation import TransformView
 from .model import ModelView
+from .status import StatusView

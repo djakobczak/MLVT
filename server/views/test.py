@@ -12,10 +12,8 @@ class TestView(ActionView):
         test_results = load_json(self.cm.get_test_results_file(),
                                  parse_keys_to=int)
         start_idx = len(test_results) - max_results
-        print(test_results)
         results = [values for key, values in test_results.items()
                    if key > start_idx]
-        print(results)
         return render_template('test.html.j2', results=results), 200
 
     def post(self):

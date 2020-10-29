@@ -14,7 +14,7 @@
         <div class="m-3">
             <h2>Test history:</h2>
         </div>
-        <table class="table">
+        <table class="table text-white">
             <thead>
                 <tr>
                     <th scope="col">#</th>
@@ -35,7 +35,7 @@
             </table>
             <div class="d-flex justify-content-center">
                 <button type="button" onclick="post_test()" class="btn btn-success btn-lg m-3">Test</button>
-                <button type="button" class="btn btn-danger btn-lg m-3" data-toggle="modal" data-target="#exampleModal">
+                <button type="button" class="btn btn-danger btn-lg m-3" data-toggle="modal" data-target="#delete">
                     Delete training history
                 </button>
             </div>
@@ -44,11 +44,11 @@
 </div>
 
 <!-- Modal -->
-<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="delete" tabindex="-1" role="dialog" aria-labelledby="deleteLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content text-dark">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Alert</h5>
+        <h5 class="modal-title" id="deleteLabel">Alert</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>

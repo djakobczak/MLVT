@@ -29,10 +29,17 @@
                 </div>
             </div>
             <div class="col-md-3">
-                {# empty #}
             </div>
-            <div class="col-md-4 pr-4">
-                <button class="btn btn-success float-right" type="button" id="new_predictions" onclick="showNewPredictions()">Show new predictions</button>
+            <div class="col-md-4 pr-4 row">
+                <div class="col-4">
+                    <div id="loadingSpinner" style="display: none;" class="spinner-border text-success float-right ml-3 mt-1 mb-1" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </div>
+                <div class="col-8">
+                    <button class="btn btn-success float-right" type="button" id="new_predictions" onclick="showNewPredictions()">Show new predictions</button>
+                </div>
+                
             </div>
         </div>
     </div>
@@ -78,8 +85,28 @@
         </div>
     </div>
 
-    <script>
+    <!-- Modal -->
+    <div class="modal fade" id="reloadModal" tabindex="-1" role="dialog" aria-labelledby="reloadLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content text-dark">
+        <div class="modal-header">
+            <h5 class="modal-title" id="reloadLabel">Alert</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            New predictions are ready, do you want to reload page?
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button"  onclick="reload()" class="btn btn-primary">Reload</button>
+        </div>
+        </div>
+    </div>
+    </div>
 
+    <script>
         class1_node = document.getElementById("class1")
         class2_node = document.getElementById("class2")
 
@@ -159,6 +186,32 @@
             });
         }
 
+        function check_status(){
+            $.ajax({
+                url: '/status/predictions',
+                type: "GET",
+                success: function(data){
+                    if (data.trim() == 'true'){
+                        console.log('Task finished, reload...');
+                        $("#loadingSpinner").hide();
+                        $('#reloadModal').modal('show');
+                    }
+                    else {
+                        console.log('sleep for 1s')
+                        setTimeout(check_status, 1000);
+                    }
+                    
+                },
+                error: function(){
+                    $("#loadingSpinner").hide();
+                }
+            });
+        }
+
+        function reload() {
+            location.reload()
+        }
+
         window.addEventListener("click", function(event) {
             if (event.target.tagName == "IMG") {
                 if (event.target.hasAttribute('selected')) {
@@ -169,11 +222,14 @@
                 else {
                     event.target.setAttribute('selected', true)
                     event.target.style.backgroundColor = "red";
-                    push_wrong_prediction(event.target)
+                    push_wrong_prediction(event.target);
                 }
             }
         });
+
         function showNewPredictions(){
+            $("#loadingSpinner").show()
+
             $.ajax({
                 url: '/predictions',
                 type: "GET",
@@ -185,15 +241,14 @@
                 },
                 contentType: "application/json; charset=utf-8",
                 success: function(){
-                    window.location.href = "/predictions";
+                    console.log('start checking status')
+                    check_status()
                 },
                 error: function(xhr) {
                     console.log(xhr.status)
                     switch (xhr.status) {
                         case 409:
                             alert("Wait for the server to end action");
-                        default:
-                            alert("Unknown error, please try again");
                     }
                 }
             });

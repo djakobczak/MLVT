@@ -184,6 +184,9 @@ class ConfigManager:
     def get_test_results_file(self):
         return self.config['paths']['data']['test_results'].get(str)
 
+    def get_predictions_file(self):
+        return self.config['paths']['data']['predictions'].get(str)
+
     # train
     def get_batch_size(self):
         return self.config['train']['batch_size'].get(int)

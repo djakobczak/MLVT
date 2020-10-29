@@ -9,7 +9,8 @@ from server.exceptions import PathException
 
 
 def save_json(path, data):
-    with open(path, "w+") as f:
+    with open(path, "w") as f:
+        print('save!!')
         json.dump(data, f, indent=4, sort_keys=True)
 
 

@@ -18,7 +18,6 @@ class TransformView(BaseView):
         return 200
 
     def _dataset_type_to_paths(self, dataset_type):
-        print(dataset_type)
         if dataset_type == DatasetType.UNLABELLED.value:
             LOG.debug('Return paths for unlabelled images.')
             return ([self.cm.get_raw_unl_dir()],

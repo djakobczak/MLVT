@@ -26,9 +26,9 @@ class BaseView(MethodView):
 
 
 class ActionView(BaseView):
-    def run_action(self, action, executable):
+    def run_action(self, action, executable, **kwargs):
         self._fail_if_ongoing_action(action)
-        executor.submit_stored(action, executable)
+        executor.submit_stored(action, executable, **kwargs)
         LOG.info(f"New action ({action.value}) added to execution")
 
     def _fail_if_ongoing_action(self, action):

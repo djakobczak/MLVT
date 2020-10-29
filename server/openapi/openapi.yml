@@ -85,6 +85,14 @@ components:
           - test
           - all
 
+    Action:
+      description: type of action
+      type: string
+      enum:
+        - train
+        - test
+        - predictions
+
   responses:
     Ongoing:
       description: There is ongoing action
@@ -381,3 +389,25 @@ paths:
       responses:
         200:
           description: Model has been saved  
+      
+  /status/{action}:
+    get:
+      summary: return True if action is ongoing
+      tags: [helpers]
+      parameters:
+        - in: path
+          name: action
+          schema:
+            $ref: "#/components/schemas/Action"
+          required: true
+      responses:
+        200:
+          description: Ok
+          content:
+              text/plain:
+                schema:
+                  type: boolean
+                  example: True
+        404:
+          description: Action not found
+            
