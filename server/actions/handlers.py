@@ -7,6 +7,7 @@ from server.file_utils import append_to_json_file, \
 from dral.datasets import LabelledDataset
 from dral.logger import LOG
 from dral.utils import get_resnet18_default_transforms
+from server.predictions_manager import PredictionsManager
 
 
 # !TODO decorator for saving?
@@ -65,7 +66,9 @@ def predict(**kwargs):
 
     LOG.info('Ask model to predict images with parameters: '
              f'random={random}, balance={balance}')
-    predictions = model.get_predictions(
-        unl_loader, n_predictions, ml_action.cm.get_predictions_file(),
-        random=random, balance=balance, from_file=False)
-    save_json(ml_action.cm.get_last_predictions_file(), predictions)
+
+    pm = PredictionsManager(ml_action.cm.get_n_labels(),
+                            ml_action.cm.get_predictions_file())
+    pm.get_new_predictions(
+        n_predictions, model=model,
+        dataloader=unl_loader, random=random, balance=balance)

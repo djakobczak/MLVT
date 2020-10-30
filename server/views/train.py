@@ -8,7 +8,7 @@ from server.actions.handlers import train
 from server.file_utils import load_json, prune_json_file
 
 
-class TrainView(ActionView):  # !TODO looks complicated
+class TrainView(ActionView):
 
     def search(self, number):
         train_results = load_json(self.cm.get_train_results_file(),

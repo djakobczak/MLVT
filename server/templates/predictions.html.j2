@@ -24,7 +24,7 @@
                         <span class="font-weight-bold ml-2 p-0" id="maxImagesValue"></span>
                     </div>
                     <div class="slidecontainer pt-2">
-                        <input type="range" class="custom-range p-1 slider" id="maxImagesSlider" min="0" max="100" value="48">
+                        <input type="range" class="custom-range p-1 slider" id="maxImagesSlider" min="0" max="100" value="{{ n_images }}">
                     </div>
                 </div>
             </div>
@@ -107,8 +107,10 @@
     </div>
 
     <script>
+        // HTML elements
         class1_node = document.getElementById("class1")
         class2_node = document.getElementById("class2")
+
 
         function removeA(arr) {
             var what, a = arguments, L = a.length, ax;
@@ -171,7 +173,7 @@
                 data: JSON.stringify(predictions),
                 contentType: "application/json; charset=utf-8",
                 success: function(){
-                    window.location.href = "/predictions";
+                    reload();
                 }
             });
         }
@@ -209,7 +211,12 @@
         }
 
         function reload() {
-            location.reload()
+            params = getUserParams();
+            queryParams = "?"
+            for (var key in params){
+                queryParams += key + "=" + params[key] + "&"
+            }
+            window.location.href = "/predictions" + queryParams;
         }
 
         window.addEventListener("click", function(event) {
@@ -262,6 +269,14 @@
                 $valueSpan.html($value.val());
             });
         });
+
+        function getUserParams(){
+            random = $("#randomCheckbox").is(":checked");
+            balance = $("#balanceCheckbox").is(":checked");
+            console.log(random + " " + typeof(random))
+            maxImages = $("#maxImagesValue").text();
+            return {"random": random, "balance": balance, "maxImages": maxImages}
+        }
         
     </script>
 </div>

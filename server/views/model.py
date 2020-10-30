@@ -16,8 +16,8 @@ class ModelView(MLView):
     def delete(self):
         # overwrite trained model with new untrained
         self.save_model(Model())
-        save_json(self.cm.get_last_predictions_file(), {})
-        LOG.info('Model is resetted and last_predictions is pruned')
+        save_json(self.cm.get_predictions_file(), {})
+        LOG.info('Model is resetted and predictions is pruned')
         return 'Model deleted', 200
 
     def put(self, force):

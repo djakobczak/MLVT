@@ -104,3 +104,17 @@ class MLView(BaseView):
         model = model if model else self.load_model()
         path = path if path else self.cm.get_model_trained()
         torch.save(model.model_conv, path)
+
+
+class ModelIO:  # !TODO to consideration
+    def load_model(self, path):
+        try:
+            model = Model.load(path)
+        except FileNotFoundError:
+            raise ModelException('Error while loading trained model')
+        return Model(model)
+
+    def save_model(self, model=None, path=None):
+        model = model if model else self.load_model()
+        path = path if path else self.cm.get_model_trained()
+        torch.save(model.model_conv, path)

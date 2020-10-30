@@ -32,7 +32,7 @@ testset:
       predictions: ./data/predictions.json
 
   train:
-    predictions: 48
+    predictions: 10
     epochs: 10
     batch_size: 64
 

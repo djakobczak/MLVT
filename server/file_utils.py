@@ -10,7 +10,6 @@ from server.exceptions import PathException
 
 def save_json(path, data):
     with open(path, "w") as f:
-        print('save!!')
         json.dump(data, f, indent=4, sort_keys=True)
 
 
@@ -80,11 +79,12 @@ def prune_json_file(path):
 
 
 def label_samples(unl_json_file, label_json_file, paths,
-                  label, unl_label=255):
+                  label, pm, unl_label=255):
     unl_json = load_labels(unl_json_file)
     label_json = load_labels(label_json_file)
     unl_samples = unl_json[unl_label]
     labelled_list = label_json[label]
+    pm.remove_predictions(paths)
     for path in paths:
         unl_samples.remove(path)
         labelled_list.append(path)
