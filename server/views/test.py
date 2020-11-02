@@ -14,7 +14,11 @@ class TestView(ActionView):
         start_idx = len(test_results) - max_results
         results = [values for key, values in test_results.items()
                    if key > start_idx]
-        return render_template('test.html.j2', results=results), 200
+        if not results:
+            flash('Test history is empty, '
+                  'you have to test your model firstly', 'danger')
+        return render_template('test.html.j2', results=results,
+                               show_results=True if results else False), 200
 
     def post(self):
         self.run_action(Action.TEST, test)

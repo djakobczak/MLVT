@@ -8,7 +8,6 @@ class lock(ContextDecorator):
     locked = False
 
     def __enter__(self):
-        print("[DEBUG] locked:", self.locked)
         if self.locked:
             raise ActionLockedException(
                 "There is ongoing action, please wait until is finished")

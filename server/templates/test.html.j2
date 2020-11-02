@@ -11,7 +11,13 @@
 {% block content %}
 <div class="container">
     <div class="container col-sm-10 mt-3 mb-4 border rounded border-secondary p-3">
+        {% if show_results %}
         <div class="m-3">
+            <h3 class="text-center pb-2">Test visualization</h3>
+            <img src="{{ url_for('.views_PlotView_search', plot_type='test') }}" alt="Image Placeholder" height="500" class="mx-auto d-block">
+        </div>
+        
+        <div class="m-3 pt-4">
             <h2>Test history:</h2>
         </div>
         <table class="table text-white">
@@ -33,6 +39,7 @@
                 {% endfor %}
                 </tbody>
             </table>
+            {% endif %}
             <div class="d-flex justify-content-center">
                 <button type="button" onclick="post_test()" class="btn btn-success btn-lg m-3">Test</button>
                 <button type="button" class="btn btn-danger btn-lg m-3" data-toggle="modal" data-target="#delete">
@@ -74,6 +81,12 @@
             },
             error: function(xhr) {
                 console.log(xhr)
+                if (xhr.status == 409){
+                    alert("There is ongoing test, please until finishes")
+                }
+                else {
+                    alert("Error occured: " + xhr.status)
+                }
             }
             });
         }

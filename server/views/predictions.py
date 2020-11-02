@@ -21,8 +21,7 @@ class PredictionsView(ActionView):
             predictions = pm.get_predictions_from_file(
                 n_predictions, random, balance)
         except json.JSONDecodeError:
-            raise FileException(
-                f"Server can not find file or it is corrupted")
+            raise FileException("Server can not find file or it is corrupted")
 
         if new_predictions:   # or not predictions
             self.run_action(Action.PREDICTION, predict,

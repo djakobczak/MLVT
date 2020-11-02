@@ -12,17 +12,13 @@ class PredictionsManager:
     def get_new_predictions(self, n_predictions,
                             model, dataloader, random, balance=True):
         LOG.info('Predict images.')
-        print('[DEBUG] random: ', random)
         predictions, paths = model.predict_all(dataloader)
-        print(len(predictions), len(paths))
-        print(f'[DEBUG] {self.predictions_path}')
         self._save_predictions(predictions.tolist(), paths.tolist())
         return self._get_predictions(
             predictions, paths, n_predictions, random, balance)
 
     def get_predictions_from_file(self, n_predictions,
                                   random, balance=True):
-        print('[DEBUG] random: ', random)
         LOG.info('Load predictions from file.')
         json_data = load_json(self.predictions_path)
         if not json_data:
@@ -48,10 +44,8 @@ class PredictionsManager:
             np.array(json_data.get('paths'))
         idxs = [idx for idx, path in enumerate(paths)
                 if path in paths_to_remove]
-        print(paths)
         paths = np.delete(paths, idxs)
         predictions = np.delete(predictions, idxs, axis=0)
-        predictions[[0, 1, 2]]
         self._save_predictions(predictions.tolist(), paths.tolist())
 
     def _save_predictions(self, predictions, paths):
@@ -61,7 +55,6 @@ class PredictionsManager:
         })
 
     def _get_most_uncertain(self, predictions, paths, n, balance=True):
-        print(predictions)
         diffs = np.apply_along_axis(lambda x: np.absolute(x[0] - x[1]),
                                     1, predictions)
         labels = np.apply_along_axis(lambda x: np.argmax(x),
@@ -84,12 +77,18 @@ class PredictionsManager:
         return out_mapping
 
     def _get_random(self, predictions, paths, n, balance=True):
+        # shuffle predictions and paths
+        p = np.random.permutation(len(predictions))
+        predictions = predictions[p]
+        paths = paths[p]
+
         labels = np.apply_along_axis(lambda x: np.argmax(x),
                                      1, predictions)
         if balance:
             out_idxs = self._get_balanced_predictions(labels, n)
         else:
-            out_idxs = range(2*n)
+            out_idxs = np.random.choice(0, len(labels), replace=False)
+
         out_labels = labels[out_idxs]
         out_paths = paths[out_idxs]
 

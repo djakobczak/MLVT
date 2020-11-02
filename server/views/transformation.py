@@ -28,3 +28,7 @@ class TransformView(BaseView):
             LOG.debug('Return paths for test images.')
             return (self.cm.get_raw_test_dirs(),
                     self.cm.get_test_transformed_dirs())
+        elif dataset_type == DatasetType.VALIDATION.value:
+            LOG.debug('Return paths for validation images.')
+            return (self.cm.get_raw_validation_dirs(),
+                    self.cm.get_validation_transformed_dirs())

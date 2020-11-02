@@ -9,3 +9,4 @@ from .prepare import PrepareView
 from .transformation import TransformView
 from .model import ModelView
 from .status import StatusView
+from .plot import PlotView

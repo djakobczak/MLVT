@@ -10,7 +10,6 @@ from PIL import Image
 
 import torch.nn as nn
 
-import numpy as np
 import torchvision
 
 from server.file_utils import load_json
@@ -107,6 +106,22 @@ class LabelledDataset(Dataset):
                 return torch.tensor(label)
 
 
+class LabelledDatasetMemoryInefficient(Dataset):
+    def __init__(self, x, y):
+        if len(x) != len(y):
+            raise Exception(
+                f"x length ({len(x)}) differ from y length ({len(y)})")
+
+        self._x = x
+        self._y = y
+
+    def __getitem__(self, idx):
+        return self._x[idx], self._y[idx]
+
+    def __len__(self):
+        return len(self._x)
+
+
 class UnlabelledDataset(Dataset):
 
     def __init__(self, path, transforms=None, unl_label=255):
@@ -131,10 +146,11 @@ class UnlabelledDataset(Dataset):
             img = self.transforms(img)
         transofrm_time = time.time() - start_transoform
         self.trans_time += transofrm_time
-
         return img, img_path
 
     def load(self):
+        self.load_time = 0
+        self.trans_time = 0
         self.annotations = \
             load_json(self.path, parse_keys_to=int)[self.unl_label]
 

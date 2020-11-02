@@ -1,3 +1,11 @@
+import os
+
+import PIL
+import numpy as np
+import torch
+from tqdm import tqdm
+
+from dral.utils import get_resnet18_default_transforms
 from server.views.base import BaseView
 from server.utils import DatasetType
 from server.file_utils import update_annotation_file, prune_json_file
@@ -21,6 +29,9 @@ class AnnotationsView(BaseView):
 
         elif annotation == DatasetType.TEST.value:
             self._create_test_annotation(prune)
+
+        elif annotation == DatasetType.VALIDATION.value:
+            self._create_validation_tensor()
 
         return 'Annotation file has been created', 200
 
@@ -55,3 +66,22 @@ class AnnotationsView(BaseView):
             update_annotation_file(annotation_path,
                                    test_dir,
                                    label)
+
+    def _create_validation_tensor(self):
+        validation_dirs = self.cm.get_validation_transformed_dirs()
+        labels = self.cm.get_numeric_labels()  # labels hould correspond to dirs
+        x = torch.empty(size=(0, 3, 224, 224))
+        y = torch.empty(size=(0,))
+        transforms = get_resnet18_default_transforms()
+        for validation_dir, label in zip(validation_dirs, labels):
+            label = torch.Tensor([label])
+            for f in tqdm(os.listdir(validation_dir)):
+                path = os.path.join(validation_dir, f)
+                img = PIL.Image.open(path)
+                img = torch.unsqueeze(transforms(img), 0)
+
+                x = torch.cat((x, img), 0)
+                y = torch.cat((y, label), 0)
+        torch.save(x, './data/x.pt')
+        torch.save(y, './data/y.pt')
+

@@ -5,7 +5,8 @@ from torch.utils.data import DataLoader
 
 from dral.models import Model
 from dral.config.config_manager import ConfigManager
-from dral.datasets import UnlabelledDataset, LabelledDataset
+from dral.datasets import UnlabelledDataset, LabelledDataset, \
+    LabelledDatasetMemoryInefficient
 from dral.utils import get_resnet18_default_transforms, \
     get_resnet_train_transforms
 
@@ -44,7 +45,7 @@ class MLAction(BaseAction):
             shuffle=True, num_workers=0)
         return self.unl_loader
 
-    def get_train_loader(self):
+    def get_train_loader(self, batch_size):
         annotation_path = self.cm.get_train_annotations_path()
         self._fail_if_file_is_empty(annotation_path)
         self.train_dataset = LabelledDataset(
@@ -52,7 +53,7 @@ class MLAction(BaseAction):
             get_resnet_train_transforms())
 
         self.train_loader = DataLoader(
-            self.train_dataset, batch_size=self.cm.get_batch_size(),
+            self.train_dataset, batch_size=batch_size,
             shuffle=True, num_workers=0)
         return self.train_loader
 
@@ -68,6 +69,16 @@ class MLAction(BaseAction):
                 self.test_dataset, batch_size=self.cm.get_batch_size(),
                 shuffle=True, num_workers=0)
         return self.test_loader
+
+    def get_validatation_loader(self):
+        x = torch.load('./data/x.pt')
+        y = torch.load('./data/y.pt')
+        self.validation_dataset = LabelledDatasetMemoryInefficient(x, y)
+
+        self.validation_loader = DataLoader(
+            self.validation_dataset, batch_size=self.cm.get_batch_size(),
+            shuffle=True, num_workers=0)
+        return self.validation_loader
 
     def _fail_if_file_is_empty(self, path):  # !TODO could be static or moved somewhere
         if not os.path.isfile(path) or not is_json_empty(path):

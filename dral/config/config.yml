@@ -25,6 +25,8 @@ testset:
       transformed_test: ./server/static/testset/images_test
       raw_train: ./data/PetImages/Train
       transformed_train: ./server/static/testset/images_train
+      raw_validation: ./data/PetImages/Validation
+      transformed_validation: ./server/static/testset/images_validation
     data:
       last_predictions: ./data/last_predictions.json
       train_results: ./data/train_results.json
@@ -34,7 +36,7 @@ testset:
   train:
     predictions: 10
     epochs: 10
-    batch_size: 64
+    batch_size: 128
 
   # currently not used
   preprocessing:

@@ -3,14 +3,13 @@ from pathlib import Path
 
 import cv2
 from tqdm import tqdm
-import torch
 from PIL import Image
 from torchvision import transforms
 
 from dral.config.config_manager import ConfigManager
-from dral.annotations import create_csv_file, label_samples
 from dral.utils import get_resnet18_default_transforms
 from dral.logger import LOG
+
 
 class DataLoader:
     def __init__(self, cm, transforms):

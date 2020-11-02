@@ -83,6 +83,7 @@ components:
           - unlabelled
           - train
           - test
+          - validation
           - all
 
     Action:
@@ -347,7 +348,7 @@ paths:
           name: dataset_type
           schema:
             type: string
-            enum: ['unlabelled', 'train', 'test']
+            enum: ['unlabelled', 'train', 'test', 'validation']
       responses:
         200:
           description: Images have been copied
@@ -402,7 +403,7 @@ paths:
           required: true
       responses:
         200:
-          description: Ok
+          description: Returns True if specified type of action is finished
           content:
               text/plain:
                 schema:
@@ -410,4 +411,17 @@ paths:
                   example: True
         404:
           description: Action not found
-            
+
+  /plot:
+    get:
+      summary: get plot image
+      parameters:
+        - in: query
+          name: plot_type
+          description: Type of plot to render
+          schema:
+            type: string
+            enum: ['train_acc', train_loss', 'test']
+      responses:
+        200:
+          description: Returns pyplot image

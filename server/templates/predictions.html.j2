@@ -17,6 +17,10 @@
                         <input type="checkbox" class="custom-control-input" id="balanceCheckbox" name="balance" checked>
                         <label class="custom-control-label" for="balanceCheckbox">Balance</label>
                     </div>
+                    <div class="custom-control custom-checkbox m-2">
+                        <input type="checkbox" class="custom-control-input" id="newPredictionsCheckbox" name="new_predictions" checked>
+                        <label class="custom-control-label" for="newPredictionsCheckbox">New Predictions</label>
+                    </div>
                 </div>
                 <div class="form-group m-1 p-2">
                     <div class="pr-2">
@@ -37,7 +41,7 @@
                     </div>
                 </div>
                 <div class="col-8">
-                    <button class="btn btn-success float-right" type="button" id="new_predictions" onclick="showNewPredictions()">Show new predictions</button>
+                    <button class="btn btn-success float-right" type="button" id="new_predictions" onclick="showNewPredictions()">Show predictions</button>
                 </div>
                 
             </div>
@@ -80,7 +84,7 @@
     
     <div class="mt-4">
         <div class="col-sm-12 text-center">
-            <button type="button" onclick="sendPredictions()" class="btn btn-success btn-lg m-3">Add annotation</button>
+            <button type="button" onclick="sendPredictions()" class="btn btn-success btn-lg m-3">Add annotations</button>
             <button type="button" onclick="train()" class="btn btn-lg btn-success m-3">Train</button>
         </div>
     </div>
@@ -241,7 +245,7 @@
                 url: '/predictions',
                 type: "GET",
                 data: {
-                    new_predictions: true,
+                    new_predictions: $("#newPredictionsCheckbox").is(":checked"),
                     random: $("#randomCheckbox").is(":checked"),
                     balance: $("#balanceCheckbox").is(":checked"),
                     maxImages: $("#maxImagesValue").text()

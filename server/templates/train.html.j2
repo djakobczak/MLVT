@@ -11,27 +11,35 @@
 {% block content %}
 <div class="container">
     <div class="container col-sm-10 mt-3 mb-4 border rounded border-secondary p-3">
+        {% if show_results %}
         <div class="m-3">
+            <h3 class="text-center pb-2">Training visualization</h3>
+            <img src="{{ url_for('.views_PlotView_search', plot_type='train_acc') }}" alt="Image Placeholder" height="500" class="mx-auto d-block">
+        </div>
+        <div class="m-3 pt-4">
             <h2>Training history:</h2>
         </div>
         <table class="table text-white">
             <thead>
                 <tr>
                     <th scope="col">Epoch</th>
-                    <th scope="col">Accuracy</th>
-                    <th scope="col">Loss</th>
+                    <th scope="col">Training accuracy</th>
+                    <th scope="col">Training loss</th>
+                    <th scope="col">Validation accuracy</th>
                 </tr>
             </thead>
                 <tbody>
-                {% for acc, loss in results %}
+                {% for acc, loss, val_acc in results %}
                 <tr>
                     <th scope="row">{{ loop.index }}</th>
                     <td>{{ acc|round(3) }}</td>
                     <td>{{ loss|round(5) }}</td>
+                    <td>{{ val_acc|round(3) }}</td>
                 </tr>
                 {% endfor %}
                 </tbody>
             </table>
+            {% endif %}
             <div class="d-flex justify-content-center">
                 <button type="button" onclick="post_train()" class="btn btn-success btn-lg m-3">Train</button>
                 <button type="button" class="btn btn-danger btn-lg m-3" data-toggle="modal" data-target="#exampleModal">

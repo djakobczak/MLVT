@@ -154,6 +154,11 @@ class ConfigManager:
             *self.config['paths']['images']['raw_test'].
             get(str).split('/'))
 
+    def get_raw_validation_dirs(self):
+        return self._join_with_clssses(
+            *self.config['paths']['images']['raw_validation'].
+            get(str).split('/'))
+
     # transformed dirs
     def get_unl_transformed_dir(self):
         return os.path.join(
@@ -168,6 +173,11 @@ class ConfigManager:
     def get_test_transformed_dirs(self):
         return self._join_with_clssses(
             *self.config['paths']['images']['transformed_test'].
+            get(str).split('/'))
+
+    def get_validation_transformed_dirs(self):
+        return self._join_with_clssses(
+            *self.config['paths']['images']['transformed_validation'].
             get(str).split('/'))
 
     def _join_with_clssses(self, *dirs):

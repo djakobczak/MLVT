@@ -16,9 +16,15 @@ def train(**kwargs):
         ml_action = MLAction()
         model = ml_action.load_model()
 
-        losses, accs = model.train(
-                ml_action.get_train_loader(),
-                ml_action.cm.get_epochs())
+        epochs = kwargs.get('epochs') if kwargs.get('epochs') \
+            else ml_action.cm.get_epochs()
+        batch_size = kwargs.get('batch_size') if kwargs.get('batch_size') \
+            else ml_action.cm.get_batch_size()
+
+        losses, accs, validation_acc = model.train(
+                ml_action.get_train_loader(batch_size),
+                epochs,
+                ml_action.get_validatation_loader())
         LOG.info(f'losses: {losses}, accs: {accs}')
         ml_action.save_model(model)
 
@@ -27,6 +33,7 @@ def train(**kwargs):
             ml_action.cm.get_train_results_file(),
             {'loss': losses,
              'acc': accs,
+             'validation_acc': validation_acc,
              'n_images': len(ml_action.train_dataset)})
     except Exception:
         return ActionStatus.FAILED
