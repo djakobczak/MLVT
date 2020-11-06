@@ -7,14 +7,12 @@ from dral.models import Model
 from dral.config.config_manager import ConfigManager
 from dral.datasets import UnlabelledDataset, LabelledDataset, \
     LabelledDatasetMemoryInefficient
-from dral.utils import get_resnet18_default_transforms, \
+from dral.utils import get_resnet_test_transforms, \
     get_resnet_train_transforms
 
 from server.exceptions import AnnotationException, ModelException
 from server.file_utils import is_json_empty
-
-
-CONFIG_NAME = 'testset'
+from server.config import CONFIG_NAME
 
 
 class BaseAction:
@@ -28,6 +26,7 @@ class MLAction(BaseAction):
         self.unl_dataset = None
         self.train_dataset = None
         self.test_dataset = None
+        self.validation_loader = None
         self.unl_loader = None
         self.train_loader = None
         self.test_loader = None
@@ -38,7 +37,7 @@ class MLAction(BaseAction):
         self._fail_if_file_is_empty(annotation_path)
         self.unl_dataset = UnlabelledDataset(
             annotation_path,
-            get_resnet18_default_transforms())
+            get_resnet_test_transforms())
 
         self.unl_loader = DataLoader(
             self.unl_dataset, batch_size=self.cm.get_batch_size(),
@@ -63,14 +62,14 @@ class MLAction(BaseAction):
         if not self.test_dataset:
             self.test_dataset = LabelledDataset(
                 annotation_path,
-                get_resnet18_default_transforms())
+                get_resnet_test_transforms())
 
             self.test_loader = DataLoader(
                 self.test_dataset, batch_size=self.cm.get_batch_size(),
                 shuffle=True, num_workers=0)
         return self.test_loader
 
-    def get_validatation_loader(self):
+    def get_validatation_loader2(self):  #!TODO
         x = torch.load('./data/x.pt')
         y = torch.load('./data/y.pt')
         self.validation_dataset = LabelledDatasetMemoryInefficient(x, y)
@@ -80,10 +79,23 @@ class MLAction(BaseAction):
             shuffle=True, num_workers=0)
         return self.validation_loader
 
+    def get_validation_loader(self, batch_size):
+        annotation_path = self.cm.get_validation_annotations_path()
+        self._fail_if_file_is_empty(annotation_path)
+        if not self.validation_loader:
+            self.validation_dataset = LabelledDataset(
+                annotation_path,
+                get_resnet_test_transforms())
+
+            self.validation_loader = DataLoader(
+                self.validation_dataset, batch_size=batch_size,
+                shuffle=True, num_workers=0)
+        return self.validation_loader
+
     def _fail_if_file_is_empty(self, path):  # !TODO could be static or moved somewhere
         if not os.path.isfile(path) or not is_json_empty(path):
             raise AnnotationException(
-                'Annotation file does not exist or is empty')
+                f'Annotation file ({path}) does not exist or is empty')
 
     def load_model(self):
         try:

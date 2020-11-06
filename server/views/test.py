@@ -1,4 +1,3 @@
-from collections import OrderedDict
 from flask import flash, render_template
 
 from server.actions.handlers import test

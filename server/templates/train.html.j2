@@ -14,7 +14,7 @@
         {% if show_results %}
         <div class="m-3">
             <h3 class="text-center pb-2">Training visualization</h3>
-            <img src="{{ url_for('.views_PlotView_search', plot_type='train_acc') }}" alt="Image Placeholder" height="500" class="mx-auto d-block">
+            <img class="img-fluid mx-auto d-block" src="{{ url_for('.views_PlotView_search', plot_type='train_acc') }}" alt="Image Placeholder" height="500" class="mx-auto d-block">
         </div>
         <div class="m-3 pt-4">
             <h2>Training history:</h2>
@@ -26,15 +26,17 @@
                     <th scope="col">Training accuracy</th>
                     <th scope="col">Training loss</th>
                     <th scope="col">Validation accuracy</th>
+                    <th scope="col">Validation loss</th>
                 </tr>
             </thead>
                 <tbody>
-                {% for acc, loss, val_acc in results %}
+                {% for train_acc, train_loss, val_acc, val_loss in results %}
                 <tr>
                     <th scope="row">{{ loop.index }}</th>
-                    <td>{{ acc|round(3) }}</td>
-                    <td>{{ loss|round(5) }}</td>
+                    <td>{{ train_acc|round(3) }}</td>
+                    <td>{{ train_loss|round(5) }}</td>
                     <td>{{ val_acc|round(3) }}</td>
+                    <td>{{ val_loss|round(5) }}</td>
                 </tr>
                 {% endfor %}
                 </tbody>

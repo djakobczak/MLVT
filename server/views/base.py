@@ -8,16 +8,13 @@ from dral.models import Model
 from dral.config.config_manager import ConfigManager
 from dral.datasets import UnlabelledDataset, LabelledDataset
 from dral.logger import LOG
-from dral.utils import get_resnet18_default_transforms, \
+from dral.utils import get_resnet_test_transforms, \
     get_resnet_train_transforms
 from server.exceptions import AnnotationException, ModelException
-from server.file_utils import is_json_empty
+from server.file_utils import is_json_empty, create_subdirs_if_not_exist
 from server.exceptions import ActionLockedException
 from server.extensions import executor
-
-
-MODEL_PATH = os.path.join('data', 'saved_models', 'test_model.pt')
-CONFIG_NAME = 'testset'
+from server.config import CONFIG_NAME
 
 
 class BaseView(MethodView):
@@ -55,7 +52,7 @@ class MLView(BaseView):
         self._fail_if_file_is_empty(annotation_path)
         self.unl_dataset = UnlabelledDataset(
             annotation_path,
-            get_resnet18_default_transforms())
+            get_resnet_test_transforms())
 
         self.unl_loader = DataLoader(
             self.unl_dataset, batch_size=self.cm.get_batch_size(),
@@ -81,7 +78,7 @@ class MLView(BaseView):
         if not self.test_dataset:
             self.test_dataset = LabelledDataset(
                 annotation_path,
-                get_resnet18_default_transforms())
+                get_resnet_test_transforms())
 
             self.test_loader = DataLoader(
                 self.test_dataset, batch_size=self.cm.get_batch_size(),
@@ -103,6 +100,7 @@ class MLView(BaseView):
     def save_model(self, model=None, path=None):
         model = model if model else self.load_model()
         path = path if path else self.cm.get_model_trained()
+        create_subdirs_if_not_exist(path)
         torch.save(model.model_conv, path)
 
 

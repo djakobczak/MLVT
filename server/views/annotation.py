@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
-from dral.utils import get_resnet18_default_transforms
+from dral.utils import get_resnet_test_transforms
 from server.views.base import BaseView
 from server.utils import DatasetType
 from server.file_utils import update_annotation_file, prune_json_file
@@ -18,6 +18,7 @@ class AnnotationsView(BaseView):
     def _handle_annotation_type(self, annotation, force, prune):
         if annotation == 'all':
             self._create_unl_annotation(prune)
+            self._create_validation_annotaion(prune)
             self._create_train_annotaion(prune)
             self._create_test_annotation(prune)
 
@@ -31,7 +32,7 @@ class AnnotationsView(BaseView):
             self._create_test_annotation(prune)
 
         elif annotation == DatasetType.VALIDATION.value:
-            self._create_validation_tensor()
+            self._create_validation_annotaion(prune)
 
         return 'Annotation file has been created', 200
 
@@ -56,6 +57,17 @@ class AnnotationsView(BaseView):
                                    train_dir,
                                    label)
 
+    def _create_validation_annotaion(self, prune):
+        valid_dirs = self.cm.get_validation_transformed_dirs()
+        labels = self.cm.get_numeric_labels()
+        annotation_path = self.cm.get_validation_annotations_path()
+        if prune:
+            prune_json_file(annotation_path)
+        for valid_dir, label in zip(valid_dirs, labels):
+            update_annotation_file(annotation_path,
+                                   valid_dir,
+                                   label)
+
     def _create_test_annotation(self, prune):
         test_dirs = self.cm.get_test_transformed_dirs()
         labels = self.cm.get_numeric_labels()  # labels hould correspond to dirs
@@ -72,7 +84,7 @@ class AnnotationsView(BaseView):
         labels = self.cm.get_numeric_labels()  # labels hould correspond to dirs
         x = torch.empty(size=(0, 3, 224, 224))
         y = torch.empty(size=(0,))
-        transforms = get_resnet18_default_transforms()
+        transforms = get_resnet_test_transforms()
         for validation_dir, label in zip(validation_dirs, labels):
             label = torch.Tensor([label])
             for f in tqdm(os.listdir(validation_dir)):
@@ -84,4 +96,3 @@ class AnnotationsView(BaseView):
                 y = torch.cat((y, label), 0)
         torch.save(x, './data/x.pt')
         torch.save(y, './data/y.pt')
-

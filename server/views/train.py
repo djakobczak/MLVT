@@ -30,9 +30,10 @@ class TrainView(ActionView):
         return render_template(
             'train.html.j2',
             show_results=True if train_results else False,
-            results=zip(result['acc'],
-                        result['loss'],
-                        result['validation_acc'])), 200
+            results=zip(result['accs'],
+                        result['losses'],
+                        result['val_accs'],
+                        result['val_losses'])), 200
 
     def post(self, epochs=None, batch_size=None, query=None):
         self.run_action(Action.TRAIN, train,

@@ -81,7 +81,6 @@ class PredictionsManager:
         p = np.random.permutation(len(predictions))
         predictions = predictions[p]
         paths = paths[p]
-
         labels = np.apply_along_axis(lambda x: np.argmax(x),
                                      1, predictions)
         if balance:

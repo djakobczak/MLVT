@@ -28,10 +28,10 @@ class PredictionsView(ActionView):
                             n_predictions=n_predictions,
                             random=random, balance=balance)
 
-        idx = predictions[0][0].index('static') if predictions else 0
+        path_start_idx = 8  # neccessary to cut off 'static' part of path
         return render_template(
             "predictions.html.j2",
-            path_start_idx=idx,  # html need realative path
+            path_start_idx=path_start_idx,  # html need realative path
             class1=predictions.get(0, []), class2=predictions.get(1, []),
             label1=self.cm.get_label_name(0),
             label2=self.cm.get_label_name(1),

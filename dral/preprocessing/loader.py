@@ -7,7 +7,6 @@ from PIL import Image
 from torchvision import transforms
 
 from dral.config.config_manager import ConfigManager
-from dral.utils import get_resnet18_default_transforms
 from dral.logger import LOG
 
 

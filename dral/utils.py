@@ -65,7 +65,7 @@ def get_before_tensor_transforms():
     ])
 
 
-def get_resnet18_default_transforms():
+def get_resnet_test_transforms():
     return transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize(

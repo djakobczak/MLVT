@@ -8,12 +8,16 @@ from dral.logger import LOG
 from server.exceptions import PathException
 
 
-def save_json(path, data):
+def save_json(path, data, force=True):
+    if force:
+        create_subdirs_if_not_exist(path)
     with open(path, "w") as f:
+        LOG.info(f'save json at path: {path}')
         json.dump(data, f, indent=4, sort_keys=True)
 
 
-def load_json(path, parse_keys_to=None):  # !TODO change load_labels to laod_json with parse
+# !TODO change load_labels to laod_json with parse
+def load_json(path, parse_keys_to=None):
     try:
         with open(path) as f:
             dict_data = json.load(f)

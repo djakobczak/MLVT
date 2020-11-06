@@ -37,7 +37,7 @@ class Model:
             LOG.info('New model created')
         self.model_conv = model.to(self.device)
 
-        self.criterion = nn.CrossEntropyLoss()
+        self.criterion = nn.CrossEntropyLoss().to(self.device)
         self.optimizer = torch.optim.Adam(
             self.model_conv.parameters(), lr=0.0005, amsgrad=True)
         self.scheduler = torch.optim.lr_scheduler.MultiStepLR(
@@ -72,46 +72,53 @@ class Model:
 
                 for path in img_paths:
                     paths.append(path)
-        LOG.debug(f"[DEBUG] loading time: {transforms_time}, feedforward time: {feedforward_time}")
+        LOG.debug(
+            f'[DEBUG] loading time: {transforms_time},'
+            f'feedforward time: {feedforward_time}')
         return predictions.cpu().numpy(), np.array(paths)
 
     def train(self, dataloader, epochs, validation_dataloader=None):
-        self.model_conv.train()  # training mode
-        loss_list = []
-        acc_list = []
-        validation_acc = []
+        # switch to training mode
+        self.model_conv.train()
+
+        LOG.info("Training started")
+        train_accs = []
+        train_losses = []
+        val_accs = []
+        val_losses = []
         for epoch in range(epochs):
-            total_loss = 0
-            itr = 0
+            losses = torch.empty((0,), device=self.device, dtype=float)
             total_corrects = torch.empty((0,), device=self.device, dtype=int)
             for samples, labels in tqdm(dataloader):
                 samples, labels = samples.to(self.device), \
                                   labels.to(self.device)
+                net_out = self.model_conv(samples)
+                loss = self.criterion(net_out, labels)
+                losses = torch.cat(
+                    (losses, self.criterion(net_out, labels).reshape(1)), 0)
+
+                # compute gradient and do SGD step
                 self.optimizer.zero_grad()
-                output = self.model_conv(samples)
-                loss = self.criterion(output, labels)
                 loss.backward()
                 self.optimizer.step()
-                total_loss += loss.item()
+
                 self.scheduler.step()
 
-                itr += 1
-                pred = torch.argmax(output, dim=1)
+                pred = torch.argmax(net_out, dim=1)
                 total_corrects = torch.cat(
                     (total_corrects, pred.eq(labels)), 0)
-            acc = torch.mean(total_corrects.float())
-            LOG.info('[Epoch {}/{}] Iteration {} -> Train Loss: {:.4f}, '
+            acc = float(torch.mean(total_corrects.float()).cpu())
+            loss = float(torch.mean(losses).cpu())
+            train_accs.append(acc)
+            train_losses.append(loss)
+            LOG.info('[Epoch {}/{}] -> Train Loss: {:.4f}, '
                      'Accuracy: {:.3f}'.format(
-                        epoch+1, epochs, itr, total_loss/itr, acc))
-            loss_list.append(total_loss/itr)
-            acc_list.append(float(acc.cpu()))
-            total_loss = 0
+                        epoch+1, epochs, loss, acc))
             if validation_dataloader:
-                vacc = self.evaluate(validation_dataloader)
-                validation_acc.append(vacc)
-                LOG.info(f"Validation accuraccy: {vacc}")
-
-        return loss_list, acc_list, validation_acc
+                vacc, vloss = self.evaluate(validation_dataloader)
+                val_accs.append(vacc)
+                val_losses.append(vloss)
+        return train_accs, train_losses, val_accs, val_losses
 
     def save(self, name):
         torch.save(self.model_conv, name)
@@ -121,9 +128,11 @@ class Model:
         return torch.load(path)
 
     def evaluate(self, testloader):
+        # switch to evaluate mode
         self.model_conv.eval()
-        total_corrects = torch.empty((0,), device=self.device, dtype=int)
 
+        total_corrects = torch.empty((0,), device=self.device, dtype=int)
+        losses = torch.empty((0,), device=self.device, dtype=float)
         with torch.no_grad():
             epoch_start = time.time()
             ff_time = 0
@@ -143,14 +152,21 @@ class Model:
                 pred = torch.argmax(net_out, dim=1)
                 total_corrects = torch.cat(
                     (total_corrects, pred.eq(labels)), 0)
+
+                # store loss (.item() is very slow operation)
+                losses = torch.cat(
+                    (losses, self.criterion(net_out, labels).reshape(1)), 0)
                 calc_time += (time.time() - calc_start)
 
             epoch_res = time.time()-epoch_start
-            LOG.debug(f'Epoch overral time: {epoch_res},'
-                      f' feedforward time: {ff_time},'
-                      f' to gpu time: {to_gpu_time},'
-                      f' calc time: {calc_time}')
-        return float(torch.mean(total_corrects.float()).cpu().numpy())
+            LOG.info(f'Epoch overral time: {epoch_res},'
+                     f' feedforward time: {ff_time},'
+                     f' to gpu time: {to_gpu_time},'
+                     f' calc time: {calc_time}')
+            acc = float(torch.mean(total_corrects.float()).cpu().numpy())
+            loss = float(torch.mean(losses).cpu())
+            LOG.info(f"Evaluation stats: acc: {acc}, loss: {loss}")
+        return acc, loss
 
 
 BATCH_SIZE = 128

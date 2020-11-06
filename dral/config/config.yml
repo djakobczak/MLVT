@@ -15,6 +15,7 @@ testset:
       unl: unl.json
       train: train.json
       test: test.json
+      valid: validation.json
     models:
       raw: ./server/static/testset/models/testset_raw.pt
       trained: ./server/static/testset/models/testset_trained.pt
@@ -46,3 +47,84 @@ testset:
     centering: False
     standarization: False
     strict_balance: False
+
+sushi_sandwiches:
+  dataset: Sushi vs sandwiches
+  description: TODO
+
+  general:
+    image_size: 256
+    label_mapping:
+      Sandwich: 0
+      Sushi: 1
+    unknown: 255
+
+  paths:
+    annotations: 
+      dir: ./server/static/sushi_sandwiches/annotations/
+      unl: unl.json
+      train: train.json
+      test: test.json
+      valid: validation.json
+    models:
+      raw: ./server/static/sushi_sandwiches/models/sushi_sandwiches_raw.pt
+      trained: ./server/static/sushi_sandwiches/models/sushi_sandwiches_trained.pt
+    images:
+      raw_unl: ./data/SushiSandwich/unlabelled
+      transformed_unl: ./server/static/sushi_sandwiches/images_tranformed
+      raw_test: ./data/SushiSandwich/test
+      transformed_test: ./server/static/sushi_sandwiches/images_test
+      raw_train: ./data/SushiSandwich/train
+      transformed_train: ./server/static/sushi_sandwiches/images_train
+      raw_validation: ./data/SushiSandwich/valid
+      transformed_validation: ./server/static/sushi_sandwiches/images_valid
+    data:
+      train_results: ./server/static/sushi_sandwiches/data/train_results.json
+      test_results: ./server/static/sushi_sandwiches/data/test_results.json
+      predictions: ./server/static/sushi_sandwiches/data/predictions.json
+
+  train:
+    predictions: 10
+    epochs: 10
+    batch_size: 128
+
+
+cars_aircrafts:
+  dataset: Cars vs Aircrafts
+  description: TODO
+
+  general:
+    image_size: 256
+    label_mapping:
+      Aircraft: 0
+      Car: 1
+    unknown: 255
+
+  paths:
+    annotations: 
+      dir: ./server/static/cars_aircrafts/annotations/
+      unl: unl.json
+      train: train.json
+      test: test.json
+      valid: validation.json
+    models:
+      raw: ./server/static/cars_aircrafts/models/cars_aircrafts_raw.pt
+      trained: ./server/static/cars_aircrafts/models/cars_aircrafts_trained.pt
+    images:
+      raw_unl: ./data/CarsAircrafts/unlabelled
+      transformed_unl: ./server/static/cars_aircrafts/images_tranformed
+      raw_test: ./data/CarsAircrafts/test
+      transformed_test: ./server/static/cars_aircrafts/images_test
+      raw_train: ./data/CarsAircrafts/train
+      transformed_train: ./server/static/cars_aircrafts/images_train
+      raw_validation: ./data/CarsAircrafts/valid
+      transformed_validation: ./server/static/cars_aircrafts/images_valid
+    data:
+      train_results: ./server/static/cars_aircrafts/data/train_results.json
+      test_results: ./server/static/cars_aircrafts/data/test_results.json
+      predictions: ./server/static/cars_aircrafts/data/predictions.json
+
+  train:
+    predictions: 10
+    epochs: 10
+    batch_size: 128

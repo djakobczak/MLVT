@@ -9,7 +9,7 @@ UNKNOWN_LABEL = 'Unknown'
 config = confuse.Configuration('DRAL', __name__)
 config.set_file(CONFIG_PATH)  # !TODO change location of file path
 
-DEFAULT_CONFIG = 'testset'
+DEFAULT_CONFIG = 'sushi_sandwitches'
 
 
 # !TODO should be splitted into sections e.g. cm.train.batch_size.get()
@@ -121,6 +121,14 @@ class ConfigManager:
 
     def get_train_annotations_filename(self):
         return self.config['paths']['annotations']['train'].get(str)
+
+    def get_validation_annotations_path(self):
+        return os.path.join(
+            self.get_annotation_dir(),
+            self.get_validation_annotations_filename())
+
+    def get_validation_annotations_filename(self):
+        return self.config['paths']['annotations']['valid'].get(str)
 
     def get_test_annotations_path(self):
         return os.path.join(

@@ -3,10 +3,10 @@ from torch.utils.data import DataLoader
 from server.actions.base import MLAction
 from server.actions.main import ActionStatus
 from server.file_utils import append_to_json_file, \
-    get_last_n_images_key, save_json
+    get_last_n_images_key
 from dral.datasets import LabelledDataset
 from dral.logger import LOG
-from dral.utils import get_resnet18_default_transforms
+from dral.utils import get_resnet_test_transforms
 from server.predictions_manager import PredictionsManager
 
 
@@ -15,27 +15,25 @@ def train(**kwargs):
     try:
         ml_action = MLAction()
         model = ml_action.load_model()
-
-        epochs = kwargs.get('epochs') if kwargs.get('epochs') \
-            else ml_action.cm.get_epochs()
-        batch_size = kwargs.get('batch_size') if kwargs.get('batch_size') \
-            else ml_action.cm.get_batch_size()
-
-        losses, accs, validation_acc = model.train(
+        epochs = kwargs.get('epochs') or ml_action.cm.get_epochs()
+        batch_size = kwargs.get('batch_size') or ml_action.cm.get_batch_size()
+        accs, losses, val_accs, val_losses = model.train(
                 ml_action.get_train_loader(batch_size),
                 epochs,
-                ml_action.get_validatation_loader())
+                ml_action.get_validation_loader(batch_size))
         LOG.info(f'losses: {losses}, accs: {accs}')
         ml_action.save_model(model)
 
         # save to output to file
         append_to_json_file(
             ml_action.cm.get_train_results_file(),
-            {'loss': losses,
-             'acc': accs,
-             'validation_acc': validation_acc,
+            {'losses': losses,
+             'accs': accs,
+             'val_accs': val_accs,
+             'val_losses': val_losses,
              'n_images': len(ml_action.train_dataset)})
-    except Exception:
+    except ValueError as e:
+        LOG.error(f'Training failed: {e}')
         return ActionStatus.FAILED
     return ActionStatus.SUCCESS
 
@@ -45,7 +43,7 @@ def test(**kwargs):
     model = ml_action.load_model()
     test_ds = LabelledDataset(
         ml_action.cm.get_test_annotations_path(),
-        get_resnet18_default_transforms())
+        get_resnet_test_transforms())
     testlaoder = DataLoader(
         test_ds, batch_size=ml_action.cm.get_batch_size(),
         shuffle=True, num_workers=2)
