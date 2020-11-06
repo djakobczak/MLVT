@@ -2,6 +2,7 @@ from torch.utils.data import DataLoader
 
 from server.actions.base import MLAction
 from server.actions.main import ActionStatus
+from server.exceptions import AnnotationException
 from server.file_utils import append_to_json_file, \
     get_last_n_images_key
 from dral.datasets import LabelledDataset
@@ -32,10 +33,13 @@ def train(**kwargs):
              'val_accs': val_accs,
              'val_losses': val_losses,
              'n_images': len(ml_action.train_dataset)})
+    except AnnotationException as e:
+        LOG.error(f'Training failed: {e}')
+        return ActionStatus.FAILED, 'Please, annote some images'
     except ValueError as e:
         LOG.error(f'Training failed: {e}')
-        return ActionStatus.FAILED
-    return ActionStatus.SUCCESS
+        return ActionStatus.FAILED, 'Unknwon error occured durning training'
+    return ActionStatus.SUCCESS, 'Training completed'
 
 
 def test(**kwargs):
@@ -58,7 +62,7 @@ def test(**kwargs):
          'n_images': get_last_n_images_key(
              ml_action.cm.get_train_results_file())
          })
-    return ActionStatus.SUCCESS
+    return ActionStatus.SUCCESS, 'Test completed'
 
 
 def predict(**kwargs):
@@ -77,3 +81,4 @@ def predict(**kwargs):
     pm.get_new_predictions(
         n_predictions, model=model,
         dataloader=unl_loader, random=random, balance=balance)
+    return ActionStatus.SUCCESS, 'Prediction completed'

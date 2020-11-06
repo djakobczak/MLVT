@@ -77,7 +77,7 @@ def update_annotation_file(path, data_dir, label):
     LOG.info(f'{path} file has been updated.')
 
 
-def prune_json_file(path):
+def purge_json_file(path):
     LOG.info(f'Prune file: {path}')
     save_json(path, {})
 

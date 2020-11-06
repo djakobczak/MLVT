@@ -4,7 +4,7 @@ from dral.logger import LOG
 from server.actions.handlers import train
 from server.actions.main import Action
 from server.views.base import ActionView
-from server.file_utils import load_json, prune_json_file
+from server.file_utils import load_json, purge_json_file
 
 
 class TrainView(ActionView):
@@ -43,5 +43,5 @@ class TrainView(ActionView):
         return 202
 
     def delete(self):
-        prune_json_file(self.cm.get_train_results_file())
+        purge_json_file(self.cm.get_train_results_file())
         return 200

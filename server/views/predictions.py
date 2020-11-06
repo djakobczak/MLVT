@@ -1,6 +1,6 @@
 import json
 
-from flask import render_template, url_for, request, redirect
+from flask import render_template, request, redirect
 
 from server.actions.main import Action
 from server.actions.handlers import predict

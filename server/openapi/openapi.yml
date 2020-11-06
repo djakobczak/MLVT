@@ -405,10 +405,15 @@ paths:
         200:
           description: Returns True if specified type of action is finished
           content:
-              text/plain:
+              application/json:
                 schema:
-                  type: boolean
-                  example: True
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      enum: [ongoing, failed, success]
+                    data:
+                      type: string
         404:
           description: Action not found
 

@@ -32,7 +32,6 @@ class ActionView(BaseView):
         if action in executor.futures._futures:
             if not executor.futures.done(action):
                 raise ActionLockedException("Ongoing action!")
-            executor.futures.pop(action)  # !TODO check it
 
 
 class MLView(BaseView):

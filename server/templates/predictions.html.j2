@@ -197,16 +197,20 @@
                 url: '/status/predictions',
                 type: "GET",
                 success: function(data){
-                    if (data.trim() == 'true'){
+                    console.log(data);
+                    if (data.status == 'success'){
                         console.log('Task finished, reload...');
                         $("#loadingSpinner").hide();
                         $('#reloadModal').modal('show');
                     }
-                    else {
+                    else if (data.status == 'ongoing') {
                         console.log('sleep for 1s')
                         setTimeout(check_status, 1000);
                     }
-                    
+                    else {
+                        console.log('status failed')
+                        alert('Unknown error occured: ' + data.description)
+                    }
                 },
                 error: function(){
                     $("#loadingSpinner").hide();

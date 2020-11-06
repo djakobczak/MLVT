@@ -8,7 +8,7 @@ from tqdm import tqdm
 from dral.utils import get_resnet_test_transforms
 from server.views.base import BaseView
 from server.utils import DatasetType
-from server.file_utils import update_annotation_file, prune_json_file
+from server.file_utils import update_annotation_file, purge_json_file
 
 
 class AnnotationsView(BaseView):
@@ -41,7 +41,7 @@ class AnnotationsView(BaseView):
         data_dir = self.cm.get_unl_transformed_dir()
         annotation_path = self.cm.get_unl_annotations_path()
         if prune:
-            prune_json_file(annotation_path)
+            purge_json_file(annotation_path)
         update_annotation_file(annotation_path,
                                data_dir,
                                self.cm.get_unknown_label())
@@ -51,7 +51,7 @@ class AnnotationsView(BaseView):
         labels = self.cm.get_numeric_labels()
         annotation_path = self.cm.get_train_annotations_path()
         if prune:
-            prune_json_file(annotation_path)
+            purge_json_file(annotation_path)
         for train_dir, label in zip(train_dirs, labels):
             update_annotation_file(annotation_path,
                                    train_dir,
@@ -62,7 +62,7 @@ class AnnotationsView(BaseView):
         labels = self.cm.get_numeric_labels()
         annotation_path = self.cm.get_validation_annotations_path()
         if prune:
-            prune_json_file(annotation_path)
+            purge_json_file(annotation_path)
         for valid_dir, label in zip(valid_dirs, labels):
             update_annotation_file(annotation_path,
                                    valid_dir,
@@ -73,7 +73,7 @@ class AnnotationsView(BaseView):
         labels = self.cm.get_numeric_labels()  # labels hould correspond to dirs
         annotation_path = self.cm.get_test_annotations_path()
         if prune:
-            prune_json_file(annotation_path)
+            purge_json_file(annotation_path)
         for test_dir, label in zip(test_dirs, labels):
             update_annotation_file(annotation_path,
                                    test_dir,

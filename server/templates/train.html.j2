@@ -42,7 +42,13 @@
                 </tbody>
             </table>
             {% endif %}
+            <div class="col-4">
+                
+            </div>
             <div class="d-flex justify-content-center">
+                <div id="loadingSpinner" style="display: none;" class="spinner-border text-success float-right mt-4 mr-2 mb-1" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
                 <button type="button" onclick="post_train()" class="btn btn-success btn-lg m-3">Train</button>
                 <button type="button" class="btn btn-danger btn-lg m-3" data-toggle="modal" data-target="#exampleModal">
                     Delete training history
@@ -73,13 +79,34 @@
   </div>
 </div>
 
+<div class="modal fade" id="reloadModal" tabindex="-1" role="dialog" aria-labelledby="reloadLabel" aria-hidden="true">
+<div class="modal-dialog" role="document">
+    <div class="modal-content text-dark">
+    <div class="modal-header">
+        <h5 class="modal-title" id="reloadLabel">Alert</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        Training is completed, do you want to reload page?
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button"  onclick="reload()" class="btn btn-primary">Reload</button>
+    </div>
+    </div>
+</div>
+</div>
+
 <script>
     function post_train(){
+        $("#loadingSpinner").show()
         $.ajax({
             url: '/train',
             type: "POST",
             success: function(){
-                location.reload(); 
+                check_status();
             },
             error: function(xhr) {
                 console.log(xhr)
@@ -99,5 +126,35 @@
             }
             });
         }
+
+    function reload() {
+        window.location.href = "/train";
+    }
+
+    function check_status(){
+        $.ajax({
+            url: '/status/train',
+            type: "GET",
+            success: function(data){
+                console.log(data);
+                if (data.status == 'success'){
+                    console.log('Task finished, reload...');
+                    $("#loadingSpinner").hide();
+                    $('#reloadModal').modal('show');
+                }
+                else if (data.status == 'ongoing') {
+                    console.log('sleep for 1s')
+                    setTimeout(check_status, 1000);
+                }
+                else {
+                    console.log('status failed')
+                    alert('Error occured: ' + data.data)
+                }
+            },
+            error: function(){
+                $("#loadingSpinner").hide();
+            }
+        });
+    }
 </script>
 {% endblock content %}

@@ -3,7 +3,7 @@ from flask import flash, render_template
 from server.actions.handlers import test
 from server.views.base import ActionView
 from server.actions.main import Action
-from server.file_utils import load_json, prune_json_file
+from server.file_utils import load_json, purge_json_file
 
 
 class TestView(ActionView):
@@ -25,5 +25,5 @@ class TestView(ActionView):
         return 202
 
     def delete(self):
-        prune_json_file(self.cm.get_test_results_file())
+        purge_json_file(self.cm.get_test_results_file())
         return 200
