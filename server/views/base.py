@@ -103,7 +103,7 @@ class MLView(BaseView):
         torch.save(model.model_conv, path)
 
 
-class ModelIO:  # !TODO to consideration
+class ModelIO:
     def load_model(self, path):
         try:
             model = Model.load(path)

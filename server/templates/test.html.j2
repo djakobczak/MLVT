@@ -57,6 +57,12 @@
             </div>
         {% endif %}
     </div>
+    <div class="container col-sm-10 mt-3 mb-4 border rounded border-secondary p-3">
+        <h3 class="text-center m-2">Your image:</h3>
+        <div class="text-center">
+        <img id="yourImage" class="img-fluid" src="#" alt="" width=500 height=500>
+        </div>
+    </div>
 
 <!-- Modals -->
 <div class="modal fade" id="delete" tabindex="-1" role="dialog" aria-labelledby="deleteLabel" aria-hidden="true">
@@ -89,17 +95,17 @@
         </button>
       </div>
       <div class="modal-body">
-        <form>
+        <form id="upload-file-form" method="post" enctype="multipart/form-data">
         <div class="custom-file">
-            <input type="file" class="custom-file-input" id="customFile">
-            <label class="custom-file-label" for="customFile">Choose file</label>
+            <input name="testImage" class="custom-file-input" type="file">
+            <label class="custom-file-label" for="testImage">Select an image</label>
         </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button"  onclick="delete_test()" class="btn btn-primary">Upload</button>
-      </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <input type="button" name="submit" id="upload-file-btn" data-dismiss="modal" class="btn btn-primary" value="Upload"/>
+        </div>
+    </form>
     </div>
   </div>
 </div>
@@ -121,8 +127,8 @@
                     alert("Error occured: " + xhr.status)
                 }
             }
-            });
-        }
+        });
+    }
     
     function get_new_images(){
         $.ajax({
@@ -135,8 +141,8 @@
                 console.log(xhr)
                 alert("Error occured: " + xhr.status)
             }
-            });
-        }
+        });
+    }
     
     function delete_test(){
         $.ajax({
@@ -148,7 +154,41 @@
             error: function(xhr) {
                 console.log(xhr)
             }
+        });
+    }
+
+    $(function() {
+        $('#upload-file-btn').click(function() {
+            var formDataRaw = $('#upload-file-form')[0];
+            console.log(formDataRaw)
+            var form_data = new FormData(formDataRaw);
+            console.log(form_data)
+            $.ajax({
+                type: 'POST',
+                url: '/test',
+                data: form_data,
+                contentType: false,
+                cache: false,
+                processData: false,
+                success: function(data) {
+                    console.log(data);
+
+                    // add the newly created image to an existing div on the page
+                    var targetImg = document.getElementById("yourImage"); 
+                    targetImg.src = data.path;
+                    console.log('Success!');
+                },
+                error: function(xhr) {
+                    console.log(xhr)
+                },
             });
-        }
+        });
+    });
+
+    $(".custom-file-input").on("change", function() {
+        var fileName = $(this).val().split("\\").pop();
+        $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+    });
+
 </script>
 {% endblock content %}

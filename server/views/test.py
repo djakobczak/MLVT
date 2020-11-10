@@ -1,15 +1,27 @@
+import os
+
 import numpy as np
+from PIL import Image
+import torch
 
+from connexion import request
 from flask import flash, render_template
+from werkzeug.utils import secure_filename
 
+from dral.utils import get_resnet_test_transforms
 from server.actions.handlers import test
 from server.actions.main import Action
 from server.file_utils import load_json, purge_json_file
 from server.utils import test_image_counter
-from server.views.base import ActionView
+from server.views.base import ActionView, ModelIO
 
 
-class TestView(ActionView):
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
+USER_IMAGE_PATH = os.path.join('.', 'server', 'static', 'user_image.png')
+RELATIVE_USER_IMAGE_PATH = os.path.join('static', 'user_image.png')
+
+
+class TestView(ActionView, ModelIO):
     def search(self, new_samples):
         test_results = load_json(self.cm.get_test_results_file(),
                                  parse_keys_to=int)
@@ -32,6 +44,22 @@ class TestView(ActionView):
                                path_start_idx=path_start_idx), 200
 
     def post(self):
+        if 'testImage' in request.files:
+            uploaded = request.files['testImage']
+            filename = secure_filename(uploaded.filename)
+            if not self._allowed_file(filename):
+                return f'Got unsupprted file type ({filename}),' \
+                    f'supported extensions: ({ALLOWED_EXTENSIONS})', 400
+
+            model = self.load_model(self.cm.get_model_trained())
+            uploaded.save(USER_IMAGE_PATH)
+            img = Image.open(USER_IMAGE_PATH)
+            img = get_resnet_test_transforms()(img)
+            frame = torch.unsqueeze(img, 0)
+            prediction = model.predict(frame)
+            return {'prediction': prediction.tolist(),
+                    'path': RELATIVE_USER_IMAGE_PATH}, 200
+
         self.run_action(Action.TEST, test)
         flash('Model evaluation started.', 'success')
         return 202
@@ -65,3 +93,7 @@ class TestView(ActionView):
                  'confidence': max(pred)}
             )
         return images
+
+    def _allowed_file(self, filename):
+        return '.' in filename and \
+            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
