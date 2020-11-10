@@ -1,4 +1,3 @@
-from collections import OrderedDict
 from enum import Enum
 import io
 
@@ -42,7 +41,7 @@ class PlotView(BaseView):
         yticks_points = 12
 
         plt.style.use('seaborn')
-        fig, ax = plt.subplots(2, figsize=(8, 10))
+        fig, ax = plt.subplots(2, figsize=(14, 8))
         fig.subplots_adjust(left=0.09, right=0.92, top=0.9, bottom=0.1)
         twin_ax = []
         twin_ax.append(ax[0].twinx())

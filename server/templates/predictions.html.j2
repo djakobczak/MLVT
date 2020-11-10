@@ -43,7 +43,6 @@
                 <div class="col-8">
                     <button class="btn btn-success float-right" type="button" id="new_predictions" onclick="showNewPredictions()">Show predictions</button>
                 </div>
-                
             </div>
         </div>
     </div>
@@ -62,7 +61,7 @@
                 {% set full_path = image %}
                 {% set image = image[path_start_idx:] %}
                 <div class="col-lg-3 col-md-4 col-5 m-0">
-                    <img class="img-fluid img-thumbnail mb-3" data-path="{{ full_path }}" src="{{ image }}" alt="" width=128 height=128>
+                    <img class="img-fluid img-thumbnail mb-3" data-path="{{ full_path }}" src="{{ image }}" alt="" width=160 height=160>
                 </div>
                 {% endfor %}
             </div>
@@ -75,7 +74,7 @@
                 {% set full_path = image %}
                 {% set image = image[path_start_idx:] %}
                 <div class="col-lg-3 col-md-4 col-5 m-0">
-                    <img class="img-fluid img-thumbnail mb-3" data-path="{{ full_path }}" src="{{ image }}" alt="" width=128 height=128>
+                    <img class="img-fluid img-thumbnail mb-3" data-path="{{ full_path }}" src="{{ image }}" alt="" width=160 height=160>
                 </div>
                 {% endfor %}
             </div>
@@ -108,7 +107,7 @@
         </div>
         </div>
     </div>
-    </div>
+    
 
     <script>
         // HTML elements

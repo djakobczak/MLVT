@@ -5,52 +5,60 @@
 {% endblock title %}
 
 {% block header %}
-    <h1>Train</h1>
+    <h1>Test</h1>
 {% endblock header %}
 
 {% block content %}
-<div class="container">
     <div class="container col-sm-10 mt-3 mb-4 border rounded border-secondary p-3">
-        {% if show_results %}
-        <div class="m-3">
-            <h3 class="text-center pb-2">Test visualization</h3>
-            <img src="{{ url_for('.views_PlotView_search', plot_type='test') }}" alt="Image Placeholder" height="500" class="mx-auto d-block">
-        </div>
-        
-        <div class="m-3 pt-4">
-            <h2>Test history:</h2>
-        </div>
-        <table class="table text-white">
-            <thead>
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Accuracy</th>
-                    <th scope="col">Number of training images</th>
-                </tr>
-            </thead>
-                <tbody>
-                {% for result in results %}
-                <tr>
-                    <th scope="row">{{ loop.index }}</th>
-                    <td>{{ result.acc|round(3) }}</td>
-                    <td>{{ result.n_images }}</td>
-                    <td></td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-            {% endif %}
-            <div class="d-flex justify-content-center">
-                <button type="button" onclick="post_test()" class="btn btn-success btn-lg m-3">Test</button>
-                <button type="button" class="btn btn-danger btn-lg m-3" data-toggle="modal" data-target="#delete">
+        <div class="text-right">
+            <div class="btn-group">
+                <button type="button" onclick="post_test()" class="btn btn-success btn-lg">
+                    Run test
+                </button>
+                <button type="button"  onclick="get_new_images()" class="btn btn-success btn-lg ml-1">
+                    New images
+                </button>
+                <button type="button" class="btn btn-primary btn-lg ml-1" data-toggle="modal" data-target="#upload">
+                    Test your image
+                </button>
+                <button type="button" class="btn btn-danger btn-lg ml-1" data-toggle="modal" data-target="#delete">
                     Delete training history
                 </button>
             </div>
         </div>
     </div>
-</div>
+    <div class="container col-sm-10 mt-3 mb-4 border rounded border-secondary p-3">
+        {% if show_results %}
+            <div class="row text-center text-lg-left m-3">
+                {% for image in images %}
+                {% set path = image.path[path_start_idx:] %}
+                <div class="col-lg-2 col-md-3 m-0 text-center">
+                    <img class="img-fluid rounded border border-white mb-3" src="{{ path }}" alt="" width=164 height=164>
+                    <div class="h5">{{ image.label}}, {{ image.confidence|round(3) }}%</div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="row text-center justify-content-center">
+                <div class='col-3'></div>
+                <div class="col-6 row justify-content-center">
+                {% if acc > 0.9 %}
+                    <h3><span class="badge badge-success m-3">Accuraccy: {{ acc|round(3) }}% </span></h3>
+                    <h3><span class="badge badge-info m-3">Loss: {{ loss|round(3) }} </span></h3>
+                {% elif acc > 0.7 %}
+                    <h3><span class="badge badge-warning m-3">Accuraccy: {{ acc|round(3) }}% </span></h3>
+                    <h3><span class="badge badge-info m-3">Loss: {{ loss|round(3) }} </span></h3>
+                {% else %}
+                    <h3><span class="badge badge-danger m-3">Accuraccy: {{ acc|round(3) }}% </span></h3>
+                    <h3><span class="badge badge-info m-3">Loss: {{ loss|round(3) }} </span></h3>
+                {% endif %}
+                </div>
+                <div class='col-3'></div>
+            </div>
+        {% endif %}
+    </div>
 
-<!-- Modal -->
+<!-- Modals -->
 <div class="modal fade" id="delete" tabindex="-1" role="dialog" aria-labelledby="deleteLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content text-dark">
@@ -66,6 +74,31 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
         <button type="button"  onclick="delete_test()" class="btn btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="upload" tabindex="-1" role="dialog" aria-labelledby="uploadLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content text-dark">
+      <div class="modal-header">
+        <h5 class="modal-title" id="uploadLabel">Test you own image</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form>
+        <div class="custom-file">
+            <input type="file" class="custom-file-input" id="customFile">
+            <label class="custom-file-label" for="customFile">Choose file</label>
+        </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button"  onclick="delete_test()" class="btn btn-primary">Upload</button>
       </div>
     </div>
   </div>
@@ -87,6 +120,20 @@
                 else {
                     alert("Error occured: " + xhr.status)
                 }
+            }
+            });
+        }
+    
+    function get_new_images(){
+        $.ajax({
+            url: '/test?new_samples=True',
+            type: "GET",
+            success: function(){
+                location.reload(); 
+            },
+            error: function(xhr) {
+                console.log(xhr)
+                alert("Error occured: " + xhr.status)
             }
             });
         }

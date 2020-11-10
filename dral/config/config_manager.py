@@ -214,3 +214,7 @@ class ConfigManager:
 
     def get_n_predictions(self):
         return self.config['train']['predictions'].get(int)
+
+    # test
+    def get_test_n_outputs(self):
+        return self.config['test']['outputs'].get(int)

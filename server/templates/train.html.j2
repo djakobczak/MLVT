@@ -9,7 +9,6 @@
 {% endblock header %}
 
 {% block content %}
-<div class="container">
     <div class="container col-sm-10 mt-3 mb-4 border rounded border-secondary p-3">
         {% if show_results %}
         <div class="m-3">
@@ -56,7 +55,6 @@
             </div>
         </div>
     </div>
-</div>
 
 <!-- Modals -->
 <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -109,11 +107,15 @@
                 check_status();
             },
             error: function(xhr) {
-                console.log(xhr)
+                console.log(xhr.status)
+                switch (xhr.status) {
+                    case 409:
+                        alert("Wait for the server to end action");
+                }
             }
-            });
-        }
-    
+        })
+    }
+
     function delete_train(){
         $.ajax({
             url: '/train',

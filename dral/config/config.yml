@@ -128,3 +128,6 @@ cars_aircrafts:
     predictions: 10
     epochs: 10
     batch_size: 128
+
+  test:
+    outputs: 6

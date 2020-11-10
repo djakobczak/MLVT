@@ -9,9 +9,9 @@ from dral.datasets import LabelledDataset
 from dral.logger import LOG
 from dral.utils import get_resnet_test_transforms
 from server.predictions_manager import PredictionsManager
+from server.utils import test_image_counter
 
 
-# !TODO decorator for saving?
 def train(**kwargs):
     try:
         ml_action = MLAction()
@@ -43,25 +43,29 @@ def train(**kwargs):
 
 
 def test(**kwargs):
+    uploaded_image = kwargs.get('uploaded_image')
+
     ml_action = MLAction()
     model = ml_action.load_model()
     test_ds = LabelledDataset(
         ml_action.cm.get_test_annotations_path(),
-        get_resnet_test_transforms())
+        get_resnet_test_transforms(), return_paths=True)
     testlaoder = DataLoader(
         test_ds, batch_size=ml_action.cm.get_batch_size(),
-        shuffle=True, num_workers=2)
+        shuffle=True, num_workers=0)
 
     LOG.info('Start testing model')
-    acc = model.evaluate(testlaoder)
-    LOG.info(f'Model accuraccy: {acc}')
+    acc, loss, predictions, paths = model.test(testlaoder)
 
     append_to_json_file(
         ml_action.cm.get_test_results_file(),
         {'acc': acc,
-         'n_images': get_last_n_images_key(
-             ml_action.cm.get_train_results_file())
+         'loss': loss,
+         'predictions': predictions.tolist(),
+         'paths': paths.tolist()
          })
+    with test_image_counter.get_lock():
+        test_image_counter.value = 0
     return ActionStatus.SUCCESS, 'Test completed'
 
 

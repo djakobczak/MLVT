@@ -290,15 +290,15 @@ paths:
     get:
       summary: Test model against test dataset
       parameters:
-          - in: query
-            name: max_results
-            schema:
-              type: integer
-              minimum: 0
-              default: 10
+        - in: query
+          name: new_samples
+          description: if set to True then return new test samples
+          schema:
+            type: boolean
+            default: False
       responses:
         200:
-          description: Succesfull test
+          description: Sample results
           content:
               text/html:
                 schema:

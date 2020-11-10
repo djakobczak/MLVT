@@ -67,7 +67,7 @@ def create_csv_file_without_label(target_file, data_dir, labels=None,
 
 class LabelledDataset(Dataset):
 
-    def __init__(self, path, transforms=None):
+    def __init__(self, path, transforms=None, return_paths=False):
         self.path = path
         self.load()
         self.n_class1 = len(self.all_annotations)
@@ -75,6 +75,7 @@ class LabelledDataset(Dataset):
         self.n_labels = len(self.annotations)
         self.load_time = 0
         self.trans_time = 0
+        self.return_paths = return_paths
 
     def __len__(self):
         return len(self.all_annotations)
@@ -91,8 +92,8 @@ class LabelledDataset(Dataset):
         if self.transforms:
             img = self.transforms(img)
 
-        # print(img_path, target_label)
-        return img, target_label
+        return (img, target_label, img_path) if self.return_paths \
+            else (img, target_label)
 
     def load(self):
         self.annotations = load_json(self.path, parse_keys_to=int)

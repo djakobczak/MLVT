@@ -70,8 +70,7 @@ class Model:
                 predictions = torch.cat((predictions, prediction), 0)
                 transforms_time += time.time() - start_transoform
 
-                for path in img_paths:
-                    paths.append(path)
+                paths.extend(img_paths)
         LOG.debug(
             f'[DEBUG] loading time: {transforms_time},'
             f'feedforward time: {feedforward_time}')
@@ -167,6 +166,36 @@ class Model:
             loss = float(torch.mean(losses).cpu())
             LOG.info(f"Evaluation stats: acc: {acc}, loss: {loss}")
         return acc, loss
+
+    def test(self, testloader):
+        # switch to evaluate mode
+        self.model_conv.eval()
+
+        total_corrects = torch.empty((0,), device=self.device, dtype=int)
+        predictions = torch.empty((0, 2), device=self.device, dtype=float)
+        paths = []
+        losses = torch.empty((0,), device=self.device, dtype=float)
+        with torch.no_grad():
+            for samples, labels, img_paths in tqdm(testloader):
+                samples, labels = samples.to(self.device), \
+                    labels.to(self.device)
+
+                net_out = self(samples)
+                predictions = torch.cat((predictions, net_out), 0)
+
+                predicted_labels = torch.argmax(net_out, dim=1)
+                total_corrects = torch.cat(
+                    (total_corrects, predicted_labels.eq(labels)), 0)
+
+                # store loss (.item() is very slow operation)
+                losses = torch.cat(
+                    (losses, self.criterion(net_out, labels).reshape(1)), 0)
+                paths.extend(img_paths)
+
+            acc = float(torch.mean(total_corrects.float()).cpu().numpy())
+            loss = float(torch.mean(losses).cpu())
+            LOG.info(f"Evaluation stats: acc: {acc}, loss: {loss}")
+        return acc, loss, predictions.cpu().numpy(), np.array(paths)
 
 
 BATCH_SIZE = 128

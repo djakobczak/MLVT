@@ -1,4 +1,5 @@
 from enum import Enum
+from multiprocessing import Value
 
 
 class DatasetType(Enum):
@@ -6,3 +7,6 @@ class DatasetType(Enum):
     TRAIN = 'train'
     TEST = 'test'
     VALIDATION = 'validation'
+
+
+test_image_counter = Value('i', 0)

@@ -1,23 +1,35 @@
+import numpy as np
+
 from flask import flash, render_template
 
 from server.actions.handlers import test
-from server.views.base import ActionView
 from server.actions.main import Action
 from server.file_utils import load_json, purge_json_file
+from server.utils import test_image_counter
+from server.views.base import ActionView
 
 
 class TestView(ActionView):
-    def search(self, max_results):
+    def search(self, new_samples):
         test_results = load_json(self.cm.get_test_results_file(),
                                  parse_keys_to=int)
-        start_idx = len(test_results) - max_results
-        results = [values for key, values in test_results.items()
-                   if key > start_idx]
-        if not results:
-            flash('Test history is empty, '
-                  'you have to test your model firstly', 'danger')
-        return render_template('test.html.j2', results=results,
-                               show_results=True if results else False), 200
+        if not test_results:
+            flash('You have not tested your model yet', 'danger')
+            return render_template('test.html.j2', results=[],
+                                   show_results=False), 200
+        # get last test result
+        test_results = test_results[len(test_results) - 1]
+        images = self._get_test_images(
+            np.array(test_results['predictions']),
+            np.array(test_results['paths']),
+            increment=new_samples)
+        path_start_idx = 8  # neccessary to cut off 'static' part of path !TODO
+        return render_template('test.html.j2',
+                               images=images,
+                               acc=test_results['acc'],
+                               loss=test_results['loss'],
+                               show_results=True,
+                               path_start_idx=path_start_idx), 200
 
     def post(self):
         self.run_action(Action.TEST, test)
@@ -27,3 +39,29 @@ class TestView(ActionView):
     def delete(self):
         purge_json_file(self.cm.get_test_results_file())
         return 200
+
+    def _get_test_images(self, predictions, paths, n_images=None,
+                         increment=False):
+        n_images = n_images or self.cm.get_test_n_outputs()
+
+        # lock gloabal counter
+        with test_image_counter.get_lock():
+            if increment:
+                test_image_counter.value += n_images
+            if test_image_counter.value + n_images >= len(predictions):
+                test_image_counter.value = 0
+
+            start_idx = test_image_counter.value
+            idxs = range(start_idx, start_idx + n_images)
+
+        predictions = predictions[idxs]
+        paths = paths[idxs]
+        images = []
+        labels = dict((v, k) for k, v in self.cm.get_label_mapping().items())
+        for path, pred in zip(paths, predictions):
+            images.append(
+                {'path': path,
+                 'label': labels[np.argmax(pred)],
+                 'confidence': max(pred)}
+            )
+        return images
