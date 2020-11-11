@@ -99,6 +99,7 @@ class MLView(BaseView):
     def save_model(self, model=None, path=None):
         model = model if model else self.load_model()
         path = path if path else self.cm.get_model_trained()
+        print('path: ', self.cm.get_predictions_file())
         create_subdirs_if_not_exist(path)
         torch.save(model.model_conv, path)
 

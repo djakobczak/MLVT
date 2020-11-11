@@ -213,7 +213,7 @@ paths:
 
   /annotations:
     put:
-      summary: create or update existing annotation csv file
+      summary: create or update existing annotation json files
       tags:
         - config
       parameters:

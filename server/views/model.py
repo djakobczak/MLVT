@@ -5,7 +5,8 @@ from dral.models import Model
 from server.views.base import MLView
 from server.file_utils import (fail_if_headpath_not_exist,
                                create_subdirs_if_not_exist,
-                               save_json)
+                               save_json, purge_json_file)
+from server.views.annotation import AnnotationsView
 
 
 class ModelView(MLView):
@@ -17,6 +18,11 @@ class ModelView(MLView):
         # overwrite trained model with new untrained
         self.save_model(Model())
         save_json(self.cm.get_predictions_file(), {})
+        purge_json_file(self.cm.get_test_results_file())
+        purge_json_file(self.cm.get_last_user_test_path())
+        purge_json_file(self.cm.get_train_results_file())
+        av = AnnotationsView()
+        av.put(True, 'all', True)
         LOG.info('Model is resetted and predictions is pruned')
         return 'Model deleted', 200
 
@@ -26,4 +32,4 @@ class ModelView(MLView):
             create_subdirs_if_not_exist(path)
         fail_if_headpath_not_exist(path)
         self.save_model(path=path)
-        return 'OK', 200
+        return 200

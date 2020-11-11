@@ -101,29 +101,33 @@ cars_aircrafts:
     unknown: 255
 
   paths:
-    annotations: 
-      dir: ./server/static/cars_aircrafts/annotations/
+    server_base: ['.', 'server', 'static']
+    data_base: ['.', 'data']
+    annotations: # server base prefix will be added
+      dir: [cars_aircrafts, annotations]
       unl: unl.json
       train: train.json
       test: test.json
       valid: validation.json
-    models:
-      raw: ./server/static/cars_aircrafts/models/cars_aircrafts_raw.pt
-      trained: ./server/static/cars_aircrafts/models/cars_aircrafts_trained.pt
+    models: # server base prefix will be added
+      raw: [cars_aircrafts, models, cars_aircrafts_raw.pt]
+      trained: [cars_aircrafts, models, cars_aircrafts_trained.pt]
     images:
-      raw_unl: ./data/CarsAircrafts/unlabelled
-      transformed_unl: ./server/static/cars_aircrafts/images_tranformed
-      raw_test: ./data/CarsAircrafts/test
-      transformed_test: ./server/static/cars_aircrafts/images_test
-      raw_train: ./data/CarsAircrafts/train
-      transformed_train: ./server/static/cars_aircrafts/images_train
-      raw_validation: ./data/CarsAircrafts/valid
-      transformed_validation: ./server/static/cars_aircrafts/images_valid
-    data:
-      train_results: ./server/static/cars_aircrafts/data/train_results.json
-      test_results: ./server/static/cars_aircrafts/data/test_results.json
-      predictions: ./server/static/cars_aircrafts/data/predictions.json
-      last_user_test: ['.', 'server', 'static', 'json', 'last_user_test.json']
+      raw:  # data base prefix will be added
+        unl: [CarsAircrafts, unlabelled]
+        test: [CarsAircrafts, test]
+        train: [CarsAircrafts, train]
+        validation: [CarsAircrafts, valid]
+      transformed:  # server base prefix will be added
+        unl: [cars_aircrafts, images_tranformed]
+        test: [cars_aircrafts, images_test]
+        train: [cars_aircrafts, images_train]
+        validation: [cars_aircrafts, images_valid]
+    data:  # server base prefix will be added
+      train_results: [cars_aircrafts, data, train_results.json]
+      test_results: [cars_aircrafts, data, test_results.json]
+      predictions: [cars_aircrafts, data, predictions.json]
+      last_user_test: [json, last_user_test.json]
 
   train:
     predictions: 10

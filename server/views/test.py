@@ -11,7 +11,8 @@ from werkzeug.utils import secure_filename
 from dral.utils import get_resnet_test_transforms
 from server.actions.handlers import test
 from server.actions.main import Action
-from server.config import USER_IMAGE_DIR, RELATIVE_USER_IMAGE_DIR, CUT_STATIC_IDX
+from server.config import (USER_IMAGE_DIR, RELATIVE_USER_IMAGE_DIR,
+                           CUT_STATIC_IDX)
 from server.file_utils import load_json, purge_json_file, save_json
 from server.utils import test_image_counter
 from server.views.base import ActionView, ModelIO
@@ -24,9 +25,11 @@ class TestView(ActionView, ModelIO):
     def search(self, new_samples):
         test_results = load_json(self.cm.get_test_results_file(),
                                  parse_keys_to=int)
+        user_test = load_json(self.cm.get_last_user_test_path())
         if not test_results:
             flash('You have not tested your model yet', 'danger')
             return render_template('test.html.j2', results=[],
+                                   user_test=user_test,
                                    show_results=False), 200
         # get last test result
         test_results = test_results[len(test_results) - 1]
@@ -34,7 +37,6 @@ class TestView(ActionView, ModelIO):
             np.array(test_results['predictions']),
             np.array(test_results['paths']),
             increment=new_samples)
-        user_test = load_json(self.cm.get_last_user_test_path())
         return render_template('test.html.j2',
                                images=images,
                                user_test=user_test,

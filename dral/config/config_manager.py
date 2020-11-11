@@ -1,3 +1,4 @@
+from functools import wraps
 import os
 
 import numpy as np
@@ -101,10 +102,61 @@ class ConfigManager:
         """
         self.preprocessing = 'preprocessing_npy' if enable else 'preprocessing'
 
+    # base server path
+    def _get_base_server_path(self):
+        return self.config['paths']['server_base'].get(list)
+
+    def _get_base_data_path(self):
+        return self.config['paths']['data_base'].get(list)
+
+    def server_path(join_multiple=False):
+        """Decorator that adds server static path prefix and
+         create os independent path.
+
+        Args:
+            f (obj): function that returns path in list format
+            e.g. [path, to, file]
+
+        Returns:
+            str: path
+        """
+        def decorator(f):
+            @wraps(f)
+            def inner(*args, **kwargs):
+                out = f(*args, **kwargs)
+                if join_multiple:
+                    return [os.path.join(*args[0]._get_base_server_path(),
+                            *path) for path in out]
+                return os.path.join(*args[0]._get_base_server_path(), *out)
+            return inner
+        return decorator
+
+    def data_path(join_multiple=False):
+        """Decorator that adds base data path prefix and
+        create os independent path.
+
+        Args:
+            f (obj): function that returns path in list format
+            e.g. [path, to, file]
+
+        Returns:
+            str: path
+        """
+        def decorator(f):
+            @wraps(f)
+            def inner(*args, **kwargs):
+                out = f(*args, **kwargs)
+                if join_multiple:
+                    return [os.path.join(*args[0]._get_base_data_path(),
+                            *path) for path in out]
+                return os.path.join(*args[0]._get_base_data_path(), *out)
+            return inner
+        return decorator
+
     # annotation files paths
+    @server_path()
     def get_annotation_dir(self):
-        return os.path.join(
-            *self.config['paths']['annotations']['dir'].get(str).split('/'))
+        return self.config['paths']['annotations']['dir'].get(list)
 
     def get_unl_annotations_path(self):
         return os.path.join(
@@ -139,75 +191,79 @@ class ConfigManager:
         return self.config['paths']['annotations']['test'].get(str)
 
     # model paths
+    @server_path()
     def get_model_raw(self):
-        return os.path.join(
-            *self.config['paths']['models']['raw'].get(str).split('/'))
+        return self.config['paths']['models']['raw'].get(list)
 
+    @server_path()
     def get_model_trained(self):
-        return os.path.join(
-            *self.config['paths']['models']['trained'].get(str).split('/'))
+        return self.config['paths']['models']['trained'].get(list)
+
+    def _raw_images_path(self):
+        return self.config['paths']['images']['raw']
+
+    def _transformed_images_path(self):
+        return self.config['paths']['images']['transformed']
 
     # raw paths
+    @data_path()
     def get_raw_unl_dir(self):
-        return os.path.join(
-            *self.config['paths']['images']['raw_unl'].get(str).split('/'))
+        return self._raw_images_path()['unl'].get(list)
 
+    @data_path(join_multiple=True)
     def get_raw_train_dirs(self):
         return self._join_with_clssses(
-            *self.config['paths']['images']['raw_train'].
-            get(str).split('/'))
+            self._raw_images_path()['train'].get(list))
 
+    @data_path(join_multiple=True)
     def get_raw_test_dirs(self):
         return self._join_with_clssses(
-            *self.config['paths']['images']['raw_test'].
-            get(str).split('/'))
+            self._raw_images_path()['test'].get(list))
 
+    @data_path(join_multiple=True)
     def get_raw_validation_dirs(self):
         return self._join_with_clssses(
-            *self.config['paths']['images']['raw_validation'].
-            get(str).split('/'))
+            self._raw_images_path()['validation'].get(list))
 
     # transformed dirs
+    @server_path()
     def get_unl_transformed_dir(self):
-        return os.path.join(
-            *self.config['paths']['images']['transformed_unl'].
-            get(str).split('/'))
+        return self._transformed_images_path()['unl'].get(list)
 
+    @server_path(join_multiple=True)
     def get_train_transformed_dirs(self):
         return self._join_with_clssses(
-            *self.config['paths']['images']['transformed_train'].
-            get(str).split('/'))
+            self._transformed_images_path()['train'].get(list))
 
+    @server_path(join_multiple=True)
     def get_test_transformed_dirs(self):
         return self._join_with_clssses(
-            *self.config['paths']['images']['transformed_test'].
-            get(str).split('/'))
+            self._transformed_images_path()['test'].get(list))
 
+    @server_path(join_multiple=True)
     def get_validation_transformed_dirs(self):
         return self._join_with_clssses(
-            *self.config['paths']['images']['transformed_validation'].
-            get(str).split('/'))
+            self._transformed_images_path()['validation'].get(list))
 
-    def _join_with_clssses(self, *dirs):
-        return [os.path.join(*dirs, class_name)
-                for class_name in self.get_label_names()]
+    def _join_with_clssses(self, path):
+        return [path + [class_name] for class_name in self.get_label_names()]
 
     # data paths
-    def get_last_predictions_file(self):
-        return self.config['paths']['data']['last_predictions'].get(str)
-
+    @server_path()
     def get_train_results_file(self):
-        return self.config['paths']['data']['train_results'].get(str)
+        return self.config['paths']['data']['train_results'].get(list)
 
+    @server_path()
     def get_test_results_file(self):
-        return self.config['paths']['data']['test_results'].get(str)
+        return self.config['paths']['data']['test_results'].get(list)
 
+    @server_path()
     def get_predictions_file(self):
-        return self.config['paths']['data']['predictions'].get(str)
+        return self.config['paths']['data']['predictions'].get(list)
 
+    @server_path()
     def get_last_user_test_path(self):
-        return os.path.join(
-            *self.config['paths']['data']['last_user_test'].get(list))
+        return self.config['paths']['data']['last_user_test'].get(list)
 
     # train
     def get_batch_size(self):

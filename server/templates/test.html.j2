@@ -66,7 +66,7 @@
         </div>
         <div class="text-center">
         {% if user_test %}
-            <img id="yourImage" class="img-fluid rounded border border-white m-3" src="{{ user_test.path }}" alt="ads" width=500 height=500>
+            <img id="yourImage" class="img-fluid rounded border border-white m-3" src="{{ user_test.path }}" alt="Something went wrong, try again" width=500 height=500>
             <div><h5 id="userLabel">Label: {{ user_test.label }} with {{ user_test.acc }} % accuracy</h5></div>
         {% else %}
             <img id="yourImage" style="display: none;" class="img-fluid rounded border border-white m-3" src="" alt="ads" width=500 height=500>
