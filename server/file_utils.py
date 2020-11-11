@@ -49,6 +49,17 @@ def append_to_json_file(path, values):
     save_json(path, dict_data)
 
 
+def append_to_train_file(path, values):
+    dict_data = load_json(path)
+
+    dict_data['train_acc'].extend(values['train_acc'])
+    dict_data['train_loss'].extend(values['train_loss'])
+    dict_data['val_acc'].extend(values['val_acc'])
+    dict_data['val_loss'].extend(values['val_loss'])
+    dict_data['n_images'].extend(values['n_images'])
+    save_json(path, dict_data)
+
+
 def is_json_empty(path):  # path must contain iterable keys
     """Returns sum of the elements in json file specified by path
 
@@ -78,9 +89,11 @@ def update_annotation_file(path, data_dir, label):
     LOG.info(f'{path} file has been updated.')
 
 
-def purge_json_file(path):
-    LOG.info(f'Prune file: {path}')
-    save_json(path, {})
+def purge_json_file(path, content=None):
+    if content is None:
+        content = {}
+    LOG.info(f'Purge file: {path}')
+    save_json(path, content)
 
 
 def clear_dir(dir_path):

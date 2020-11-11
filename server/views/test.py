@@ -85,13 +85,13 @@ class TestView(ActionView, ModelIO):
 
         # lock gloabal counter
         with test_image_counter.get_lock():
-            if increment:
-                test_image_counter.value += n_images
             if test_image_counter.value + n_images >= len(predictions):
                 test_image_counter.value = 0
 
             start_idx = test_image_counter.value
             idxs = range(start_idx, start_idx + n_images)
+            if increment:
+                test_image_counter.value += n_images
 
         predictions = predictions[idxs]
         paths = paths[idxs]

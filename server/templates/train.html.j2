@@ -26,16 +26,18 @@
                     <th scope="col">Training loss</th>
                     <th scope="col">Validation accuracy</th>
                     <th scope="col">Validation loss</th>
+                    <th scope="col">Images</th>
                 </tr>
             </thead>
                 <tbody>
-                {% for train_acc, train_loss, val_acc, val_loss in results %}
+                {% for train_acc, train_loss, val_acc, val_loss, n_images in results %}
                 <tr>
                     <th scope="row">{{ loop.index }}</th>
                     <td>{{ train_acc|round(3) }}</td>
                     <td>{{ train_loss|round(5) }}</td>
                     <td>{{ val_acc|round(3) }}</td>
                     <td>{{ val_loss|round(5) }}</td>
+                    <td>{{ n_images }}</td>
                 </tr>
                 {% endfor %}
                 </tbody>

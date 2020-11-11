@@ -7,33 +7,33 @@ from server.views.base import ActionView
 from server.file_utils import load_json, purge_json_file
 
 
+EMPTY_TRAIN_RESULTS = {
+    'train_acc': [], 'train_loss': [],
+    'val_acc': [], 'val_loss': [],
+    'n_images': []
+}
+
+
 class TrainView(ActionView):
 
-    def search(self, number):  # !TODO refactoring unclear flow
-        train_results = load_json(self.cm.get_train_results_file(),
-                                  parse_keys_to=int)
+    def search(self, nepochs, reverse):  # !TODO refactoring unclear flow
+        train_results = load_json(self.cm.get_train_results_file())
 
         if not train_results:
             flash('Training history is empty, '
                   'you have to train your model firstly', 'danger')
             return render_template(
                 'train.html.j2', results=dict())
-
-        number = len(train_results) - 1 if number < 0 else number
-        try:
-            result = train_results[number]
-        except IndexError:
-            flash(f'Training history contain only {len(train_results)}'
-                  ' results, you got the most recent one', 'danger')
-            result = train_results[number]
+        results = self._get_last_n_results(train_results, nepochs, reverse)
 
         return render_template(
             'train.html.j2',
             show_results=True if train_results else False,
-            results=zip(result['accs'],
-                        result['losses'],
-                        result['val_accs'],
-                        result['val_losses'])), 200
+            results=zip(results['train_acc'],
+                        results['train_loss'],
+                        results['val_acc'],
+                        results['val_loss'],
+                        results['n_images'])), 200
 
     def post(self, epochs=None, batch_size=None, query=None):
         self.run_action(Action.TRAIN, train,
@@ -43,5 +43,11 @@ class TrainView(ActionView):
         return 202
 
     def delete(self):
-        purge_json_file(self.cm.get_train_results_file())
+        purge_json_file(self.cm.get_train_results_file(), EMPTY_TRAIN_RESULTS)
         return 200
+
+    def _get_last_n_results(self, results, n, reverse):
+        n = max(0, n)
+        print(results)
+        return {key: val[:n] for key, val in results.items()} if reverse \
+            else {key: val[-n:] for key, val in results.items()}

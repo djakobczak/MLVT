@@ -246,13 +246,17 @@ paths:
     get:
       parameters:
         - in: query
-          name: number
-          description: Tells which test result should be returned,
-            0 indicates the most recent one
+          name: nepochs
+          description: Number of epochs to show
           schema:
             type: integer
             default: -1
             minimum: -1
+        - in: query
+          name: reverse
+          schema:
+            type: boolean
+            default: False
             
       summary: Get last training result
       responses:

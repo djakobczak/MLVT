@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 from server.actions.base import MLAction
 from server.actions.main import ActionStatus
 from server.exceptions import AnnotationException
-from server.file_utils import append_to_json_file
+from server.file_utils import append_to_json_file, append_to_train_file
 from dral.datasets import LabelledDataset
 from dral.logger import LOG
 from dral.utils import get_resnet_test_transforms
@@ -25,13 +25,13 @@ def train(**kwargs):
         ml_action.save_model(model)
 
         # save to output to file
-        append_to_json_file(
+        append_to_train_file(
             ml_action.cm.get_train_results_file(),
-            {'losses': losses,
-             'accs': accs,
-             'val_accs': val_accs,
-             'val_losses': val_losses,
-             'n_images': len(ml_action.train_dataset)})
+            {'train_loss': losses,
+             'train_acc': accs,
+             'val_acc': val_accs,
+             'val_loss': val_losses,
+             'n_images': [len(ml_action.train_dataset)] * len(accs)})
     except AnnotationException as e:
         LOG.error(f'Training failed: {e}')
         return ActionStatus.FAILED, 'Please, annote some images'
