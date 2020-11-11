@@ -29,6 +29,9 @@
     </div>
     <div class="container col-sm-10 mt-3 mb-4 border rounded border-secondary p-3">
         {% if show_results %}
+            <div class="font-weight-light text-center m-4 p-2 header-basic">
+                Sample test results
+            </div>
             <div class="row text-center text-lg-left m-3">
                 {% for image in images %}
                 {% set path = image.path[path_start_idx:] %}
@@ -58,9 +61,17 @@
         {% endif %}
     </div>
     <div class="container col-sm-10 mt-3 mb-4 border rounded border-secondary p-3">
-        <h3 class="text-center m-2">Your image:</h3>
+        <div class="font-weight-light text-center m-2 p-2 header-basic">
+            Your image
+        </div>
         <div class="text-center">
-        <img id="yourImage" class="img-fluid" src="#" alt="" width=500 height=500>
+        {% if user_test %}
+            <img id="yourImage" class="img-fluid rounded border border-white m-3" src="{{ user_test.path }}" alt="ads" width=500 height=500>
+            <div><h5 id="userLabel">Label: {{ user_test.label }} with {{ user_test.acc }} % accuracy</h5></div>
+        {% else %}
+            <img id="yourImage" style="display: none;" class="img-fluid rounded border border-white m-3" src="" alt="ads" width=500 height=500>
+            <div><h5 id="userLabel"></h5></div>
+        {% endif %}
         </div>
     </div>
 
@@ -110,13 +121,61 @@
   </div>
 </div>
 
+<div class="modal fade" id="reloadModal" tabindex="-1" role="dialog" aria-labelledby="reloadLabel" aria-hidden="true">
+<div class="modal-dialog" role="document">
+    <div class="modal-content text-dark">
+    <div class="modal-header">
+        <h5 class="modal-title" id="reloadLabel">Alert</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        Test is completed, do you want to reload page?
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button"  onclick="reload()" class="btn btn-primary">Reload</button>
+    </div>
+    </div>
+</div>
+</div>
+
 <script>
+    window.onload = function() {
+        pool_status(handle_status_data_no_modal);
+    }
+
+    function handle_status_data_no_modal(data) {
+        // wrapper that disables modal
+        handle_status_data(data, false);
+    }
+
+    function handle_status_data(data, show_modal = true) {
+        status = data.status
+        console.log('Received status: ' + status);
+        if (status == 'success'){
+            $("#loadingSpinner").hide();
+            if (show_modal) {
+                $('#reloadModal').modal('show');
+            }
+        }
+        else if (status == 'ongoing') {
+            console.log('sleep for 0.5s')
+            setTimeout(pool_status(handle_status_data), 500);
+        }
+        else {
+            console.log('status failed')
+            alert('Error occured: ' + data.data)
+        }
+    }
+
     function post_test(){
         $.ajax({
             url: '/test',
             type: "POST",
             success: function(){
-                location.reload(); 
+                pool_status(handle_status_data);
             },
             error: function(xhr) {
                 console.log(xhr)
@@ -171,11 +230,12 @@
                 cache: false,
                 processData: false,
                 success: function(data) {
-                    console.log(data);
-
-                    // add the newly created image to an existing div on the page
-                    var targetImg = document.getElementById("yourImage"); 
+                    console.log("user image result: " + data.path);
+                    var targetImg = document.getElementById("yourImage");
                     targetImg.src = data.path;
+                     $("#yourImage").show();
+                    label = document.getElementById("userLabel");
+                    label.innerHTML = "Label: " + data.label + " with " + data.acc + "% accuracy";
                     console.log('Success!');
                 },
                 error: function(xhr) {
@@ -185,10 +245,29 @@
         });
     });
 
+    function pool_status(status_hanlder){
+         $.ajax({
+            url: '/status/test',
+            type: "GET",
+            success: function(data){
+                console.log(data);
+                status_hanlder(data);
+            },
+            error: function(err){
+                $("#loadingSpinner").hide();
+                alert("Error occured: " + err)
+            }
+        });
+    }
+
     $(".custom-file-input").on("change", function() {
         var fileName = $(this).val().split("\\").pop();
         $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
     });
+
+    function reload() {
+        window.location.href = "/test";
+    }
 
 </script>
 {% endblock content %}

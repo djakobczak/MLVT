@@ -1,5 +1,5 @@
 import json
-import os
+import os, shutil
 from pathlib import Path
 
 from tqdm import tqdm
@@ -26,6 +26,7 @@ def load_json(path, parse_keys_to=None):
                         for key, val in dict_data.items()}
             return dict_data
     except FileNotFoundError:
+        LOG.warning(f"File ({path}) not found")
         return {}
 
 
@@ -80,6 +81,18 @@ def update_annotation_file(path, data_dir, label):
 def purge_json_file(path):
     LOG.info(f'Prune file: {path}')
     save_json(path, {})
+
+
+def clear_dir(dir_path):
+    for filename in os.listdir(dir_path):
+        file_path = os.path.join(dir_path, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+        except Exception as e:
+            LOG.error('Failed to delete %s. Reason: %s' % (file_path, e))
 
 
 def label_samples(unl_json_file, label_json_file, paths,

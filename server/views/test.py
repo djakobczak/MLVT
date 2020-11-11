@@ -11,14 +11,13 @@ from werkzeug.utils import secure_filename
 from dral.utils import get_resnet_test_transforms
 from server.actions.handlers import test
 from server.actions.main import Action
-from server.file_utils import load_json, purge_json_file
+from server.config import USER_IMAGE_DIR, RELATIVE_USER_IMAGE_DIR, CUT_STATIC_IDX
+from server.file_utils import load_json, purge_json_file, save_json
 from server.utils import test_image_counter
 from server.views.base import ActionView, ModelIO
 
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
-USER_IMAGE_PATH = os.path.join('.', 'server', 'static', 'user_image.png')
-RELATIVE_USER_IMAGE_PATH = os.path.join('static', 'user_image.png')
 
 
 class TestView(ActionView, ModelIO):
@@ -35,13 +34,14 @@ class TestView(ActionView, ModelIO):
             np.array(test_results['predictions']),
             np.array(test_results['paths']),
             increment=new_samples)
-        path_start_idx = 8  # neccessary to cut off 'static' part of path !TODO
+        user_test = load_json(self.cm.get_last_user_test_path())
         return render_template('test.html.j2',
                                images=images,
+                               user_test=user_test,
                                acc=test_results['acc'],
                                loss=test_results['loss'],
                                show_results=True,
-                               path_start_idx=path_start_idx), 200
+                               path_start_idx=CUT_STATIC_IDX), 200
 
     def post(self):
         if 'testImage' in request.files:
@@ -52,13 +52,21 @@ class TestView(ActionView, ModelIO):
                     f'supported extensions: ({ALLOWED_EXTENSIONS})', 400
 
             model = self.load_model(self.cm.get_model_trained())
-            uploaded.save(USER_IMAGE_PATH)
-            img = Image.open(USER_IMAGE_PATH)
+            path = os.path.join(USER_IMAGE_DIR, filename)
+            uploaded.save(path)
+            img = Image.open(path)
+            # tranform image to tensor and normalize
             img = get_resnet_test_transforms()(img)
             frame = torch.unsqueeze(img, 0)
-            prediction = model.predict(frame)
-            return {'prediction': prediction.tolist(),
-                    'path': RELATIVE_USER_IMAGE_PATH}, 200
+            prediction = model.predict(frame).flatten().cpu().numpy()
+            labels = self._numeric_to_classname()
+            user_test = {
+                'label': labels[np.argmax(prediction)],
+                'acc': round(max(prediction.tolist()), 3),
+                'path': os.path.join(RELATIVE_USER_IMAGE_DIR, filename)
+            }
+            save_json(self.cm.get_last_user_test_path(), user_test)
+            return user_test, 200
 
         self.run_action(Action.TEST, test)
         flash('Model evaluation started.', 'success')
@@ -66,6 +74,7 @@ class TestView(ActionView, ModelIO):
 
     def delete(self):
         purge_json_file(self.cm.get_test_results_file())
+        purge_json_file(self.cm.get_last_user_test_path())
         return 200
 
     def _get_test_images(self, predictions, paths, n_images=None,
@@ -85,7 +94,7 @@ class TestView(ActionView, ModelIO):
         predictions = predictions[idxs]
         paths = paths[idxs]
         images = []
-        labels = dict((v, k) for k, v in self.cm.get_label_mapping().items())
+        labels = self._numeric_to_classname()
         for path, pred in zip(paths, predictions):
             images.append(
                 {'path': path,
@@ -97,3 +106,6 @@ class TestView(ActionView, ModelIO):
     def _allowed_file(self, filename):
         return '.' in filename and \
             filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+    def _numeric_to_classname(self):
+        return dict((v, k) for k, v in self.cm.get_label_mapping().items())

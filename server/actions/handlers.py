@@ -3,8 +3,7 @@ from torch.utils.data import DataLoader
 from server.actions.base import MLAction
 from server.actions.main import ActionStatus
 from server.exceptions import AnnotationException
-from server.file_utils import append_to_json_file, \
-    get_last_n_images_key
+from server.file_utils import append_to_json_file
 from dral.datasets import LabelledDataset
 from dral.logger import LOG
 from dral.utils import get_resnet_test_transforms
@@ -43,8 +42,6 @@ def train(**kwargs):
 
 
 def test(**kwargs):
-    uploaded_image = kwargs.get('uploaded_image')
-
     ml_action = MLAction()
     model = ml_action.load_model()
     test_ds = LabelledDataset(

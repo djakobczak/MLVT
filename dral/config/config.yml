@@ -123,6 +123,7 @@ cars_aircrafts:
       train_results: ./server/static/cars_aircrafts/data/train_results.json
       test_results: ./server/static/cars_aircrafts/data/test_results.json
       predictions: ./server/static/cars_aircrafts/data/predictions.json
+      last_user_test: ['.', 'server', 'static', 'json', 'last_user_test.json']
 
   train:
     predictions: 10

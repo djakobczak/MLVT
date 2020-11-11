@@ -41,9 +41,6 @@
                 </tbody>
             </table>
             {% endif %}
-            <div class="col-4">
-                
-            </div>
             <div class="d-flex justify-content-center">
                 <div id="loadingSpinner" style="display: none;" class="spinner-border text-success float-right mt-4 mr-2 mb-1" role="status">
                     <span class="sr-only">Loading...</span>
@@ -54,6 +51,7 @@
                 </button>
             </div>
         </div>
+    </div>
     </div>
 
 <!-- Modals -->
@@ -98,13 +96,17 @@
 </div>
 
 <script>
+    window.onload = function() {
+        pool_status(handle_status_data_no_modal);
+    }
+
     function post_train(){
-        $("#loadingSpinner").show()
+        $("#loadingSpinner").show();
         $.ajax({
             url: '/train',
             type: "POST",
             success: function(){
-                check_status();
+                pool_status(handle_status_data);
             },
             error: function(xhr) {
                 console.log(xhr.status)
@@ -133,30 +135,46 @@
         window.location.href = "/train";
     }
 
-    function check_status(){
-        $.ajax({
+    // wrapper that disables modal
+    function handle_status_data_no_modal(data) {
+        handle_status_data(data, false);
+    }
+
+    function handle_status_data(data, show_modal = true) {
+        status = data.status
+        console.log('Received status: ' + status);
+        if (status == 'success'){
+            $("#loadingSpinner").hide();
+            if (show_modal) {
+                $('#reloadModal').modal('show');
+            }
+        }
+        else if (status == 'ongoing') {
+            console.log('sleep for 1.5s')
+            $("#loadingSpinner").show();
+            setTimeout(pool_status(handle_status_data), 1500);
+        }
+        else {
+            console.log('status failed')
+            alert('Error occured: ' + data.data)
+        }
+    }
+
+    // !TODO move to external js file
+    function pool_status(status_hanlder){
+         $.ajax({
             url: '/status/train',
             type: "GET",
             success: function(data){
                 console.log(data);
-                if (data.status == 'success'){
-                    console.log('Task finished, reload...');
-                    $("#loadingSpinner").hide();
-                    $('#reloadModal').modal('show');
-                }
-                else if (data.status == 'ongoing') {
-                    console.log('sleep for 1s')
-                    setTimeout(check_status, 1000);
-                }
-                else {
-                    console.log('status failed')
-                    alert('Error occured: ' + data.data)
-                }
+                status_hanlder(data);
             },
-            error: function(){
+            error: function(err){
                 $("#loadingSpinner").hide();
+                alert("Error occured: " + err)
             }
         });
     }
+
 </script>
 {% endblock content %}

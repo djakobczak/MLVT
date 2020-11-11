@@ -5,6 +5,8 @@ from connexion.resolver import MethodViewResolver
 
 from server.exceptions import errors
 from server.extensions import executor
+from server.file_utils import clear_dir
+from server.config import USER_IMAGE_DIR
 
 
 def register_extensions(app):
@@ -24,6 +26,7 @@ def create_app():
     flask_app.config['EXECUTOR_MAX_WORKERS'] = 2
     flask_app.config['EXECUTOR_PROPAGATE_EXCEPTIONS'] = True
     register_extensions(flask_app)
+    clear_dir(USER_IMAGE_DIR)
     return app
 
 

@@ -205,6 +205,10 @@ class ConfigManager:
     def get_predictions_file(self):
         return self.config['paths']['data']['predictions'].get(str)
 
+    def get_last_user_test_path(self):
+        return os.path.join(
+            *self.config['paths']['data']['last_user_test'].get(list))
+
     # train
     def get_batch_size(self):
         return self.config['train']['batch_size'].get(int)
