@@ -37,7 +37,7 @@
                 {% set path = image.path[path_start_idx:] %}
                 <div class="col-lg-2 col-md-3 m-0 text-center">
                     <img class="img-fluid rounded border border-white mb-3" src="{{ path }}" alt="" width=164 height=164>
-                    <div class="h5">{{ image.label}}, {{ image.confidence|round(3) }}%</div>
+                    <div class="h5">{{ image.label}}, {{ (image.confidence*100)|round(2) }}%</div>
                 </div>
                 {% endfor %}
             </div>
@@ -46,13 +46,13 @@
                 <div class='col-3'></div>
                 <div class="col-6 row justify-content-center">
                 {% if acc > 0.9 %}
-                    <h3><span class="badge badge-success m-3">Accuraccy: {{ acc|round(3) }}% </span></h3>
+                    <h3><span class="badge badge-success m-3">Accuraccy: {{ (acc*100)|round(2) }}% </span></h3>
                     <h3><span class="badge badge-info m-3">Loss: {{ loss|round(3) }} </span></h3>
                 {% elif acc > 0.7 %}
-                    <h3><span class="badge badge-warning m-3">Accuraccy: {{ acc|round(3) }}% </span></h3>
+                    <h3><span class="badge badge-warning m-3">Accuraccy: {{ (acc*100)|round(2) }}% </span></h3>
                     <h3><span class="badge badge-info m-3">Loss: {{ loss|round(3) }} </span></h3>
                 {% else %}
-                    <h3><span class="badge badge-danger m-3">Accuraccy: {{ acc|round(3) }}% </span></h3>
+                    <h3><span class="badge badge-danger m-3">Accuraccy: {{ (acc*100)|round(2) }}% </span></h3>
                     <h3><span class="badge badge-info m-3">Loss: {{ loss|round(3) }} </span></h3>
                 {% endif %}
                 </div>
@@ -67,7 +67,7 @@
         <div class="text-center">
         {% if user_test %}
             <img id="yourImage" class="img-fluid rounded border border-white m-3" src="{{ user_test.path }}" alt="Something went wrong, try again" width=500 height=500>
-            <div><h5 id="userLabel">Label: {{ user_test.label }} with {{ user_test.acc }} % accuracy</h5></div>
+            <div><h5 id="userLabel">Label: {{ user_test.label }} with {{ (user_test.acc*100)|round(2) }} % accuracy</h5></div>
         {% else %}
             <img id="yourImage" style="display: none;" class="img-fluid rounded border border-white m-3" src="" alt="ads" width=500 height=500>
             <div><h5 id="userLabel"></h5></div>

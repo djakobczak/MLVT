@@ -82,7 +82,17 @@ hr.common-light {
     cursor: pointer; /* Cursor on hover */
   }
 
-  .hide {
-    display: none;
-  }
+.hide {
+  display: none;
+}
+
+.my-custom-scrollbar {
+  position: relative;
+  height: 500px;
+  overflow: auto;
+}
+
+.table-wrapper-scroll-y {
+  display: block;
+}
   

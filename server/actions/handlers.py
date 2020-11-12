@@ -1,3 +1,4 @@
+import torch
 from torch.utils.data import DataLoader
 
 from server.actions.base import MLAction
@@ -32,54 +33,66 @@ def train(**kwargs):
              'val_acc': val_accs,
              'val_loss': val_losses,
              'n_images': [len(ml_action.train_dataset)] * len(accs)})
+        torch.cuda.empty_cache()
+        return ActionStatus.SUCCESS, 'Training completed'
     except AnnotationException as e:
         LOG.error(f'Training failed: {e}')
         return ActionStatus.FAILED, 'Please, annote some images'
     except ValueError as e:
         LOG.error(f'Training failed: {e}')
         return ActionStatus.FAILED, 'Unknwon error occured durning training'
-    return ActionStatus.SUCCESS, 'Training completed'
+    finally:
+        torch.cuda.empty_cache()
 
 
 def test(**kwargs):
-    ml_action = MLAction()
-    model = ml_action.load_model()
-    test_ds = LabelledDataset(
-        ml_action.cm.get_test_annotations_path(),
-        get_resnet_test_transforms(), return_paths=True)
-    testlaoder = DataLoader(
-        test_ds, batch_size=ml_action.cm.get_batch_size(),
-        shuffle=True, num_workers=0)
+    try:
+        ml_action = MLAction()
+        model = ml_action.load_model()
+        test_ds = LabelledDataset(
+            ml_action.cm.get_test_annotations_path(),
+            get_resnet_test_transforms(), return_paths=True)
+        testlaoder = DataLoader(
+            test_ds, batch_size=ml_action.cm.get_batch_size(),
+            shuffle=True, num_workers=0)
 
-    LOG.info('Start testing model')
-    acc, loss, predictions, paths = model.test(testlaoder)
+        LOG.info('Start testing model')
+        acc, loss, predictions, paths = model.test(testlaoder)
 
-    append_to_json_file(
-        ml_action.cm.get_test_results_file(),
-        {'acc': acc,
-         'loss': loss,
-         'predictions': predictions.tolist(),
-         'paths': paths.tolist()
-         })
-    with test_image_counter.get_lock():
-        test_image_counter.value = 0
-    return ActionStatus.SUCCESS, 'Test completed'
+        append_to_json_file(
+            ml_action.cm.get_test_results_file(),
+            {'acc': acc,
+             'loss': loss,
+             'predictions': predictions.tolist(),
+             'paths': paths.tolist()
+             })
+        with test_image_counter.get_lock():
+            test_image_counter.value = 0
+        torch.cuda.empty_cache()
+        return ActionStatus.SUCCESS, 'Test completed'
+    except Exception:
+        torch.cuda.empty_cache()
+        return ActionStatus.FAILED, 'Unknwon error occured durning training'
 
 
 def predict(**kwargs):
-    n_predictions = kwargs.get('n_predictions')
-    random = kwargs.get('random')
-    balance = kwargs.get('balance')
-    ml_action = MLAction()
-    model = ml_action.load_model()
-    unl_loader = ml_action.get_unl_loader()
+    try:
+        n_predictions = kwargs.get('n_predictions')
+        random = kwargs.get('random')
+        balance = kwargs.get('balance')
+        ml_action = MLAction()
+        model = ml_action.load_model()
+        unl_loader = ml_action.get_unl_loader()
 
-    LOG.info('Ask model to predict images with parameters: '
-             f'random={random}, balance={balance}')
-
-    pm = PredictionsManager(ml_action.cm.get_n_labels(),
-                            ml_action.cm.get_predictions_file())
-    pm.get_new_predictions(
-        n_predictions, model=model,
-        dataloader=unl_loader, random=random, balance=balance)
-    return ActionStatus.SUCCESS, 'Prediction completed'
+        LOG.info('Start prediction with parameters: '
+                 f'random={random}, balance={balance}')
+        pm = PredictionsManager(ml_action.cm.get_n_labels(),
+                                ml_action.cm.get_predictions_file())
+        pm.get_new_predictions(
+            n_predictions, model=model,
+            dataloader=unl_loader, random=random, balance=balance)
+        torch.cuda.empty_cache()
+        return ActionStatus.SUCCESS, 'Prediction completed'
+    except Exception:
+        torch.cuda.empty_cache()
+        return ActionStatus.FAILED, 'Unknwon error occured durning training'

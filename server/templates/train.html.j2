@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{# import macros #}
+{% from 'macros.html.j2' import badge_accuracy %}
+{% from 'macros.html.j2' import badge_loss %}
+
 {% block title %}
     Train
 {% endblock title %}
@@ -10,50 +14,109 @@
 
 {% block content %}
     <div class="container col-sm-10 mt-3 mb-4 border rounded border-secondary p-3">
-        {% if show_results %}
-        <div class="m-3">
-            <h3 class="text-center pb-2">Training visualization</h3>
-            <img class="img-fluid mx-auto d-block" src="{{ url_for('.views_PlotView_search', plot_type='train_acc') }}" alt="Image Placeholder" height="500" class="mx-auto d-block">
+    {% if show_results %}
+    <div class="m-3">
+        <h3 class="text-center pb-2">Training visualization</h3>
+        <img class="img-fluid mx-auto d-block" src="{{ url_for('.views_PlotView_search', plot_type='train_acc') }}" alt="Image Placeholder" height="500" class="mx-auto d-block">
+    </div>
+    {% endif %}
+    </div>
+        <div class="container col-sm-10 mt-3 mb-4 border rounded border-secondary p-4">
+        <div class="row">
+            <div class="col-7 row">
+                <form class="needs-validation col-12" novalidate>
+                    <div class="ml-3 form-row">
+                        <div class="col-ml-4">
+                            <label for="validationCustom01">Number of epochs</label>
+                            <input type="number" class="form-control" id="validationCustom01">
+                        </div>
+                        <div class="mt-1 pl-2" id="epochsOpt">
+                            <div class="custom-control custom-radio">
+                                <input type="radio" class="custom-control-input" id="customRadio" name="example" value="customEx">
+                                <label class="custom-control-label" for="customRadio">Tail</label>
+                            </div>
+                            <div class="custom-control custom-radio">
+                                <input type="radio" class="custom-control-input" id="customRadio2" name="example" value="customEx">
+                                <label class="custom-control-label" for="customRadio2">Head</label>
+                            </div>
+                            <div class="custom-control custom-radio">
+                                <input type="radio" class="custom-control-input" checked="checked" id="customRadio2" name="example" value="customEx">
+                                <label class="custom-control-label" for="customRadio2">All epochs</label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-5">
+                <div class="row">
+                    <div id="loadingSpinner" style="display: none;" class="ml-auto spinner-border text-success mr-1 mt-1" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                    <div class="btn-group ml-auto mr-3">
+                        <button type="button" onclick="post_train()" class="btn btn-success btn-lg ml-1">Train</button>
+                        <button type="button" class="btn btn-danger btn-lg ml-1" data-toggle="modal" data-target="#exampleModal">
+                            Delete training history
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div class="font-weight-light text-center m-4 p-2 header-basic">
+                Training statistics
+            </div>
+            <div class="row justify-content-center mt-2">
+                <div class="col-lg-4 row text-center">
+                    <h4>Training</h4>
+                    <div data-toggle="tooltip" data-placement="bottom" title="ads">
+                        {{ badge_accuracy(0.8) }}
+                    </div>
+                    <div data-toggle="tooltip" data-placement="bottom" title="ads">
+                        {{ badge_loss(1) }}
+                    </div>
+                </div>
+
+                <div class="col-lg-4 row text-center">
+                    <h4>Validation</h4>
+                    <div data-toggle="tooltip" data-placement="bottom" title="ads">
+                        {{ badge_accuracy(0.8) }}
+                    </div>
+                    <div data-toggle="tooltip" data-placement="bottom" title="ads">
+                        {{ badge_loss(1) }}
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="m-3 pt-4">
             <h2>Training history:</h2>
         </div>
-        <table class="table text-white">
-            <thead>
-                <tr>
-                    <th scope="col">Epoch</th>
-                    <th scope="col">Training accuracy</th>
-                    <th scope="col">Training loss</th>
-                    <th scope="col">Validation accuracy</th>
-                    <th scope="col">Validation loss</th>
-                    <th scope="col">Images</th>
-                </tr>
-            </thead>
+        <div class="table-wrapper-scroll-y my-custom-scrollbar">
+            <table class="table text-white table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Epoch</th>
+                        <th scope="col">Training accuracy</th>
+                        <th scope="col">Training loss</th>
+                        <th scope="col">Validation accuracy</th>
+                        <th scope="col">Validation loss</th>
+                        <th scope="col">Images</th>
+                    </tr>
+                </thead>
                 <tbody>
-                {% for train_acc, train_loss, val_acc, val_loss, n_images in results %}
-                <tr>
-                    <th scope="row">{{ loop.index }}</th>
-                    <td>{{ train_acc|round(3) }}</td>
-                    <td>{{ train_loss|round(5) }}</td>
-                    <td>{{ val_acc|round(3) }}</td>
-                    <td>{{ val_loss|round(5) }}</td>
-                    <td>{{ n_images }}</td>
-                </tr>
-                {% endfor %}
+                    {% for train_acc, train_loss, val_acc, val_loss, n_images in results %}
+                    <tr>
+                        <th scope="row">{{ loop.index }}</th>
+                        <td>{{ train_acc|round(3) }}</td>
+                        <td>{{ train_loss|round(5) }}</td>
+                        <td>{{ val_acc|round(3) }}</td>
+                        <td>{{ val_loss|round(5) }}</td>
+                        <td>{{ n_images }}</td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
-            {% endif %}
-            <div class="d-flex justify-content-center">
-                <div id="loadingSpinner" style="display: none;" class="spinner-border text-success float-right mt-4 mr-2 mb-1" role="status">
-                    <span class="sr-only">Loading...</span>
-                </div>
-                <button type="button" onclick="post_train()" class="btn btn-success btn-lg m-3">Train</button>
-                <button type="button" class="btn btn-danger btn-lg m-3" data-toggle="modal" data-target="#exampleModal">
-                    Delete training history
-                </button>
-            </div>
         </div>
-    </div>
+        </div>
     </div>
 
 <!-- Modals -->
@@ -178,5 +241,8 @@
         });
     }
 
+    $(document).ready(function(){
+        $('[data-toggle="tooltip"]').tooltip();
+    });
 </script>
 {% endblock content %}

@@ -27,11 +27,11 @@ class PlotView(BaseView):
         return Response(output.getvalue(), mimetype='image/png')
 
     def generate_training_acc_plot(self):
-        train_results = load_json(self.cm.get_train_results_file(),
-                                  parse_keys_to=int)
+        train_results = load_json(self.cm.get_train_results_file())
         train_acc, train_loss, val_acc, val_loss, n_images = \
-            self._concat_training_sessions(train_results)
-
+            train_results['train_acc'], train_results['train_loss'], \
+            train_results['val_acc'], train_results['val_loss'], \
+            train_results['n_images']
         range_ = len(train_acc) + 1
         max_acc = 1.1
         max_imgs = int(max(n_images) * 1.05)

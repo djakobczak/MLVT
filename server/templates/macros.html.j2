@@ -1,0 +1,19 @@
+{% macro badge_accuracy(acc) %}
+    {% if acc > 0.9 %}
+        <span class="badge badge-success ml-3"><h4>Accuraccy: {{ (acc*100)|round(2) }}% </h4></span>
+    {% elif acc > 0.7 %}
+        <span class="badge badge-warning ml-3"><h4>Accuraccy: {{ (acc*100)|round(2) }}% </h4></span>
+    {% else %}
+        <span class="badge badge-danger ml-3"><h4>Accuraccy: {{ (acc*100)|round(2) }}% </h4></span>
+    {% endif %}
+{% endmacro %}
+
+{% macro badge_loss(loss) %}
+    {% if loss < 0.5 %}
+        <span class="badge badge-success ml-3"><h4>Loss: {{ loss|round(2) }} </h4></span>
+    {% elif loss < 1 %}
+        <span class="badge badge-warning ml-3"><h4>Loss: {{ loss|round(2) }} </h4></span>
+    {% else %}
+        <span class="badge badge-danger ml-3"><h4>Loss: {{ loss|round(2) }} </h4></span>
+    {% endif %}
+{% endmacro %}

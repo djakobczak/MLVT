@@ -48,6 +48,5 @@ class TrainView(ActionView):
 
     def _get_last_n_results(self, results, n, reverse):
         n = max(0, n)
-        print(results)
         return {key: val[:n] for key, val in results.items()} if reverse \
             else {key: val[-n:] for key, val in results.items()}
