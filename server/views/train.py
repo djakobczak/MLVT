@@ -18,7 +18,7 @@ EMPTY_TRAIN_RESULTS = {
 
 class TrainView(ActionView):
 
-    def search(self, nepochs, reverse):  # !TODO refactoring unclear flow
+    def search(self, nepochs, reverse):
         train_results = load_json(self.cm.get_train_results_file())
         show_results = self.is_dict_empty(train_results)
         if show_results:
@@ -32,6 +32,8 @@ class TrainView(ActionView):
             'train.html.j2',
             show_results=True,
             stats=stats,
+            default_epochs=self.cm.get_epochs(),
+            default_bs=self.cm.get_batch_size(),
             results=zip(results['train_acc'],
                         results['train_loss'],
                         results['val_acc'],

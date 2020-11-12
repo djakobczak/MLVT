@@ -28,8 +28,21 @@
                 <form class="needs-validation col-12" novalidate>
                     <div class="ml-3 form-row">
                         <div class="col-ml-4">
-                            <label for="validationCustom01">Number of epochs</label>
-                            <input type="number" class="form-control" id="validationCustom01">
+                            <label for="epochsInput">Epochs</label>
+                            <input type="number" id="epochsInput" value="{{ default_epochs }}" class="form-control" id="validationCustom01">
+                        </div>
+                        <div class="col-ml-4">
+                            <label for="batchSizeDropdown">Batch size</label>
+                            <select class="custom-select mr-sm-2" id="batchSizeDropdown">
+                                <option selected>{{ default_bs }}</option>
+                                <option value="1">1</option>
+                                <option value="2">8</option>
+                                <option value="3">16</option>
+                                <option value="4">32</option>
+                                <option value="5">64</option>
+                                <option value="6">128</option>
+                                <option value="7">256</option>
+                            </select>
                         </div>
                         <div class="mt-1 pl-2" id="epochsOpt">
                             <div class="custom-control custom-radio">
@@ -65,23 +78,23 @@
         <div>
             {% if show_results %}
             {{ header("Training statistics") }}
-            <div class="row justify-content-center mt-2">
-                <div class="col-lg-4 row text-center">
-                    <h4>Training</h4>
-                    <div data-toggle="tooltip" data-placement="bottom" title="{{ stats.tacc_description }}">
+            <div class="row justify-content-center">
+                <div class="col-md-6 row justify-content-center p-3 mr-0 ml-0">
+                    <h4 class="mt-2">Training</h4>
+                    <div class="mt-2" data-toggle="tooltip" data-placement="bottom" title="{{ stats.tacc_description }}">
                         {{ badge_accuracy(stats.tacc) }}
                     </div>
-                    <div data-toggle="tooltip" data-placement="bottom" title="{{ stats.tloss_description }}">
+                    <div class="mt-2" data-toggle="tooltip" data-placement="bottom" title="{{ stats.tloss_description }}">
                         {{ badge_loss(stats.tloss) }}
                     </div>
                 </div>
 
-                <div class="col-lg-4 row text-center">
-                    <h4>Validation</h4>
-                    <div data-toggle="tooltip" data-placement="bottom" title="{{ stats.vacc_description }}">
+                <div class="col-md-6 row justify-content-center p-3 mr-0 ml-0">
+                    <h4 class="mt-2">Validation</h4>
+                    <div class="mt-2" data-toggle="tooltip" data-placement="bottom" title="{{ stats.vacc_description }}">
                         {{ badge_accuracy(stats.vacc) }}
                     </div>
-                    <div data-toggle="tooltip" data-placement="bottom" title="{{ stats.vloss_description }}">
+                    <div class="mt-2" data-toggle="tooltip" data-placement="bottom" title="{{ stats.vloss_description }}">
                         {{ badge_loss(stats.vloss) }}
                     </div>
                 </div>
@@ -169,8 +182,12 @@
 
     function post_train(){
         $("#loadingSpinner").show();
+        epochs = $("#epochsInput").val();
+        bs =  $("#batchSizeDropdown").val();
+        console.log("Train with " + epochs + " epochs and " + bs + " batch size");
+        URL = "/train?epochs=" + epochs + "&batch_size=" + bs;
         $.ajax({
-            url: '/train',
+            url: URL,
             type: "POST",
             success: function(){
                 pool_status(handle_status_data);
