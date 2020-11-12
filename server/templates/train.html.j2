@@ -3,6 +3,7 @@
 {# import macros #}
 {% from 'macros.html.j2' import badge_accuracy %}
 {% from 'macros.html.j2' import badge_loss %}
+{% from 'macros.html.j2' import header %}
 
 {% block title %}
     Train
@@ -16,7 +17,7 @@
     <div class="container col-sm-10 mt-3 mb-4 border rounded border-secondary p-3">
     {% if show_results %}
     <div class="m-3">
-        <h3 class="text-center pb-2">Training visualization</h3>
+        {{ header("Training visulalization") }}
         <img class="img-fluid mx-auto d-block" src="{{ url_for('.views_PlotView_search', plot_type='train_acc') }}" alt="Image Placeholder" height="500" class="mx-auto d-block">
     </div>
     {% endif %}
@@ -62,30 +63,30 @@
             </div>
         </div>
         <div>
-            <div class="font-weight-light text-center m-4 p-2 header-basic">
-                Training statistics
-            </div>
+            {% if show_results %}
+            {{ header("Training statistics") }}
             <div class="row justify-content-center mt-2">
                 <div class="col-lg-4 row text-center">
                     <h4>Training</h4>
-                    <div data-toggle="tooltip" data-placement="bottom" title="ads">
-                        {{ badge_accuracy(0.8) }}
+                    <div data-toggle="tooltip" data-placement="bottom" title="{{ stats.tacc_description }}">
+                        {{ badge_accuracy(stats.tacc) }}
                     </div>
-                    <div data-toggle="tooltip" data-placement="bottom" title="ads">
-                        {{ badge_loss(1) }}
+                    <div data-toggle="tooltip" data-placement="bottom" title="{{ stats.tloss_description }}">
+                        {{ badge_loss(stats.tloss) }}
                     </div>
                 </div>
 
                 <div class="col-lg-4 row text-center">
                     <h4>Validation</h4>
-                    <div data-toggle="tooltip" data-placement="bottom" title="ads">
-                        {{ badge_accuracy(0.8) }}
+                    <div data-toggle="tooltip" data-placement="bottom" title="{{ stats.vacc_description }}">
+                        {{ badge_accuracy(stats.vacc) }}
                     </div>
-                    <div data-toggle="tooltip" data-placement="bottom" title="ads">
-                        {{ badge_loss(1) }}
+                    <div data-toggle="tooltip" data-placement="bottom" title="{{ stats.vloss_description }}">
+                        {{ badge_loss(stats.vloss) }}
                     </div>
                 </div>
             </div>
+            
         </div>
         <div class="m-3 pt-4">
             <h2>Training history:</h2>
@@ -117,6 +118,7 @@
             </table>
         </div>
         </div>
+        {% endif %}
     </div>
 
 <!-- Modals -->
@@ -221,6 +223,7 @@
         }
         else {
             console.log('status failed')
+            $("#loadingSpinner").hide();
             alert('Error occured: ' + data.data)
         }
     }

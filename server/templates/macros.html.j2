@@ -17,3 +17,9 @@
         <span class="badge badge-danger ml-3"><h4>Loss: {{ loss|round(2) }} </h4></span>
     {% endif %}
 {% endmacro %}
+
+{% macro header(text) %}
+    <div class="font-weight-light text-center m-4 p-2 header-basic">
+        {{ text }}
+    </div>
+{% endmacro %}
