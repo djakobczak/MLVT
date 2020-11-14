@@ -16,7 +16,7 @@
     <title>{% block title %}{% endblock %} - DRAL</title>
 </head>
 <body class="normal">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark dark-blue">
         <a class="navbar-brand" href="#">ALCNN</a>
         <!-- use this to create collapse plugin -->
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation"> 
@@ -38,19 +38,16 @@
                     <a class="nav-link" href="{{ url_for('.views_TestView_search') }}">Test</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('.views_PrepareView_search') }}">Prepare</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('.views_InformationView_search') }}">Information</a>
+                    <a class="nav-link" href="{{ url_for('.views_SettingsView_search') }}">Settings</a>
                 </li>
             </ul>
         </div>
     </nav>
     <section class="content">
     <header>
-        <div class="header-dark text-center p-3">
+        <!-- <div class="text-center p-3 header-dark">
             <h1>{% block header %}{% endblock %}</h1>
-        </div>
+        </div> -->
     </header>
     <div class="container mt-3 text-center">
         <!-- with_categories allows us to get the bootstrap class e.g. success, due to use of that we get 2 values to loop through -->

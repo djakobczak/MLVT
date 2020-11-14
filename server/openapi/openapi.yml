@@ -329,9 +329,9 @@ paths:
         200:
           description: Succesfull information
 
-  /prepare:
+  /settings:
     get:
-      summary: information TODO
+      summary: settings TODO
       responses:
         200:
           description: OK

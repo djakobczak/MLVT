@@ -19,7 +19,7 @@ def init_and_save(path):
 
 
 class Model:
-    def __init__(self, model=None, n_out=2):
+    def __init__(self, model=None, n_out=2, lr=1e-3):
         LOG.info('Model initialization starts...')
         self.device = torch.device(
             "cuda:0" if torch.cuda.is_available() else "cpu")
@@ -38,10 +38,14 @@ class Model:
         self.model_conv = model.to(self.device)
 
         self.criterion = nn.CrossEntropyLoss().to(self.device)
-        self.optimizer = torch.optim.Adam(
-            self.model_conv.parameters(), lr=0.0005, amsgrad=True)
+        self._init_optimizer(lr)
         self.scheduler = torch.optim.lr_scheduler.MultiStepLR(
-            self.optimizer, milestones=[10, 20, 30], gamma=0.5)
+            self.optimizer, milestones=[20, 40, 80], gamma=0.5)
+
+    def _init_optimizer(self, lr=0.001):
+        self._lr = lr
+        self.optimizer = torch.optim.Adam(
+            self.model_conv.parameters(), lr=lr, amsgrad=True)
 
     def __call__(self, batch_x):
         return self.model_conv(batch_x)
@@ -196,6 +200,9 @@ class Model:
             loss = float(torch.mean(losses).cpu())
             LOG.info(f"Evaluation stats: acc: {acc}, loss: {loss}")
         return acc, loss, predictions.cpu().numpy(), np.array(paths)
+
+    def get_lr(self):
+        return self._lr
 
 
 BATCH_SIZE = 128

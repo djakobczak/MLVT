@@ -1,10 +1,10 @@
 from enum import Enum
 import io
 
+from flask import Response
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import matplotlib.pyplot as plt
 import numpy as np
-from flask import Response
 
 from server.views.base import BaseView
 from server.file_utils import load_json

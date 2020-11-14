@@ -58,9 +58,9 @@ class Normalize:
         return tensor
 
 
-def get_before_tensor_transforms():
+def get_before_tensor_transforms(resize=256):
     return transforms.Compose([
-        transforms.Resize(256),
+        transforms.Resize(resize),
         transforms.CenterCrop(224),
     ])
 

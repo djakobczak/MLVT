@@ -16,7 +16,7 @@ class ModelView(MLView):
         return str(model.model_conv), 200
 
     def delete(self):
-        # overwrite trained model with new untrained
+        # overwrite trained model with new untrained and clear all history data
         self.save_model(Model())
         save_json(self.cm.get_predictions_file(), {})
         purge_json_file(self.cm.get_test_results_file())

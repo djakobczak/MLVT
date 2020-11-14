@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% from 'macros.html.j2' import header %}
+
 {% block title %}
     Train
 {% endblock title %}
@@ -10,15 +12,16 @@
 
 {% block content %}
     <div class="container col-sm-10 mt-3 mb-4 border rounded border-secondary p-3">
-        <div class="text-right">
+        {{ header("Choose action") }}
+        <div class="text-center">
             <div class="btn-group">
-                <button type="button" onclick="post_test()" class="btn btn-success btn-lg">
+                <button type="button" onclick="post_test()" class="btn main-color btn-lg">
                     Run test
                 </button>
-                <button type="button"  onclick="get_new_images()" class="btn btn-success btn-lg ml-1">
+                <button type="button"  onclick="get_new_images()" class="btn main-color btn-lg ml-1">
                     New images
                 </button>
-                <button type="button" class="btn btn-primary btn-lg ml-1" data-toggle="modal" data-target="#upload">
+                <button type="button" class="btn main-color btn-lg ml-1" data-toggle="modal" data-target="#upload">
                     Test your image
                 </button>
                 <button type="button" class="btn btn-danger btn-lg ml-1" data-toggle="modal" data-target="#delete">
@@ -29,9 +32,7 @@
     </div>
     <div class="container col-sm-10 mt-3 mb-4 border rounded border-secondary p-3">
         {% if show_results %}
-            <div class="font-weight-light text-center m-4 p-2 header-basic">
-                Sample test results
-            </div>
+            {{ header("Sample test results") }}
             <div class="row text-center text-lg-left m-3">
                 {% for image in images %}
                 {% set path = image.path[path_start_idx:] %}
@@ -61,9 +62,7 @@
         {% endif %}
     </div>
     <div class="container col-sm-10 mt-3 mb-4 border rounded border-secondary p-3">
-        <div class="font-weight-light text-center m-2 p-2 header-basic">
-            Your image
-        </div>
+        {{ header("Your image") }}
         <div class="text-center">
         {% if user_test %}
             <img id="yourImage" class="img-fluid rounded border border-white m-3" src="{{ user_test.path }}" alt="Something went wrong, try again" width=500 height=500>

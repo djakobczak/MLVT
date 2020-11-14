@@ -44,20 +44,6 @@
                                 <option value="7">256</option>
                             </select>
                         </div>
-                        <div class="mt-1 pl-2" id="epochsOpt">
-                            <div class="custom-control custom-radio">
-                                <input type="radio" class="custom-control-input" id="customRadio" name="example" value="customEx">
-                                <label class="custom-control-label" for="customRadio">Tail</label>
-                            </div>
-                            <div class="custom-control custom-radio">
-                                <input type="radio" class="custom-control-input" id="customRadio2" name="example" value="customEx">
-                                <label class="custom-control-label" for="customRadio2">Head</label>
-                            </div>
-                            <div class="custom-control custom-radio">
-                                <input type="radio" class="custom-control-input" checked="checked" id="customRadio2" name="example" value="customEx">
-                                <label class="custom-control-label" for="customRadio2">All epochs</label>
-                            </div>
-                        </div>
                     </div>
                 </form>
             </div>
@@ -67,7 +53,7 @@
                         <span class="sr-only">Loading...</span>
                     </div>
                     <div class="btn-group ml-auto mr-3">
-                        <button type="button" onclick="post_train()" class="btn btn-success btn-lg ml-1">Train</button>
+                        <button type="button" onclick="post_train()" class="btn main-color btn-lg ml-1">Train</button>
                         <button type="button" class="btn btn-danger btn-lg ml-1" data-toggle="modal" data-target="#exampleModal">
                             Delete training history
                         </button>
@@ -101,9 +87,7 @@
             </div>
             
         </div>
-        <div class="m-3 pt-4">
-            <h2>Training history:</h2>
-        </div>
+        {{ header("Training history") }}
         <div class="table-wrapper-scroll-y my-custom-scrollbar">
             <table class="table text-white table-striped">
                 <thead>

@@ -11,7 +11,7 @@ class TransformView(BaseView):
     def put(self):
         dataset_type = request.args.get('dataset_type')
         # load data and perform preprocessing
-        dl = DataLoader(self.cm, get_before_tensor_transforms())
+        dl = DataLoader(self.cm)
         srcs, dsts = self._dataset_type_to_paths(dataset_type)
         dl.copy_multiple_paths(srcs, dsts)
 

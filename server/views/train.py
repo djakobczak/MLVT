@@ -20,12 +20,14 @@ class TrainView(ActionView):
 
     def search(self, nepochs, reverse):
         train_results = load_json(self.cm.get_train_results_file())
-        show_results = self.is_dict_empty(train_results)
-        if show_results:
+        if self.is_dict_empty(train_results):
             flash('Training history is empty, '
                   'you have to train your model firstly', 'danger')
             return render_template(
-                'train.html.j2', results=dict(), show_results=False)
+                'train.html.j2', results=dict(),
+                show_results=False,
+                default_epochs=self.cm.get_epochs(),
+                default_bs=self.cm.get_batch_size())
         results = self._get_last_n_results(train_results, nepochs, reverse)
         stats = self._get_training_stats(results)
         return render_template(

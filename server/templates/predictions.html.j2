@@ -1,11 +1,14 @@
 {% extends "base.html" %}
 
+{% from 'macros.html.j2' import header %}
+
 {% block header %}
   {% block title %}Predictions{% endblock %}
 {% endblock %}
 
 {% block content %}
     <div class="container col-sm-10 mt-3 mb-4 border rounded border-secondary p-3">
+        {{ header("Show images") }}
         <div class="row">
             <div class="col-md-5">
                 <div class="row m-1">
@@ -41,7 +44,7 @@
                     </div>
                 </div>
                 <div class="col-8">
-                    <button class="btn btn-success float-right" type="button" id="new_predictions" onclick="showNewPredictions()">Show predictions</button>
+                    <button class="btn main-color btn-lg float-right" type="button" id="new_predictions" onclick="showNewPredictions()">Show</button>
                 </div>
             </div>
         </div>
@@ -49,9 +52,7 @@
 
 
 <div class="container mt-3 col-sm-10 border rounded border-secondary p-3 mb-5">
-    <div class="font-weight-light text-center p-2 header-basic">
-        Select wrong predicted images.
-    </div>
+    {{ header("Select wrong predicted images") }}
     <div class="row" id="images">
         <div class="col-sm-6 pr-4">
             <h1 class="font-weight-light text-center text-lg-left mt-4 mb-0">{{ label1 }}</h1>
@@ -83,8 +84,8 @@
     
     <div class="mt-4">
         <div class="col-sm-12 text-center">
-            <button type="button" onclick="sendPredictions()" class="btn btn-success btn-lg m-3">Add annotations</button>
-            <button type="button" onclick="train()" class="btn btn-lg btn-success m-3">Train</button>
+            <button type="button" onclick="sendPredictions()" class="btn main-color btn-lg m-3">Add annotations</button>
+            <button type="button" onclick="train()" class="btn btn-lg main-color m-3">Train</button>
         </div>
     </div>
 

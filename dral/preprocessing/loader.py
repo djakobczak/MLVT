@@ -11,10 +11,16 @@ from dral.logger import LOG
 
 
 class DataLoader:
-    def __init__(self, cm, transforms):
+    def __init__(self, cm, resize_without_ratio=False):
         self.cm = cm
-        self.transforms = transforms
         self.IMG_SIZE = cm.get_img_size()
+        if resize_without_ratio:
+            self.transforms = None
+        else:
+            self.transforms = transforms.Compose([
+                transforms.Resize(self.IMG_SIZE),
+                transforms.CenterCrop(224),
+            ])
 
     def copy_multiple_paths(self, srcs, dsts):
         for src, dst in zip(srcs, dsts):
@@ -27,9 +33,10 @@ class DataLoader:
             src_path = os.path.join(src, f)
             if os.path.isfile(src_path):
                 img = Image.open(src_path).convert('RGB')
-                img = self.transforms(img)
+                img = self.transforms(img) if self.transforms \
+                    else img.resize((self.IMG_SIZE, self.IMG_SIZE))
                 dst_path = os.path.join(dst, f)
-                img.save(dst_path)
+                img.save(dst_path, quality=95)
         LOG.info(f'Images copied form {src} to {dst}.')
 
     def _rescale(self, img):
