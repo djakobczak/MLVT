@@ -1,12 +1,17 @@
 from flask import render_template
 
 from server.views.base import BaseView, ModelIO
+from server.views.annotation import AnnotationsView
 
 
 class SettingsView(BaseView, ModelIO):
     def search(self):
         model_summary = self._get_model_summary()
-        return render_template("settings.html.j2", model=model_summary)
+        av = AnnotationsView()
+        annotation_summary = av.search()[0]
+        print(annotation_summary)
+        return render_template("settings.html.j2", model=model_summary,
+                               annotation=annotation_summary)
 
     def _get_model_summary(self):
         model_wrapper = self.load_model(self.cm.get_model_trained())

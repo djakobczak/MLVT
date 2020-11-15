@@ -13,7 +13,6 @@ config.set_file(CONFIG_PATH)  # !TODO change location of file path
 DEFAULT_CONFIG = 'sushi_sandwitches'
 
 
-# !TODO should be splitted into sections e.g. cm.train.batch_size.get()
 class ConfigManager:
     configurations = config.keys()
 

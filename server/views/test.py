@@ -108,6 +108,3 @@ class TestView(ActionView, ModelIO):
     def _allowed_file(self, filename):
         return '.' in filename and \
             filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-    def _numeric_to_classname(self):
-        return dict((v, k) for k, v in self.cm.get_label_mapping().items())

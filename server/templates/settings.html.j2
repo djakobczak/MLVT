@@ -27,28 +27,88 @@
                     <a class="nav-link" data-toggle="pill" href="#prepare">Prepare</a>
                 </li>
                 </ul>
-            </div>          
+        </div>          
     </div>
-        <div class="col-md-8">
-          <div class="tab-content">
-            <div class="tab-pane show active" id="model" role="tabpanel">
-                {{ header("Model informations") }}
-                <div class="m-4">
-                    <dl class="row">
-                    {% for name, value in model.items() %}
-                    <dt class="col-sm-5 mt-2 text-big">{{ name }}</dt>
-                    <dd class="col-sm-7 mt-2 text-big">{{ value }}</dd>
-                    {% endfor %}
-                    </dl>
-                </div>
-                {{ header("Actions") }}
+    <div class="col-md-8">
+        <div class="tab-content">
+        <div class="tab-pane show active" id="model" role="tabpanel">
+            {{ header("Model informations") }}
+            <div class="m-4">
+                <dl class="row">
+                {% for name, value in model.items() %}
+                <dt class="col-sm-5 mt-2 text-big">{{ name }}</dt>
+                <dd class="col-sm-7 mt-2 text-big">{{ value }}</dd>
+                {% endfor %}
+                </dl>
             </div>
-            <div class="tab-pane" id="annotations" role="tabpanel">b</div>
-            <div class="tab-pane" id="prepare" role="tabpanel">c</div>
-          </div>
+            {{ header("Actions") }}
+            <div class="m-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="ml-4">
+                            <input class="form-check-input" type="checkbox" value="" id="clearAnnotCheckbox">
+                            <label class="form-check-label" for="clearAnnotCheckbox">
+                               Clear annotations
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <button type="button" class="btn btn-danger btn-lg" data-toggle="modal" data-target="#delete">
+                            Delete model
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane" id="annotations" role="tabpanel">
+            {{ header("Annotation files summary") }}
+            <div class="m-4">
+                <dl class="row">
+                {% for name, value in annotation.items() %}
+                <dt class="col-sm-5 mt-2 text-big">{{ name }}</dt>
+                <dd class="col-sm-7 mt-2 text-big">{{ value }}</dd>
+                {% endfor %}
+                </dl>
+            </div>
+        </div>
+        <div class="tab-pane" id="prepare" role="tabpanel">c</div>
         </div>
     </div>
-    <script>
-    </script>
+    </div>
+    <!-- Modals -->
+    <div class="modal fade" id="delete" tabindex="-1" role="dialog" aria-labelledby="deleteLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content text-dark">
+        <div class="modal-header">
+            <h5 class="modal-title" id="deleteLabel">Alert</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            Do you really want to delete model?
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button"  onclick="delete_model()" class="btn btn-danger">Delete</button>
+        </div>
+        </div>
+    </div>
+    </div>
 </div>
+
+<script>
+function delete_model(){
+    $.ajax({
+        url: '/model' + "?clear_annotations=" + $("#clearAnnotCheckbox").is(":checked"),
+        type: "DELETE",
+        success: function(){
+            location.reload(); 
+        },
+        error: function(xhr) {
+            console.log(xhr)
+        }
+    });
+}
+</script>
 {% endblock content %}

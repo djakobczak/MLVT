@@ -212,6 +212,14 @@ paths:
                   type: string
 
   /annotations:
+    get:
+      summary: get summary of all annotation files
+      responses:
+        200:
+          description: Ok
+        404:
+          description: Annotation files not found
+
     put:
       summary: create or update existing annotation json files
       tags:
@@ -367,6 +375,13 @@ paths:
     delete:
       summary: Delete current model and overwrite it with
         new untrained model
+      parameters:
+        - in: query
+          name: clear_annotations
+          description: if set to true reset remove all training annotations
+          schema:
+            type: boolean
+            default: False
       responses:
           200:
             description: Model deleted

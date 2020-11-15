@@ -15,17 +15,19 @@ class ModelView(MLView):
         model = self.load_model()
         return str(model.model_conv), 200
 
-    def delete(self):
+    def delete(self, clear_annotations):
         # overwrite trained model with new untrained and clear all history data
         self.save_model(Model())
         save_json(self.cm.get_predictions_file(), {})
         purge_json_file(self.cm.get_test_results_file())
         purge_json_file(self.cm.get_last_user_test_path())
-        purge_json_file(
-            self.cm.get_train_results_file(),
-            EMPTY_TRAIN_RESULTS)
-        av = AnnotationsView()
-        av.put(True, 'all', True)
+        if clear_annotations:
+            purge_json_file(
+                self.cm.get_train_results_file(),
+                EMPTY_TRAIN_RESULTS)
+            av = AnnotationsView()
+            av.put(True, 'all', True)
+
         LOG.info('Model is resetted and predictions is pruned')
         return 'Model deleted', 200
 
@@ -35,4 +37,4 @@ class ModelView(MLView):
             create_subdirs_if_not_exist(path)
         fail_if_headpath_not_exist(path)
         self.save_model(path=path)
-        return 200
+        return '', 200

@@ -21,6 +21,9 @@ class BaseView(MethodView):
     def __init__(self):
         self.cm = ConfigManager(CONFIG_NAME)
 
+    def _numeric_to_classname(self):
+        return dict((v, k) for k, v in self.cm.get_label_mapping().items())
+
 
 class ActionView(BaseView):
     def run_action(self, action, executable, **kwargs):
