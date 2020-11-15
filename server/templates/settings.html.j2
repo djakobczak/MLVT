@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% from 'macros.html.j2' import header %}
+
+{% block title %}
+    Prepare data
+{% endblock title %}
+
+{% block header %}
+    <h1>Configuration panel</h1>
+{% endblock header %}
+
+{% block content %}
+    <div class="container col-sm-10 mt-3 mb-4 border rounded border-secondary p-3">
+    <div class='row'>
+    <div class="col-md-4">
+        <div class="p-2">
+            <div class="text-white h4 text-center p-2">Settings</div>
+                <ul class="nav nav-pills flex-column m-2">
+                <li class="nav-item">
+                    <a class="nav-link active" data-toggle="pill" href="#model">Model</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="pill" href="#annotations">Annotations</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="pill" href="#prepare">Prepare</a>
+                </li>
+                </ul>
+            </div>          
+    </div>
+        <div class="col-md-8">
+          <div class="tab-content">
+            <div class="tab-pane show active" id="model" role="tabpanel">
+                {{ header("Model informations") }}
+                <div class="m-4">
+                    <dl class="row">
+                    {% for name, value in model.items() %}
+                    <dt class="col-sm-5 mt-2 text-big">{{ name }}</dt>
+                    <dd class="col-sm-7 mt-2 text-big">{{ value }}</dd>
+                    {% endfor %}
+                    </dl>
+                </div>
+                {{ header("Actions") }}
+            </div>
+            <div class="tab-pane" id="annotations" role="tabpanel">b</div>
+            <div class="tab-pane" id="prepare" role="tabpanel">c</div>
+          </div>
+        </div>
+    </div>
+    <script>
+    </script>
+</div>
+{% endblock content %}
