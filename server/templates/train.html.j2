@@ -94,7 +94,7 @@
         </div>
         {{ header("Training history") }}
         <div class="table-wrapper-scroll-y my-custom-scrollbar">
-            <table class="table text-white table-striped">
+            <table class="table text-white table-striped" id="historyTable">
                 <thead>
                     <tr>
                         <th scope="col">Epoch</th>
@@ -108,7 +108,7 @@
                 <tbody>
                     {% for train_acc, train_loss, val_acc, val_loss, n_images in results %}
                     <tr>
-                        <th scope="row">{{ loop.index }}</th>
+                        <td scope="row">{{ loop.index }}</td>
                         <td>{{ train_acc|round(3) }}</td>
                         <td>{{ train_loss|round(5) }}</td>
                         <td>{{ val_acc|round(3) }}</td>
@@ -154,7 +154,7 @@
         </button>
     </div>
     <div class="modal-body">
-        Training is completed, do you want to reload page?
+        Please, reload page to show training graph.
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -169,7 +169,7 @@
         pool_status(handle_status_data_no_modal);
     }
 
-    MODEL_CREATED = false;
+    model_created = false;
     function init_graph(plot_acc, plot_loss){
         console.log("INIT GRAPH: " + plot_acc)
         create_plot('accGraph', plot_acc);
@@ -192,8 +192,7 @@
                 height:  window.innerHeight * rH
             })
         }
-        MODEL_CREATED = true;
-        update_plot('accGraph', {'x': [[10], [10], [10]], 'y': [[0.80], [0.80], [2]]})
+        model_created = true;
     }
 
     {% if show_results %}
@@ -205,9 +204,35 @@
         Plotly.plot(handlerId, graph, {});
     }
 
-    function update_plot(handlerId, data){
+    function update_plots(data){
+        graph_data = document.getElementById("accGraph").data
+        epochs = graph_data[0]['x'].length
+        lastEpoch = data['n_images'].length;
+
+        var x = [];
+        for (var k = epochs + 1; k <= lastEpoch; k++) {
+            x.push(k);
+        }
+
+        n_images = data['n_images'].slice(epochs)
+        train_acc = data['train_acc'].slice(epochs)
+        train_loss = data['train_loss'].slice(epochs)
+        val_acc = data['val_acc'].slice(epochs)
+        val_loss = data['val_loss'].slice(epochs)
+
         console.log('UPDATE GRAPH')
-        Plotly.extendTraces(handlerId, data, [0, 1, 2])
+        console.log(train_acc, val_acc, n_images, x)
+        if (x) {
+            Plotly.extendTraces("accGraph",
+                {'x': [x, x, x],
+                'y': [train_acc, val_acc, n_images]},
+                [0, 1, 2])
+            Plotly.extendTraces("lossGraph",
+                {'x': [x, x, x],
+                'y': [train_loss, val_loss, n_images]},
+                [0, 1, 2])
+        }
+        
     }
 
     function post_train(){
@@ -258,16 +283,16 @@
         status = data.status
         console.log('Received status: ' + status);
         if (status == 'success'){
-            pool_plots();
             $("#loadingSpinner").hide();
             if (show_modal) {
+                pool_training_data();
                 console.log("Training completed!");
             }
         }
         else if (status == 'ongoing') {
             console.log('sleep for 1.5s')
             $("#loadingSpinner").show();
-            pool_plots();
+            pool_training_data();
             setTimeout(pool_status(handle_status_data), 1500);
         }
         else {
@@ -277,7 +302,6 @@
         }
     }
 
-    // !TODO move to external js file
     function pool_status(status_hanlder){
          $.ajax({
             url: '/status/train',
@@ -293,22 +317,22 @@
         });
     }
 
-    function pool_plots() {
-        console.log("Pool plot")
+    function pool_training_data() {
+        console.log("Pool training data")
         $.ajax({
-            url: '/plot',
+            url: '/data/train_results',
             type: "GET",
             success: function(data, _, xhr){
                 switch (xhr.status) {
                     case 200:
-                      if (!MODEL_CREATED){
+                      if (data['n_images'].length > 0 && !model_created){
+                          console.log(data['n_images'], model_created)
                           $('#reloadModal').modal('show');
+                          to_reload = false;
                       }
-                      else{
-                        update_plot('accGraph', {'y': [[0.80], [0.80]]})
+                      else if (model_created) {
+                        update_plots(data)
                       }
-                    case 204:
-                        console.log("No update")
                 }
                 console.log(data);
             },

@@ -82,7 +82,7 @@ class Model:
         return predictions.cpu().numpy(), np.array(paths)
 
     def train(self, train_loader, epochs, validation_loader,
-              save_to=None):
+              save_to=None, n_images=0):
         # switch to training mode
         self.model_conv.train()
 
@@ -105,7 +105,7 @@ class Model:
                      'train_loss': [tloss],
                      'val_acc': [vacc],
                      'val_loss': [vloss],
-                     'n_images': [len(train_loader)]})
+                     'n_images': [n_images]})
 
             train_accs.append(tacc)
             train_losses.append(tloss)

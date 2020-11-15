@@ -421,18 +421,17 @@ paths:
         404:
           description: Action not found
 
-  /plot:
+  /data/{datatype}:
     get:
-      summary: get plotly trainig graphs
+      summary: get data
       parameters:
-        - in: query
-          name: force
-          description: If set to true always return plots
+        - in: path
+          name: datatype
+          description: type of requested data
           schema:
-            type: boolean
-            default: False
+            type: string
+          required: true
       responses:
         200:
-          description: Returns pyplot image
-        204:
-          description: Plot did not change
+          description: Ok
+

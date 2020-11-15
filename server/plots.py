@@ -5,6 +5,10 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 
+PLOT_MAX_ACC = 1.1
+PLOT_MARGINS = dict(l=70, r=10, t=100, b=60)
+HEIGHT = 600
+
 class Plot:
     def generate_acc_plot(self, train_acc, val_acc, n_images):
         epochs = list(range(1, len(train_acc) + 1))
@@ -20,7 +24,7 @@ class Plot:
             xaxis_title="Epochs",
             yaxis_title="Accuracy"
         )
-        fig.update_yaxes(range=[0, 1.0], secondary_y=False)
+        fig.update_yaxes(range=[0, PLOT_MAX_ACC], secondary_y=False)
         fig.update_yaxes(range=[0, max(n_images) + 5],
                          showgrid=False, secondary_y=True)
         fig.update_yaxes(title_text="Number of images",
@@ -85,7 +89,8 @@ class Plot:
                 'font': dict(
                     size=22
                 )},
-            margin=dict(l=70, r=10, t=100, b=60),
+            height=HEIGHT,
+            margin=PLOT_MARGINS,
             paper_bgcolor='rgba(0,0,0,0)',
             font_color="rgba(230,230,230,255)"
             )

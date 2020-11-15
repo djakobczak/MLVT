@@ -1,7 +1,6 @@
 from flask import flash, render_template
 import numpy as np
 
-from dral.logger import LOG
 from server.actions.handlers import train
 from server.actions.main import Action
 from server.views.base import ActionView
@@ -32,13 +31,12 @@ class TrainView(ActionView):
                 show_results=False,
                 default_epochs=self.cm.get_epochs(),
                 default_bs=self.cm.get_batch_size())
-        results = self._get_last_n_results(train_results, nepochs, reverse)
 
+        results = self._get_last_n_results(train_results, nepochs, reverse)
         train_acc, train_loss, val_acc, val_loss, n_images = \
             train_results['train_acc'], train_results['train_loss'], \
             train_results['val_acc'], train_results['val_loss'], \
             train_results['n_images']
-        print('[DEBUG] get plot!')
         stats = self._get_training_stats(results)
         plot = Plot()
         plot_acc = plot.generate_acc_plot(train_acc, val_acc, n_images)

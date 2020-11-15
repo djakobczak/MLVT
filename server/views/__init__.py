@@ -9,4 +9,4 @@ from .settings import SettingsView
 from .transformation import TransformView
 from .model import ModelView
 from .status import StatusView
-from .plot import PlotView
+from .data import DataView
