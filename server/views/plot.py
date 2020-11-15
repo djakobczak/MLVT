@@ -21,7 +21,6 @@ class PlotView(BaseView):
             fig = self.generate_training_acc_plot()
         elif plot_type == PlotType.TEST.value:
             fig = self.generate_test_plot()
-
         output = io.BytesIO()
         FigureCanvas(fig).print_png(output)
         return Response(output.getvalue(), mimetype='image/png')

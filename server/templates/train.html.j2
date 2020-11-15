@@ -14,11 +14,22 @@
 {% endblock header %}
 
 {% block content %}
+    <!-- Latest compiled and minified plotly.js JavaScript -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js" charset="utf-8"></script>
+
     <div class="container col-sm-10 mt-3 mb-4 border rounded border-secondary p-3">
     {% if show_results %}
     <div class="m-3">
         {{ header("Training visulalization") }}
-        <img class="img-fluid mx-auto d-block" src="{{ url_for('.views_PlotView_search', plot_type='train_acc') }}" alt="Image Placeholder" height="500" class="mx-auto d-block">
+        <div class="img-fluid mx-auto d-block">
+            <div class="chart img-fluid mx-auto d-block" id="accGraph">
+                <script>
+                    
+                </script>
+            </div>
+            <div class="chart" id="valGraph">
+            </div>
+        </div>
     </div>
     {% endif %}
     </div>
@@ -53,7 +64,7 @@
                         <span class="sr-only">Loading...</span>
                     </div>
                     <div class="btn-group ml-auto mr-3">
-                        <button type="button" onclick="post_train()" class="btn main-color btn-lg ml-1">Train</button>
+                        <button type="button" onclick="post_train()" class="btn main-blue btn-lg ml-1">Train</button>
                         <button type="button" class="btn btn-danger btn-lg ml-1" data-toggle="modal" data-target="#exampleModal">
                             Delete training history
                         </button>
@@ -162,6 +173,28 @@
 <script>
     window.onload = function() {
         pool_status(handle_status_data_no_modal);
+    }
+    var graph_loss = {{plot_loss | safe}};
+    Plotly.plot('valGraph', graph_loss, {});
+
+    var graph_acc = {{plot_acc | safe}};
+    Plotly.plot('accGraph', graph_acc, {});
+    CONTAINER_W = document.getElementById("valGraph").offsetWidth;
+    WINDOW_W = window.innerWidth;
+    CONTAINER_H = document.getElementById("valGraph").offsetHeight;
+    WINDOW_H = window.innerHeight;
+    rW = CONTAINER_W / WINDOW_W;
+    rH = CONTAINER_H / WINDOW_H;
+
+    window.onresize = function() {
+        Plotly.relayout(valGraph, {
+            width: window.innerWidth * rW,
+            height:  window.innerHeight * rH 
+        })
+        Plotly.relayout(accGraph, {
+            width: window.innerWidth * rW,
+            height:  window.innerHeight * rH
+        })
     }
 
     function post_train(){
