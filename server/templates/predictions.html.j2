@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% from 'macros.html.j2' import header %}
+{% set show_predictions = class1 or class2 %}
 
 {% block header %}
   {% block title %}Predictions{% endblock %}
@@ -50,7 +51,7 @@
         </div>
     </div>
 
-
+{% if show_predictions %}
 <div class="container mt-3 col-sm-10 border rounded border-secondary p-3 mb-5">
     {{ header("Select wrong predicted images") }}
     <div class="row" id="images">
@@ -88,7 +89,8 @@
             <button type="button" onclick="train()" class="btn btn-lg main-color m-3">Train</button>
         </div>
     </div>
-
+</div>
+{% endif %}
     <!-- Modal -->
     <div class="modal fade" id="reloadModal" tabindex="-1" role="dialog" aria-labelledby="reloadLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -135,6 +137,7 @@
             }
             return array
         }
+        {% if show_predictions %}
         all_class1_predictions = get_attr_from_tags(class1_node, "img", "data-path")
         all_class2_predictions = get_attr_from_tags(class2_node, "img", "data-path")
         console.log(all_class1_predictions)
@@ -144,7 +147,7 @@
             class1: all_class1_predictions,
             class2: all_class2_predictions,
         }
-
+        {% endif %}
         function push_wrong_prediction(node){
             if (class1_node.contains(node)){
                 predictions.class2.push(node.getAttribute("data-path"))
@@ -287,6 +290,5 @@
         }
         
     </script>
-</div>
  
 {% endblock %}

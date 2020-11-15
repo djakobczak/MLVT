@@ -18,20 +18,14 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js" charset="utf-8"></script>
 
     <div class="container col-sm-10 mt-3 mb-4 border rounded border-secondary p-3">
-    {% if show_results %}
     <div class="m-3">
         {{ header("Training visulalization") }}
         <div class="img-fluid mx-auto d-block">
-            <div class="chart img-fluid mx-auto d-block" id="accGraph">
-                <script>
-                    
-                </script>
-            </div>
-            <div class="chart" id="valGraph">
-            </div>
+            {# Graphs #}
+            <div class="chart img-fluid mx-auto d-block" id="accGraph"></div>
+            <div class="chart" id="lossGraph"></div>
         </div>
     </div>
-    {% endif %}
     </div>
         <div class="container col-sm-10 mt-3 mb-4 border rounded border-secondary p-4">
         <div class="row">
@@ -174,27 +168,46 @@
     window.onload = function() {
         pool_status(handle_status_data_no_modal);
     }
-    var graph_loss = {{plot_loss | safe}};
-    Plotly.plot('valGraph', graph_loss, {});
 
-    var graph_acc = {{plot_acc | safe}};
-    Plotly.plot('accGraph', graph_acc, {});
-    CONTAINER_W = document.getElementById("valGraph").offsetWidth;
-    WINDOW_W = window.innerWidth;
-    CONTAINER_H = document.getElementById("valGraph").offsetHeight;
-    WINDOW_H = window.innerHeight;
-    rW = CONTAINER_W / WINDOW_W;
-    rH = CONTAINER_H / WINDOW_H;
+    MODEL_CREATED = false;
+    function init_graph(plot_acc, plot_loss){
+        console.log("INIT GRAPH: " + plot_acc)
+        create_plot('accGraph', plot_acc);
+        create_plot('lossGraph', plot_loss);
+        
+        CONTAINER_W = document.getElementById("lossGraph").offsetWidth;
+        WINDOW_W = window.innerWidth;
+        CONTAINER_H = document.getElementById("lossGraph").offsetHeight;
+        WINDOW_H = window.innerHeight;
+        rW = CONTAINER_W / WINDOW_W;
+        rH = CONTAINER_H / WINDOW_H;
 
-    window.onresize = function() {
-        Plotly.relayout(valGraph, {
-            width: window.innerWidth * rW,
-            height:  window.innerHeight * rH 
-        })
-        Plotly.relayout(accGraph, {
-            width: window.innerWidth * rW,
-            height:  window.innerHeight * rH
-        })
+        window.onresize = function() {
+            Plotly.relayout(lossGraph, {
+                width: window.innerWidth * rW,
+                height:  window.innerHeight * rH 
+            })
+            Plotly.relayout(accGraph, {
+                width: window.innerWidth * rW,
+                height:  window.innerHeight * rH
+            })
+        }
+        MODEL_CREATED = true;
+        update_plot('accGraph', {'x': [[10], [10], [10]], 'y': [[0.80], [0.80], [2]]})
+    }
+
+    {% if show_results %}
+    init_graph({{ plot_acc }}, {{ plot_loss }});
+    {% endif %}
+
+    function create_plot(handlerId, graph) {
+        graph = {{graph | safe}}
+        Plotly.plot(handlerId, graph, {});
+    }
+
+    function update_plot(handlerId, data){
+        console.log('UPDATE GRAPH')
+        Plotly.extendTraces(handlerId, data, [0, 1, 2])
     }
 
     function post_train(){
@@ -245,14 +258,16 @@
         status = data.status
         console.log('Received status: ' + status);
         if (status == 'success'){
+            pool_plots();
             $("#loadingSpinner").hide();
             if (show_modal) {
-                $('#reloadModal').modal('show');
+                console.log("Training completed!");
             }
         }
         else if (status == 'ongoing') {
             console.log('sleep for 1.5s')
             $("#loadingSpinner").show();
+            pool_plots();
             setTimeout(pool_status(handle_status_data), 1500);
         }
         else {
@@ -274,6 +289,31 @@
             error: function(err){
                 $("#loadingSpinner").hide();
                 alert("Error occured: " + err)
+            }
+        });
+    }
+
+    function pool_plots() {
+        console.log("Pool plot")
+        $.ajax({
+            url: '/plot',
+            type: "GET",
+            success: function(data, _, xhr){
+                switch (xhr.status) {
+                    case 200:
+                      if (!MODEL_CREATED){
+                          $('#reloadModal').modal('show');
+                      }
+                      else{
+                        update_plot('accGraph', {'y': [[0.80], [0.80]]})
+                      }
+                    case 204:
+                        console.log("No update")
+                }
+                console.log(data);
+            },
+            error: function(err){
+                console.log(err);
             }
         });
     }

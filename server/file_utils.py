@@ -50,6 +50,7 @@ def append_to_json_file(path, values):
 
 
 def append_to_train_file(path, values):
+    LOG.info("Append new training data")
     dict_data = load_json(path)
 
     dict_data['train_acc'].extend(values['train_acc'])
@@ -131,3 +132,10 @@ def fail_if_headpath_not_exist(path):
     head, tail = os.path.split(path)
     if not os.path.exists(head):
         raise PathException(f'({path}) does not exist.')
+
+
+def is_dict_empty(d):
+    for key, values in d.items():
+        if values:
+            return False
+    return True

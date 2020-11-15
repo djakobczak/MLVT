@@ -21,6 +21,10 @@ class PathException(Exception):
     pass
 
 
+class EmptyFileException(Exception):
+    pass
+
+
 errors = Blueprint('errors', __name__)
 
 PLAIN = 'ContentType: text/plain'
@@ -54,3 +58,8 @@ def handle_model(error):
 def handle_path(error):
     return render_template(
         "error.html.j2", code=400, msg=str(error)), 400
+
+
+@errors.app_errorhandler(EmptyFileException)
+def handle_empty_file(error):
+    return str(error), 400

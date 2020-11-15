@@ -1,3 +1,4 @@
+from ctypes import c_wchar_p
 from enum import Enum
 from multiprocessing import Value
 
@@ -10,3 +11,4 @@ class DatasetType(Enum):
 
 
 test_image_counter = Value('i', 0)
+last_checksum = Value(c_wchar_p, '')

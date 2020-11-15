@@ -21,18 +21,19 @@ def train(**kwargs):
         accs, losses, val_accs, val_losses = model.train(
                 ml_action.get_train_loader(batch_size),
                 epochs,
-                ml_action.get_validation_loader(batch_size))
+                ml_action.get_validation_loader(batch_size),
+                save_to=ml_action.cm.get_train_results_file())
         LOG.info(f'losses: {losses}, accs: {accs}')
         ml_action.save_model(model)
 
         # save to output to file
-        append_to_train_file(
-            ml_action.cm.get_train_results_file(),
-            {'train_loss': losses,
-             'train_acc': accs,
-             'val_acc': val_accs,
-             'val_loss': val_losses,
-             'n_images': [len(ml_action.train_dataset)] * len(accs)})
+        # append_to_train_file(
+        #     ml_action.cm.get_train_results_file(),
+        #     {'train_loss': losses,
+        #      'train_acc': accs,
+        #      'val_acc': val_accs,
+        #      'val_loss': val_losses,
+        #      'n_images': [len(ml_action.train_dataset)] * len(accs)})
         torch.cuda.empty_cache()
         return ActionStatus.SUCCESS, 'Training completed'
     except AnnotationException as e:

@@ -423,14 +423,16 @@ paths:
 
   /plot:
     get:
-      summary: get plot image
+      summary: get plotly trainig graphs
       parameters:
         - in: query
-          name: plot_type
-          description: Type of plot to render
+          name: force
+          description: If set to true always return plots
           schema:
-            type: string
-            enum: ['train_acc', train_loss', 'test']
+            type: boolean
+            default: False
       responses:
         200:
           description: Returns pyplot image
+        204:
+          description: Plot did not change

@@ -11,6 +11,7 @@ from tqdm import tqdm
 
 from dral.datasets import LabelledDataset
 from dral.logger import LOG
+from server.file_utils import append_to_train_file
 
 
 def init_and_save(path):
@@ -80,7 +81,8 @@ class Model:
             f'feedforward time: {feedforward_time}')
         return predictions.cpu().numpy(), np.array(paths)
 
-    def train(self, dataloader, epochs, validation_dataloader=None):
+    def train(self, train_loader, epochs, validation_loader,
+              save_to=None):
         # switch to training mode
         self.model_conv.train()
 
@@ -90,38 +92,51 @@ class Model:
         val_accs = []
         val_losses = []
         for epoch in range(epochs):
-            losses = torch.empty((0,), device=self.device, dtype=float)
-            total_corrects = torch.empty((0,), device=self.device, dtype=int)
-            for samples, labels in tqdm(dataloader):
-                samples, labels = samples.to(self.device), \
-                                  labels.to(self.device)
-                net_out = self.model_conv(samples)
-                loss = self.criterion(net_out, labels)
-                losses = torch.cat(
-                    (losses, self.criterion(net_out, labels).reshape(1)), 0)
-
-                # compute gradient and do SGD step
-                self.optimizer.zero_grad()
-                loss.backward()
-                self.optimizer.step()
-
-                self.scheduler.step()
-
-                pred = torch.argmax(net_out, dim=1)
-                total_corrects = torch.cat(
-                    (total_corrects, pred.eq(labels)), 0)
-            acc = float(torch.mean(total_corrects.float()).cpu())
-            loss = float(torch.mean(losses).cpu())
-            train_accs.append(acc)
-            train_losses.append(loss)
+            tacc, tloss = self._train(train_loader)
             LOG.info('[Epoch {}/{}] -> Train Loss: {:.4f}, '
                      'Accuracy: {:.3f}'.format(
-                        epoch+1, epochs, loss, acc))
-            if validation_dataloader:
-                vacc, vloss = self.evaluate(validation_dataloader)
-                val_accs.append(vacc)
-                val_losses.append(vloss)
+                        epoch+1, epochs, tloss, tacc))
+
+            vacc, vloss = self.evaluate(validation_loader)
+            if save_to:
+                append_to_train_file(
+                    save_to,
+                    {'train_acc': [tacc],
+                     'train_loss': [tloss],
+                     'val_acc': [vacc],
+                     'val_loss': [vloss],
+                     'n_images': [len(train_loader)]})
+
+            train_accs.append(tacc)
+            train_losses.append(tloss)
+            val_accs.append(vacc)
+            val_losses.append(vloss)
         return train_accs, train_losses, val_accs, val_losses
+
+    def _train(self, dataloader):
+        losses = torch.empty((0,), device=self.device, dtype=float)
+        total_corrects = torch.empty((0,), device=self.device, dtype=int)
+        for samples, labels in tqdm(dataloader):
+            samples, labels = samples.to(self.device), \
+                            labels.to(self.device)
+            net_out = self.model_conv(samples)
+            loss = self.criterion(net_out, labels)
+            losses = torch.cat(
+                (losses, self.criterion(net_out, labels).reshape(1)), 0)
+
+            # compute gradient and do SGD step
+            self.optimizer.zero_grad()
+            loss.backward()
+            self.optimizer.step()
+
+            self.scheduler.step()
+
+            pred = torch.argmax(net_out, dim=1)
+            total_corrects = torch.cat(
+                (total_corrects, pred.eq(labels)), 0)
+        acc = float(torch.mean(total_corrects.float()).cpu())
+        loss = float(torch.mean(losses).cpu())
+        return acc, loss
 
     def save(self, name):
         torch.save(self.model_conv, name)
