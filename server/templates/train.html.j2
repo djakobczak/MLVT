@@ -331,7 +331,8 @@
                           to_reload = false;
                       }
                       else if (model_created) {
-                        update_plots(data)
+                        update_plots(data);
+                        update_history_table(data);
                       }
                 }
                 console.log(data);
@@ -340,6 +341,27 @@
                 console.log(err);
             }
         });
+    }
+
+    function update_history_table(data){
+        var table = document.getElementById("historyTable");
+        startIdx = table.rows.length - 1;
+
+        for(var k = startIdx; k < data['n_images'].length; k++){
+            var row = table.insertRow(k + 1);
+            var epochCell = row.insertCell(0);
+            var trainAccCell = row.insertCell(1);
+            var trainLossCell = row.insertCell(2);
+            var valAccCell = row.insertCell(3);
+            var valLossCell = row.insertCell(4);
+            var nImagesCell = row.insertCell(5);
+            epochCell.innerHTML = k + 1;
+            trainAccCell.innerHTML = data['train_acc'][k].toFixed(3);
+            trainLossCell.innerHTML = data['train_loss'][k].toFixed(5);
+            valAccCell.innerHTML = data['val_acc'][k].toFixed(3);
+            valLossCell.innerHTML = data['val_loss'][k].toFixed(5);
+            nImagesCell.innerHTML = data['n_images'][k];
+        }
     }
 
     $(document).ready(function(){

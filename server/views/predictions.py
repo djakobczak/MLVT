@@ -46,4 +46,4 @@ class PredictionsView(ActionView):
                           self.cm.get_train_annotations_path(),
                           paths, class_num, pm)
 
-        return 200
+        return '', 200
