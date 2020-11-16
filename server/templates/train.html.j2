@@ -241,6 +241,7 @@
         bs =  $("#batchSizeDropdown").val();
         console.log("Train with " + epochs + " epochs and " + bs + " batch size");
         URL = "/train?epochs=" + epochs + "&batch_size=" + bs;
+        showAlert(msg.ACCEPTED, "Training started!");
         $.ajax({
             url: URL,
             type: "POST",
@@ -251,7 +252,10 @@
                 console.log(xhr.status)
                 switch (xhr.status) {
                     case 409:
-                        alert("Wait for the server to end action");
+                        showAlert(msg.WARNING, "Wait until server finishes training");
+                        break;
+                    default:
+                        showAlert(msg.FAIILED, "Unknown error occured");
                 }
             }
         })
@@ -286,6 +290,7 @@
             $("#loadingSpinner").hide();
             if (show_modal) {
                 pool_training_data();
+                showAlert(msg.OK, "Training finished!");
                 console.log("Training completed!");
             }
         }
@@ -298,7 +303,7 @@
         else {
             console.log('status failed')
             $("#loadingSpinner").hide();
-            alert('Error occured: ' + data.data)
+            showAlert(msg.FAILED, "Training failed: " + data.data);
         }
     }
 

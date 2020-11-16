@@ -56,7 +56,6 @@ class TrainView(ActionView):
         self.run_action(Action.TRAIN, train,
                         batch_size=batch_size,
                         epochs=epochs)
-        flash('Training started!', 'success')
         return 202
 
     def delete(self):

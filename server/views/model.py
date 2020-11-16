@@ -15,16 +15,17 @@ class ModelView(MLView):
         model = self.load_model()
         return str(model.model_conv), 200
 
-    def delete(self, clear_annotations):
+    def delete(self, clear_annotations, clear_history):
         # overwrite trained model with new untrained and clear all history data
         self.save_model(Model())
         save_json(self.cm.get_predictions_file(), {})
-        purge_json_file(self.cm.get_test_results_file())
         purge_json_file(self.cm.get_last_user_test_path())
-        if clear_annotations:
+        if clear_history:
+            purge_json_file(self.cm.get_test_results_file())
             purge_json_file(
                 self.cm.get_train_results_file(),
                 EMPTY_TRAIN_RESULTS)
+        if clear_annotations:
             av = AnnotationsView()
             av.put(True, 'all', True)
 

@@ -381,7 +381,13 @@ paths:
           description: if set to true reset remove all training annotations
           schema:
             type: boolean
-            default: False
+            default: True
+        - in: query
+          name: clear_history
+          description: if set to true remove all training data
+          schema:
+            type: boolean
+            default: True
       responses:
           200:
             description: Model deleted

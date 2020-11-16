@@ -204,6 +204,7 @@
                     if (data.status == 'success'){
                         console.log('Task finished, reload...');
                         $("#loadingSpinner").hide();
+                        showAlert(msg.OK, "Action completed!");
                         $('#reloadModal').modal('show');
                     }
                     else if (data.status == 'ongoing') {
@@ -247,7 +248,7 @@
 
         function showNewPredictions(){
             $("#loadingSpinner").show();
-
+            showAlert(msg.ACCEPTED, "Prediction started");
             $.ajax({
                 url: '/predictions',
                 type: "GET",
@@ -265,9 +266,12 @@
                 error: function(xhr) {
                     console.log(xhr.status)
                     switch (xhr.status) {
-                        case 409:
-                            alert("Wait for the server to end action");
-                    }
+                    case 409:
+                        showAlert(msg.WARNING, "Wait until server finishes predicting");
+                        break;
+                    default:
+                        showAlert(msg.FAIILED, "Unknown error occured");
+                }
                 }
             });
         }

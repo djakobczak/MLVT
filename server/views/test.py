@@ -71,7 +71,6 @@ class TestView(ActionView, ModelIO):
             return user_test, 200
 
         self.run_action(Action.TEST, test)
-        flash('Model evaluation started.', 'success')
         return 202
 
     def delete(self):

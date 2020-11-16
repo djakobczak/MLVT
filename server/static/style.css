@@ -143,3 +143,7 @@ dt::after {
 .text-big {
   font-size: large;
 }
+
+.text-md {
+  font-size: 16px;
+}

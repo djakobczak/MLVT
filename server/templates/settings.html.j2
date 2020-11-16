@@ -45,13 +45,23 @@
             <div class="m-4">
                 <div class="row">
                     <div class="col-md-6">
-                        <div class="ml-4">
-                            <input class="form-check-input" type="checkbox" value="" id="clearAnnotCheckbox">
-                            <label class="form-check-label" for="clearAnnotCheckbox">
-                            <div data-toggle="tooltip" data-placement="right" title="Remove all training labels.">
-                                Clear annotations
+                        <div class="ml-4 row h5">
+                            <div class="col-lg-6">
+                                <input class="form-check-input" checked="true" type="checkbox" value="" id="clearAnnotCheckbox">
+                                <label class="form-check-label" for="clearAnnotCheckbox">
+                                <div data-toggle="tooltip" data-placement="bottom" title="Remove all training labels.">
+                                    Clear annotations
+                                </div>
+                                </label>
                             </div>
-                            </label>
+                            <div class="col-lg-6">
+                                <input class="form-check-input" checked="true" type="checkbox" value="" id="clearHistory">
+                                <label class="form-check-label" for="clearHistory">
+                                <div data-toggle="tooltip" data-placement="bottom" title="Remove training and test history.">
+                                    Clear history
+                                </div>
+                                </label>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-6 text-right">
@@ -115,7 +125,7 @@
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="button"  onclick="delete_model()" class="btn btn-danger">Delete</button>
+            <button type="button"  onclick="delete_model()" data-dismiss="modal" class="btn btn-danger">Delete</button>
         </div>
         </div>
     </div>
@@ -124,27 +134,34 @@
 
 <script>
 function delete_model(){
+    clear_annotation = "clear_annotations=" + $("#clearAnnotCheckbox").is(":checked");
+    clear_history = "clear_history=" + $("#clearHistoryCheckbox").is(":checked");
     $.ajax({
-        url: '/model' + "?clear_annotations=" + $("#clearAnnotCheckbox").is(":checked"),
+        url: '/model?' +  clear_annotation + "&" + clear_history,
         type: "DELETE",
         success: function(){
-            console.log("Success: model delete")
+            console.log("Success: model deleted");
+            showAlert(msg.OK, "Model deleted!");
         },
         error: function(xhr) {
             console.log(xhr)
+            showAlert(msg.FAILED, "Model deletion: failed");
         }
     });
 }
 
 function tranform_images(){
+    datatype = $("#dsType option:selected").text()
+    showAlert(msg.ACCEPTED, "Copy images for " + datatype + " images: started")
     $.ajax({
-        url: '/transform' + "?dataset_type=" + $("#dsType option:selected").text(),
+        url: '/transform' + "?dataset_type=" + datatype,
         type: "PUT",
         success: function(){
-            console.log("Success: transform")
+            showAlert(msg.OK, "Transform images: success");
         },
         error: function(xhr) {
             console.log(xhr)
+            showAlert(msg.FAILED, "Transform images: failed");
         }
     });
 }

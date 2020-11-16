@@ -170,6 +170,7 @@
     }
 
     function post_test(){
+        showAlert(msg.ACCEPTED, "Test started!");
         $.ajax({
             url: '/test',
             type: "POST",
@@ -178,11 +179,12 @@
             },
             error: function(xhr) {
                 console.log(xhr)
-                if (xhr.status == 409){
-                    alert("There is ongoing test, please until finishes")
-                }
-                else {
-                    alert("Error occured: " + xhr.status)
+                switch (xhr.status) {
+                    case 409:
+                        showAlert(msg.WARNING, "Wait until server finishes testing");
+                        break;
+                    default:
+                        showAlert(msg.FAIILED, "Unknown error occured");
                 }
             }
         });
