@@ -48,7 +48,9 @@
                         <div class="ml-4">
                             <input class="form-check-input" type="checkbox" value="" id="clearAnnotCheckbox">
                             <label class="form-check-label" for="clearAnnotCheckbox">
-                               Clear annotations
+                            <div data-toggle="tooltip" data-placement="right" title="Remove all training labels.">
+                                Clear annotations
+                            </div>
                             </label>
                         </div>
                     </div>
@@ -71,7 +73,30 @@
                 </dl>
             </div>
         </div>
-        <div class="tab-pane" id="prepare" role="tabpanel">c</div>
+        <div class="tab-pane" id="prepare" role="tabpanel">
+            {{ header("Prepare dataset") }}
+            <div class="m-4 border rounded border-secondary p-4">
+            <div class="mb-4">
+            Copy your images from paths specified in the config file
+             the server and apply basic transformations on them.
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                <label for="dsType">Select dataset type</label>
+                <select class="form-control" id="dsType">
+                    <option>unlabelled</option>
+                    <option>test</option>
+                    <option>validation</option>
+                </select>
+                </div>
+                <div class="col-md-6 text-right mt-4">
+                    <button type="button" class="btn btn-secondary btn-lg" onclick=tranform_images()>
+                        Apply
+                    </button>
+                </div>
+            </div>
+            </div>
+        </div>
         </div>
     </div>
     </div>
@@ -103,12 +128,29 @@ function delete_model(){
         url: '/model' + "?clear_annotations=" + $("#clearAnnotCheckbox").is(":checked"),
         type: "DELETE",
         success: function(){
-            location.reload(); 
+            console.log("Success: model delete")
         },
         error: function(xhr) {
             console.log(xhr)
         }
     });
 }
+
+function tranform_images(){
+    $.ajax({
+        url: '/transform' + "?dataset_type=" + $("#dsType option:selected").text(),
+        type: "PUT",
+        success: function(){
+            console.log("Success: transform")
+        },
+        error: function(xhr) {
+            console.log(xhr)
+        }
+    });
+}
+
+$(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+});
 </script>
 {% endblock content %}

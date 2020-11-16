@@ -9,6 +9,7 @@ PLOT_MAX_ACC = 1.1
 PLOT_MARGINS = dict(l=70, r=10, t=100, b=60)
 HEIGHT = 600
 
+
 class Plot:
     def generate_acc_plot(self, train_acc, val_acc, n_images):
         epochs = list(range(1, len(train_acc) + 1))

@@ -15,9 +15,6 @@ EMPTY_TRAIN_RESULTS = {
     'n_images': []
 }
 
-GRAPH_WIDTH = 1400
-GRAPH_HEIGHT = 600
-
 
 class TrainView(ActionView):
 

@@ -30,8 +30,8 @@
             </div>
         </div>
     </div>
+    {% if show_results %}
     <div class="container col-sm-10 mt-3 mb-4 border rounded border-secondary p-3">
-        {% if show_results %}
             {{ header("Sample test results") }}
             <div class="row text-center text-lg-left m-3">
                 {% for image in images %}
@@ -59,8 +59,8 @@
                 </div>
                 <div class='col-3'></div>
             </div>
-        {% endif %}
     </div>
+    {% endif %}
     <div class="container col-sm-10 mt-3 mb-4 border rounded border-secondary p-3">
         {{ header("Your image") }}
         <div class="text-center">
