@@ -86,25 +86,50 @@
         <div class="tab-pane" id="prepare" role="tabpanel">
             {{ header("Prepare dataset") }}
             <div class="m-4 border rounded border-secondary p-4">
-            <div class="mb-4">
-            Copy your images from paths specified in the config file
-             the server and apply basic transformations on them.
-            </div>
-            <div class="row">
-                <div class="col-md-6">
-                <label for="dsType">Select dataset type</label>
-                <select class="form-control" id="dsType">
-                    <option>unlabelled</option>
-                    <option>test</option>
-                    <option>validation</option>
-                </select>
+                <div class="mb-4 h-5">
+                Copy your images from paths specified in the config file
+                the server and apply basic transformations on them.
                 </div>
-                <div class="col-md-6 text-right mt-4">
-                    <button type="button" class="btn btn-secondary btn-lg" onclick=tranform_images()>
-                        Apply
-                    </button>
+                <div class="row">
+                    <div class="col-md-6">
+                    <label for="transformDatatype">Select dataset type</label>
+                    <select class="form-control" id="transformDatatype">
+                        <option>all</option>
+                        <option>unlabelled</option>
+                        <option>train</option>
+                        <option>test</option>
+                        <option>validation</option>
+                    </select>
+                    </div>
+                    <div class="col-md-6 text-right mt-4">
+                        <button type="button" class="btn main-color btn-lg" onclick=tranform_images()>
+                            Apply
+                        </button>
+                    </div>
                 </div>
             </div>
+            <div class="m-4 border rounded border-secondary p-4">
+                <div class="mb-4 h-5">
+                Delete the existing annotations and create new one. For training images it removes all
+                annotated labels.
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                    <label for="annoteDatatype">Select dataset type</label>
+                    <select class="form-control" id="annoteDatatype">
+                        <option>all</option>
+                        <option>unlabelled</option>
+                        <option>train</option>
+                        <option>test</option>
+                        <option>validation</option>
+                    </select>
+                    </div>
+                    <div class="col-md-6 text-right mt-4">
+                        <button type="button" class="btn main-color btn-lg" onclick=clear_annotations()>
+                            Apply
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
         </div>
@@ -151,7 +176,7 @@ function delete_model(){
 }
 
 function tranform_images(){
-    datatype = $("#dsType option:selected").text()
+    datatype = $("#transformDatatype option:selected").text()
     showAlert(msg.ACCEPTED, "Copy images for " + datatype + " images: started")
     $.ajax({
         url: '/transform' + "?dataset_type=" + datatype,
@@ -161,7 +186,23 @@ function tranform_images(){
         },
         error: function(xhr) {
             console.log(xhr)
-            showAlert(msg.FAILED, "Transform images: failed");
+            showAlert(msg.FAILED, "Transform images failed: " + xhr.responseText);
+        }
+    });
+}
+
+function clear_annotations(){
+    datatype = $("#annoteDatatype option:selected").text()
+    showAlert(msg.ACCEPTED, "Clear annotations for " + datatype + " dataset: started")
+    $.ajax({
+        url: '/annotations' + "?dataset_type=" + datatype,
+        type: "PUT",
+        success: function(){
+            showAlert(msg.OK, "Clear annotations: success");
+        },
+        error: function(xhr) {
+            console.log(xhr)
+            showAlert(msg.FAILED, "Clear annotations: failed");
         }
     });
 }

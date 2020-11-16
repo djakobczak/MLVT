@@ -1,5 +1,3 @@
-from flask import request
-
 from dral.logger import LOG
 from dral.preprocessing.loader import DataLoader
 from server.views.base import BaseView
@@ -7,14 +5,17 @@ from server.utils import DatasetType
 
 
 class TransformView(BaseView):
-    def put(self):
-        dataset_type = request.args.get('dataset_type')
-        # load data and perform preprocessing
+    def put(self, dataset_type):
         dl = DataLoader(self.cm)
-        srcs, dsts = self._dataset_type_to_paths(dataset_type)
-        dl.copy_multiple_paths(srcs, dsts)
-
-        return 200
+        if dataset_type == 'all':
+            for dataset in DatasetType:
+                srcs, dsts = self._dataset_type_to_paths(dataset_type)
+                dl.copy_multiple_paths(srcs, dsts)
+        else:
+            srcs, dsts = self._dataset_type_to_paths(dataset_type)
+            print(srcs, dsts)
+            dl.copy_multiple_paths(srcs, dsts)
+        return '', 200
 
     def _dataset_type_to_paths(self, dataset_type):
         if dataset_type == DatasetType.UNLABELLED.value:
@@ -22,7 +23,9 @@ class TransformView(BaseView):
             return ([self.cm.get_raw_unl_dir()],
                     [self.cm.get_unl_transformed_dir()])
         elif dataset_type == DatasetType.TRAIN.value:
-            return None, None   # !TODO
+            LOG.debug('Return paths for unlabelled images.')
+            return (self.cm.get_raw_train_dirs(),
+                    self.cm.get_train_transformed_dirs())
         elif dataset_type == DatasetType.TEST.value:
             LOG.debug('Return paths for test images.')
             return (self.cm.get_raw_test_dirs(),

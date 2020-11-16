@@ -4,10 +4,13 @@ from flask import render_template, request
 
 from server.actions.main import Action
 from server.actions.handlers import predict
+from server.config import CUT_STATIC_IDX
+from server.exceptions import FileException
+from server.views.annotation import AnnotationsView
 from server.views.base import ActionView
 from server.file_utils import label_samples
-from server.exceptions import FileException
 from server.predictions_manager import PredictionsManager
+from server.utils import DatasetType
 
 
 class PredictionsView(ActionView):
@@ -23,19 +26,19 @@ class PredictionsView(ActionView):
         except json.JSONDecodeError:
             raise FileException("Server can not find file or it is corrupted")
 
-        if new_predictions:   # or not predictions
+        if new_predictions:
             self.run_action(Action.PREDICTION, predict,
                             n_predictions=n_predictions,
                             random=random, balance=balance)
-
-        path_start_idx = 8  # neccessary to cut off 'static' part of path
+        av = AnnotationsView()
         return render_template(
             "predictions.html.j2",
-            path_start_idx=path_start_idx,  # html need realative path
+            path_start_idx=CUT_STATIC_IDX,  # html need realative path
             class1=predictions.get(0, []), class2=predictions.get(1, []),
             label1=self.cm.get_label_name(0),
             label2=self.cm.get_label_name(1),
-            n_images=self.cm.get_n_predictions()), 200
+            n_images=self.cm.get_n_predictions(),
+            annote_summary=av.get(DatasetType.TRAIN.value)[0]), 200
 
     def post(self):
         payload = request.json

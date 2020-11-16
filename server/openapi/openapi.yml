@@ -205,11 +205,31 @@ paths:
 
       responses:
           '200':
-            description: Return desired number of indicies
+            description: Return specified number of indicies
             content:
               text/html:
                 schema:
                   type: string
+
+  /annotations/{dataset_type}:
+    get:
+      summary: get dataset summary
+      parameters:
+        - in: path
+          name: dataset_type
+          schema:
+            type: string
+            allOf:
+              - $ref:  "#/components/schemas/DatasetType"
+              - not:
+                 type: string
+                 enum: ['all']
+          required: true
+      responses:
+        200:
+          description: Ok
+        404:
+          description: Annotation files not found
 
   /annotations:
     get:
@@ -360,7 +380,7 @@ paths:
           name: dataset_type
           schema:
             type: string
-            enum: ['unlabelled', 'train', 'test', 'validation']
+            enum: ['all', 'unlabelled', 'train', 'test', 'validation']
       responses:
         200:
           description: Images have been copied

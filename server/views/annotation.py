@@ -15,6 +15,20 @@ TOTAL_ITEMS = 'Total number of images'
 
 
 class AnnotationsView(BaseView):
+    def get(self, dataset_type):
+        if dataset_type == DatasetType.UNLABELLED.value:
+            result = self.json_summary(load_json(
+                self.cm.get_unl_annotations_path(), parse_keys_to=int))
+        elif dataset_type == DatasetType.TRAIN.value:
+            result = self.json_summary(load_json(
+                self.cm.get_train_annotations_path(), parse_keys_to=int))
+        elif dataset_type == DatasetType.TEST.value:
+            result = self.json_summary(load_json(
+                self.cm.get_test_annotations_path(), parse_keys_to=int))
+        elif dataset_type == DatasetType.VALIDATION.value:
+            result = self.json_summary(load_json(
+                self.cm.get_validation_annotations_path(), parse_keys_to=int))
+        return result, 200
 
     def search(self):
         unl_json = load_json(self.cm.get_unl_annotations_path(),
@@ -41,12 +55,14 @@ class AnnotationsView(BaseView):
         label_to_cls[self.cm.get_unknown_label()] = 'Unlabelled'
         summary = {label_to_cls.get(key): len(val)
                    for key, val in json_data.items()}
-        summary[TOTAL_ITEMS] = sum(val for _, val in summary.items())
+        summary['total'] = sum(val for _, val in summary.items())
         return summary
 
     def pretty_summary(self, summary):
         txt_summary = str()
         for key, val in summary.items():
+            if key == 'total':
+                key = TOTAL_ITEMS
             txt_summary += f"{key}: <b>{val}</b> images<br>"
         return txt_summary
 

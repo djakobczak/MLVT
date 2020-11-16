@@ -30,6 +30,11 @@ a {
   color: whitesmoke !important;
 }
 
+.main-color-nohover {
+  background-color:#227cb1 !important;
+  color: whitesmoke !important;
+}
+
 .main-color:hover {
   background-color:#195f88 !important;
   color: whitesmoke !important;
