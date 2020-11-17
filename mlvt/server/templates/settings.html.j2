@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% from 'macros.html.j2' import header %}
+
+{% block title %}
+    Prepare data
+{% endblock title %}
+
+{% block header %}
+    <h1>Configuration panel</h1>
+{% endblock header %}
+
+{% block content %}
+    <div class="container col-sm-10 mt-3 mb-4 border rounded border-secondary p-3">
+    <div class='row'>
+    <div class="col-md-4">
+        <div class="p-2">
+            <div class="text-white h4 text-center p-2">Settings</div>
+                <ul class="nav nav-pills flex-column m-2">
+                <li class="nav-item">
+                    <a class="nav-link active" data-toggle="pill" href="#model">Model</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="pill" href="#annotations">Annotations</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="pill" href="#prepare">Prepare</a>
+                </li>
+                </ul>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="tab-content">
+        <div class="tab-pane show active" id="model" role="tabpanel">
+            {{ header("Model informations") }}
+            <div class="m-4">
+                <dl class="row">
+                {% for name, value in model.items() %}
+                <dt class="col-sm-5 mt-2 text-big">{{ name }}</dt>
+                <dd class="col-sm-7 mt-2 text-big">{{ value }}</dd>
+                {% endfor %}
+                </dl>
+            </div>
+            {{ header("Actions") }}
+            <div class="m-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="ml-4 row h5">
+                            <div class="col-lg-6">
+                                <input class="form-check-input" checked="true" type="checkbox" value="" id="clearAnnotCheckbox">
+                                <label class="form-check-label" for="clearAnnotCheckbox">
+                                <div data-toggle="tooltip" data-placement="bottom" title="Remove all training labels.">
+                                    Clear annotations
+                                </div>
+                                </label>
+                            </div>
+                            <div class="col-lg-6">
+                                <input class="form-check-input" checked="true" type="checkbox" value="" id="clearHistoryCheckbox">
+                                <label class="form-check-label" for="clearHistoryCheckbox">
+                                <div data-toggle="tooltip" data-placement="bottom" title="Remove training and test history.">
+                                    Clear history
+                                </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <button type="button" class="btn btn-danger btn-lg" data-toggle="modal" data-target="#delete">
+                            Delete model
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane" id="annotations" role="tabpanel">
+            {{ header("Annotation files summary") }}
+            <div class="m-4">
+                <dl class="row">
+                {% for name, value in annotation.items() %}
+                <dt class="col-sm-5 mt-2 text-big">{{ name }}</dt>
+                <dd class="col-sm-7 mt-2 text-big">{{ value }}</dd>
+                {% endfor %}
+                </dl>
+            </div>
+        </div>
+        <div class="tab-pane" id="prepare" role="tabpanel">
+            {{ header("Prepare dataset") }}
+            <div class="m-4 border rounded border-secondary p-4">
+                <div class="mb-4 h-5">
+                Copy your images from paths specified in the config file
+                the server and apply basic transformations on them.
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                    <label for="transformDatatype">Select dataset type</label>
+                    <select class="form-control" id="transformDatatype">
+                        <option>all</option>
+                        <option>unlabelled</option>
+                        <option>train</option>
+                        <option>test</option>
+                        <option>validation</option>
+                    </select>
+                    </div>
+                    <div class="col-md-6 text-right mt-4">
+                        <button type="button" class="btn main-color btn-lg" onclick=tranform_images()>
+                            Apply
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="m-4 border rounded border-secondary p-4">
+                <div class="mb-4 h-5">
+                Delete the existing annotations and create new one. For training images it removes all
+                annotated labels.
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                    <label for="annoteDatatype">Select dataset type</label>
+                    <select class="form-control" id="annoteDatatype">
+                        <option>all</option>
+                        <option>unlabelled</option>
+                        <option>train</option>
+                        <option>test</option>
+                        <option>validation</option>
+                    </select>
+                    </div>
+                    <div class="col-md-6 text-right mt-4">
+                        <button type="button" class="btn main-color btn-lg" onclick=clear_annotations()>
+                            Apply
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+    </div>
+    <!-- Modals -->
+    <div class="modal fade" id="delete" tabindex="-1" role="dialog" aria-labelledby="deleteLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content text-dark">
+        <div class="modal-header">
+            <h5 class="modal-title" id="deleteLabel">Alert</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            Do you really want to delete model?
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button"  onclick="delete_model()" data-dismiss="modal" class="btn btn-danger">Delete</button>
+        </div>
+        </div>
+    </div>
+    </div>
+</div>
+
+<script>
+function delete_model(){
+    clear_annotation = "clear_annotations=" + $("#clearAnnotCheckbox").is(":checked");
+    clear_history = "clear_history=" + $("#clearHistoryCheckbox").is(":checked");
+    $.ajax({
+        url: '/model?' +  clear_annotation + "&" + clear_history,
+        type: "DELETE",
+        success: function(){
+            console.log("Success: model deleted");
+            showAlert(msg.OK, "Model deleted!");
+        },
+        error: function(xhr) {
+            console.log(xhr)
+            showAlert(msg.FAILED, "Model deletion: failed");
+        }
+    });
+}
+
+function tranform_images(){
+    datatype = $("#transformDatatype option:selected").text()
+    showAlert(msg.ACCEPTED, "Copy images for " + datatype + " images: started")
+    $.ajax({
+        url: '/transform' + "?dataset_type=" + datatype,
+        type: "PUT",
+        success: function(){
+            showAlert(msg.OK, "Transform images: success");
+        },
+        error: function(xhr) {
+            console.log(xhr)
+            showAlert(msg.FAILED, "Transform images failed: " + xhr.responseText);
+        }
+    });
+}
+
+function clear_annotations(){
+    datatype = $("#annoteDatatype option:selected").text()
+    showAlert(msg.ACCEPTED, "Clear annotations for " + datatype + " dataset: started")
+    $.ajax({
+        url: '/annotations' + "?dataset_type=" + datatype,
+        type: "PUT",
+        success: function(){
+            showAlert(msg.OK, "Clear annotations: success");
+        },
+        error: function(xhr) {
+            console.log(xhr)
+            showAlert(msg.FAILED, "Clear annotations: failed");
+        }
+    });
+}
+
+$(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+});
+</script>
+{% endblock content %}
