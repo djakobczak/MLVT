@@ -145,3 +145,6 @@ testset/*
 *.jpeg
 *.csv
 *.json
+
+# pytorch model/tensors
+*.pt
