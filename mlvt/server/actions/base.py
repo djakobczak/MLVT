@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from mlvt.model.models import Model
-from mlvt.model.config.config_manager import ConfigManager
+from mlvt.config.config_manager import ConfigManager
 from mlvt.model.datasets import UnlabelledDataset, LabelledDataset
 from mlvt.model.utils import get_resnet_test_transforms, \
     get_resnet_train_transforms

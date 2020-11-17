@@ -7,6 +7,7 @@ from mlvt.server.exceptions import errors
 from mlvt.server.extensions import executor
 from mlvt.server.file_utils import clear_dir
 from mlvt.server.config import USER_IMAGE_DIR
+from mlvt.logger import Logger
 
 
 def register_extensions(app):
@@ -25,6 +26,7 @@ def create_app():
     flask_app.config['EXECUTOR_TYPE'] = 'process'
     flask_app.config['EXECUTOR_MAX_WORKERS'] = 2
     flask_app.config['EXECUTOR_PROPAGATE_EXCEPTIONS'] = True
+    flask_app.config['logger'] = Logger.create_logger('MLVT')
     register_extensions(flask_app)
     clear_dir(USER_IMAGE_DIR)
     return app

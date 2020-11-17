@@ -1,3 +1,4 @@
+import logging
 import time
 import os
 
@@ -6,8 +7,10 @@ import torch
 from torch.utils.data import Dataset
 from PIL import Image
 
-from mlvt.model.logger import LOG
 from mlvt.server.file_utils import load_json
+
+
+LOG = logging.getLogger('MLVT')
 
 
 def remove_corrupted_images(path):

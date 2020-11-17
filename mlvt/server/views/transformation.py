@@ -1,7 +1,10 @@
-from mlvt.model.logger import LOG
+import logging
 from mlvt.model.preprocessing.loader import DataLoader
 from mlvt.server.views.base import BaseView
 from mlvt.server.utils import DatasetType
+
+
+LOG = logging.getLogger('MLVT')
 
 
 class TransformView(BaseView):

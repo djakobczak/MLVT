@@ -6,13 +6,16 @@ import torch.nn as nn
 import torchvision
 from tqdm import tqdm
 
-from mlvt.model.logger import LOG
+import logging
 from mlvt.server.file_utils import append_to_train_file
 
 
 def init_and_save(path):
     model = Model()
     model.save(path)
+
+
+LOG = logging.getLogger('MLVT')
 
 
 class Model:

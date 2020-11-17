@@ -31,8 +31,6 @@ class PredictionsView(ActionView):
                             n_predictions=n_predictions,
                             random=random, balance=balance)
         av = AnnotationsView()
-        print(CUT_STATIC_IDX)
-        print(predictions.get(0, []))
         return render_template(
             "predictions.html.j2",
             path_start_idx=CUT_STATIC_IDX,  # html need realative path

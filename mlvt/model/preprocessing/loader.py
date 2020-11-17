@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 
@@ -6,7 +7,8 @@ from tqdm import tqdm
 from PIL import Image
 from torchvision import transforms
 
-from mlvt.model.logger import LOG
+
+LOG = logging.getLogger('MLVT')
 
 
 class DataLoader:

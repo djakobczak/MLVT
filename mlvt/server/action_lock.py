@@ -1,7 +1,10 @@
+import logging   # !TODO split into 2 loggers
 from contextlib import ContextDecorator
 
-from mlvt.model.logger import LOG   # !TODO split into 2 loggers
 from mlvt.server.exceptions import ActionLockedException
+
+
+LOG = logging.getLogger('MLVT')
 
 
 class lock(ContextDecorator):

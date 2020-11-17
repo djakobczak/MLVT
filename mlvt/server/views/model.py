@@ -1,6 +1,6 @@
+import logging
 from connexion import request
 
-from mlvt.model.logger import LOG
 from mlvt.model.models import Model
 from mlvt.server.views.base import MLView
 from mlvt.server.file_utils import (fail_if_headpath_not_exist,
@@ -8,6 +8,9 @@ from mlvt.server.file_utils import (fail_if_headpath_not_exist,
                                     save_json, purge_json_file)
 from mlvt.server.views.annotation import AnnotationsView
 from mlvt.server.views.train import EMPTY_TRAIN_RESULTS
+
+
+LOG = logging.getLogger('MLVT')
 
 
 class ModelView(MLView):

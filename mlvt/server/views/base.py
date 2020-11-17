@@ -1,3 +1,4 @@
+import logging
 import os
 
 from flask.views import MethodView
@@ -5,9 +6,8 @@ import torch
 from torch.utils.data import DataLoader
 
 from mlvt.model.models import Model
-from mlvt.model.config.config_manager import ConfigManager
+from mlvt.config.config_manager import ConfigManager
 from mlvt.model.datasets import UnlabelledDataset, LabelledDataset
-from mlvt.model.logger import LOG
 from mlvt.model.utils import get_resnet_test_transforms, \
     get_resnet_train_transforms
 from mlvt.server.exceptions import AnnotationException, ModelException
@@ -15,6 +15,9 @@ from mlvt.server.file_utils import is_json_empty, create_subdirs_if_not_exist
 from mlvt.server.exceptions import ActionLockedException
 from mlvt.server.extensions import executor
 from mlvt.server.config import CONFIG_NAME
+
+
+LOG = logging.getLogger('MLVT')
 
 
 class BaseView(MethodView):

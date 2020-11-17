@@ -6,7 +6,7 @@ import confuse
 
 
 CONFIG_PATH = CONFIG_PATH = os.path.join(
-    '.', 'mlvt', 'model', 'config', 'config.yml')
+    '.', 'mlvt', 'config', 'config.yml')
 
 config = confuse.Configuration('DRAL', __name__)
 config.set_file(CONFIG_PATH)  # !TODO change location of file path

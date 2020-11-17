@@ -1,7 +1,11 @@
+import logging
+
 import numpy as np
 
-from mlvt.model.logger import LOG
 from mlvt.server.file_utils import load_json, save_json
+
+
+LOG = logging.getLogger('MLVT')
 
 
 class PredictionsManager:

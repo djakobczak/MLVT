@@ -5,8 +5,11 @@ import shutil
 
 from tqdm import tqdm
 
-from mlvt.model.logger import LOG
+import logging
 from mlvt.server.exceptions import PathException
+
+
+LOG = logging.getLogger('MLVT')
 
 
 def save_json(path, data, force=True):

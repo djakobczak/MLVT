@@ -1,3 +1,4 @@
+import logging
 import torch
 from torch.utils.data import DataLoader
 
@@ -6,10 +7,12 @@ from mlvt.server.actions.main import ActionStatus
 from mlvt.server.exceptions import AnnotationException
 from mlvt.server.file_utils import append_to_json_file
 from mlvt.model.datasets import LabelledDataset
-from mlvt.model.logger import LOG
 from mlvt.model.utils import get_resnet_test_transforms
 from mlvt.server.predictions_manager import PredictionsManager
 from mlvt.server.utils import test_image_counter
+
+
+LOG = logging.getLogger('MLVT')
 
 
 def train(**kwargs):

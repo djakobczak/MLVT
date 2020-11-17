@@ -1,10 +1,12 @@
+import logging
 import os
 from pathlib import Path
 
 import pandas as pd
 from tqdm import tqdm
 
-from mlvt.model.logger import LOG
+
+LOG = logging.getLogger('MLVT')
 
 
 def label_samples(src_csv_file, dst_csv_file, paths, label):
