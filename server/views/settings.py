@@ -9,7 +9,6 @@ class SettingsView(BaseView, ModelIO):
         model_summary = self._get_model_summary()
         av = AnnotationsView()
         annotation_summary = av.search()[0]
-        print(annotation_summary)
         return render_template("settings.html.j2", model=model_summary,
                                annotation=annotation_summary)
 

@@ -4,7 +4,6 @@ from .home import HomeView
 from .annotation import AnnotationsView
 from .train import TrainView
 from .test import TestView
-from .information import InformationView
 from .settings import SettingsView
 from .transformation import TransformView
 from .model import ModelView

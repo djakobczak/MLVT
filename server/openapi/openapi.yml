@@ -1,8 +1,8 @@
 openapi: 3.0.1
 info:
-  title: Sample API
+  title: MLVT (Machine Learning Visulization Tool)
   description: API for simple HTTP server that visualize machine learning process
-  version: 3.0.1
+  version: 0.1.1
 
 components:
   schemas:
@@ -20,27 +20,6 @@ components:
       description: Array with indicies of images
       items:
         type: integer
-
-    Labels:
-      type: array
-      description: Array with labels, supported formats are one-hot,
-        label number or string
-      items:
-        oneOf:
-          - type: integer
-          - type: string
-          - type: array
-
-    LabelledImages:
-      type: object
-      properties:
-        images:
-          $ref: '#/components/schemas/Images'
-        labels:
-          $ref: '#/components/schemas/Labels'
-      required:
-        - images
-        - labels
 
     WrongPredictions:
       description: Dictionary of wrong predictions for both classes.
@@ -103,7 +82,7 @@ paths:
     get:
       summary: Home page
       tags:
-        - main
+        - general
       responses:
         200:
           description: OK
@@ -159,7 +138,7 @@ paths:
     post:
       summary: Post labels annoted by the user.
       tags:
-        - data
+        - model
       requestBody:
         description: pass
         required: true
@@ -174,7 +153,7 @@ paths:
     get:
       summary: Show subset of model predictions
       tags:
-        - data
+        - model
       parameters:
         - in: query
           name: new_predictions
@@ -213,7 +192,9 @@ paths:
 
   /annotations/{dataset_type}:
     get:
-      summary: get dataset summary
+      summary: Get dataset summary
+      tags:
+        - extras
       parameters:
         - in: path
           name: dataset_type
@@ -233,7 +214,9 @@ paths:
 
   /annotations:
     get:
-      summary: get summary of all annotation files
+      summary: Get summary of all annotation files
+      tags:
+        - extras
       responses:
         200:
           description: Ok
@@ -241,7 +224,7 @@ paths:
           description: Annotation files not found
 
     put:
-      summary: create or update existing annotation json files
+      summary: Create or update existing annotation json files
       tags:
         - config
       parameters:
@@ -272,6 +255,12 @@ paths:
 
   /train:
     get:
+      summary: Get training result
+      description: Get results for both training and validation sets
+        (accuracy, loss) with number of images used to training.
+        Additionaly graph with data visualization is returned.
+      tags:
+        - results
       parameters:
         - in: query
           name: nepochs
@@ -286,7 +275,6 @@ paths:
             type: boolean
             default: False
             
-      summary: Get last training result
       responses:
           200:
             description: Success
@@ -296,7 +284,9 @@ paths:
                   type: string
 
     post:
-      summary: Train model and save train summary results
+      summary: Train model and save training summary results
+      tags:
+        - model
       parameters:
         - in: query
           name: epochs
@@ -313,14 +303,18 @@ paths:
           $ref: "#/components/responses/Ongoing"
 
     delete:
-      summary: remove training history
+      summary: Remove training history
+      tags:
+        - results
       responses:
         200:
           description: Deleted
 
   /test:
     get:
-      summary: Test model against test dataset
+      summary: Get test results
+      tags:
+        - results
       parameters:
         - in: query
           name: new_samples
@@ -338,6 +332,8 @@ paths:
   
     post:
       summary: Start testing action
+      tags:
+        - model
       responses:
         202:
           description: Test action started
@@ -345,21 +341,18 @@ paths:
           $ref: "#/components/responses/Ongoing"
 
     delete:
-      summary: remove training history
+      summary: Remove training history
+      tags:
+        - results
       responses:
         200:
           description: Deleted
 
-  /information:
-    get:
-      summary: information TODO
-      responses:
-        200:
-          description: Succesfull information
-
   /settings:
     get:
-      summary: settings TODO
+      summary: Get settings view
+      tags:
+        - extras
       responses:
         200:
           description: OK
@@ -371,6 +364,8 @@ paths:
   /transform:
     put:
       summary: Copy and transform images
+      tags:
+        - config
       description: Copy images from temporary directory to the
         server file structure. Additionally apply initial
         preprocessing on images in order to speed up further
@@ -384,17 +379,25 @@ paths:
       responses:
         200:
           description: Images have been copied
+        404:
+          description: Source or destination file not found
 
   /model:
     get:
       summary: Get model summary
+      tags:
+        - model
       responses:
         200:
           description: Model summary information
+        404:
+          description: Model not found
 
     delete:
       summary: Delete current model and overwrite it with
         new untrained model
+      tags:
+        - model
       parameters:
         - in: query
           name: clear_annotations
@@ -413,7 +416,9 @@ paths:
             description: Model deleted
 
     put:
-      summary: save current model at the specified path
+      summary: Save current model at the specified path
+      tags:
+        - model
       parameters:
         - in: query
           name: force
@@ -438,8 +443,9 @@ paths:
       
   /status/{action}:
     get:
-      summary: return True if action is ongoing
-      tags: [helpers]
+      summary: Return True if action is ongoing
+      tags:
+        - action
       parameters:
         - in: path
           name: action
@@ -464,13 +470,17 @@ paths:
 
   /data/{datatype}:
     get:
-      summary: get data
+      summary: Serve data to the client
+      tags:
+        - extras
       parameters:
         - in: path
           name: datatype
           description: type of requested data
           schema:
             type: string
+            enum:
+              - train_results
           required: true
       responses:
         200:

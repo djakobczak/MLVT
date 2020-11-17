@@ -236,7 +236,7 @@
                     targetImg.src = data.path;
                      $("#yourImage").show();
                     label = document.getElementById("userLabel");
-                    label.innerHTML = "Label: " + data.label + " with " + data.acc + "% accuracy";
+                    label.innerHTML = "Label: " + data.label + " with " + data.acc * 100 + "% accuracy";
                     console.log('Success!');
                 },
                 error: function(xhr) {
