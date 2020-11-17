@@ -1,15 +1,11 @@
-import os
 import time
 
 import numpy as np
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
 import torchvision
-from torchvision import transforms
 from tqdm import tqdm
 
-from mlvt.model.datasets import LabelledDataset
 from mlvt.model.logger import LOG
 from mlvt.server.file_utils import append_to_train_file
 
@@ -218,56 +214,3 @@ class Model:
 
     def get_lr(self):
         return self._lr
-
-
-BATCH_SIZE = 128
-MODEL_NAME = 'model.pt'
-
-
-def main():
-    root_train_dir = os.path.join('data', 'PetImages', 'Train')
-    csv_train_file = os.path.join('data', 'train_annotations.csv')
-    root_test_dir = os.path.join('data', 'PetImages', 'Test')
-    csv_test_file = os.path.join('data', 'test_annotations.csv')
-
-    preprocessed = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ])
-
-    td = LabelledDataset(csv_train_file, root_train_dir, transforms=preprocessed)
-    trainloader = DataLoader(td, batch_size=BATCH_SIZE,
-                             shuffle=True, num_workers=0)
-    model = Model()
-    model.train(trainloader, epochs=3)
-    model.save(MODEL_NAME)
-
-    td = LabelledDataset(csv_test_file, root_test_dir, transforms=preprocessed)
-    testloader = DataLoader(td, batch_size=BATCH_SIZE,
-                            shuffle=True, num_workers=0)
-
-    model.evaluate(testloader)
-
-
-if __name__ == "__main__":
-    path1 = os.path.join('data', 'PetImages', 'Unlabelled', '4001.jpg')
-    path2 = os.path.join('data', 'PetImages', 'Test', 'Cat', '2.jpg')
-
-    device = torch.device(
-        "cuda:0" if torch.cuda.is_available() else "cpu")
-    preprocessed = transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ])
-
-    model = torch.load(MODEL_NAME)
-    predictions = model(img1)
-    predictions = model(img2)
-
-    model_conv = torchvision.models.resnet18(pretrained=True)
-    num_ftrs = model_conv.fc.in_features
-    model_conv.fc = nn.Sequential(
-        nn.Linear(num_ftrs, 256),
-        nn.Linear(256, 2))

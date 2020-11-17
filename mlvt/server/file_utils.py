@@ -1,6 +1,7 @@
 import json
-import os, shutil
+import os
 from pathlib import Path
+import shutil
 
 from tqdm import tqdm
 
@@ -16,7 +17,6 @@ def save_json(path, data, force=True):
         json.dump(data, f, indent=4, sort_keys=True)
 
 
-# !TODO change load_labels to laod_json with parse
 def load_json(path, parse_keys_to=None):
     try:
         with open(path) as f:

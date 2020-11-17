@@ -12,7 +12,7 @@ from mlvt.model.utils import get_resnet_test_transforms
 from mlvt.server.actions.handlers import test
 from mlvt.server.actions.main import Action
 from mlvt.server.config import (USER_IMAGE_DIR, RELATIVE_USER_IMAGE_DIR,
-                           CUT_STATIC_IDX)
+                                CUT_STATIC_IDX)
 from mlvt.server.file_utils import load_json, purge_json_file, save_json
 from mlvt.server.utils import test_image_counter
 from mlvt.server.views.base import ActionView, ModelIO

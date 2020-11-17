@@ -1,4 +1,3 @@
-from connexion import request
 from flask import render_template
 from flask import redirect, url_for
 

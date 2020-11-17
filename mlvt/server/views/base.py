@@ -87,7 +87,7 @@ class MLView(BaseView):
                 shuffle=True, num_workers=0)
         return self.test_loader
 
-    def _fail_if_file_is_empty(self, path):  # !TODO could be static or moved somewhere
+    def _fail_if_file_is_empty(self, path):
         if not os.path.isfile(path) or not is_json_empty(path):
             raise AnnotationException(
                 'Annotation file does not exist or is empty')

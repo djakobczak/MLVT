@@ -1,5 +1,5 @@
-from mlvt.dral.logger import LOG
-from mlvt.dral.preprocessing.loader import DataLoader
+from mlvt.model.logger import LOG
+from mlvt.model.preprocessing.loader import DataLoader
 from mlvt.server.views.base import BaseView
 from mlvt.server.utils import DatasetType
 
@@ -9,7 +9,7 @@ class TransformView(BaseView):
         dl = DataLoader(self.cm)
         if dataset_type == 'all':
             for dataset in DatasetType:
-                srcs, dsts = self._dataset_type_to_paths(dataset_type)
+                srcs, dsts = self._dataset_type_to_paths(dataset.value)
                 dl.copy_multiple_paths(srcs, dsts)
         else:
             srcs, dsts = self._dataset_type_to_paths(dataset_type)

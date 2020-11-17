@@ -5,8 +5,7 @@ from torch.utils.data import DataLoader
 
 from mlvt.model.models import Model
 from mlvt.model.config.config_manager import ConfigManager
-from mlvt.model.datasets import UnlabelledDataset, LabelledDataset, \
-    LabelledDatasetMemoryInefficient
+from mlvt.model.datasets import UnlabelledDataset, LabelledDataset
 from mlvt.model.utils import get_resnet_test_transforms, \
     get_resnet_train_transforms
 
@@ -69,16 +68,6 @@ class MLAction(BaseAction):
                 shuffle=True, num_workers=0)
         return self.test_loader
 
-    def get_validatation_loader2(self):  #!TODO
-        x = torch.load('./data/x.pt')
-        y = torch.load('./data/y.pt')
-        self.validation_dataset = LabelledDatasetMemoryInefficient(x, y)
-
-        self.validation_loader = DataLoader(
-            self.validation_dataset, batch_size=self.cm.get_batch_size(),
-            shuffle=True, num_workers=0)
-        return self.validation_loader
-
     def get_validation_loader(self, batch_size):
         annotation_path = self.cm.get_validation_annotations_path()
         self._fail_if_file_is_empty(annotation_path)
@@ -92,7 +81,7 @@ class MLAction(BaseAction):
                 shuffle=True, num_workers=0)
         return self.validation_loader
 
-    def _fail_if_file_is_empty(self, path):  # !TODO could be static or moved somewhere
+    def _fail_if_file_is_empty(self, path):
         if not os.path.isfile(path) or not is_json_empty(path):
             raise AnnotationException(
                 f'Annotation file ({path}) does not exist or is empty')

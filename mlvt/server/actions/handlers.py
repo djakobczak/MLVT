@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 from mlvt.server.actions.base import MLAction
 from mlvt.server.actions.main import ActionStatus
 from mlvt.server.exceptions import AnnotationException
-from mlvt.server.file_utils import append_to_json_file, append_to_train_file
+from mlvt.server.file_utils import append_to_json_file
 from mlvt.model.datasets import LabelledDataset
 from mlvt.model.logger import LOG
 from mlvt.model.utils import get_resnet_test_transforms
@@ -32,9 +32,10 @@ def train(**kwargs):
     except AnnotationException as e:
         LOG.error(f'Training failed: {e}')
         return ActionStatus.FAILED, 'Please, annote some images'
-    except ValueError as e:
+    except Exception as e:
         LOG.error(f'Training failed: {e}')
-        return ActionStatus.FAILED, 'Unknwon error occured durning training'
+        return ActionStatus.FAILED, \
+            f'Unknwon error occured durning training ({str(e)})'
     finally:
         torch.cuda.empty_cache()
 
@@ -64,9 +65,10 @@ def test(**kwargs):
             test_image_counter.value = 0
         torch.cuda.empty_cache()
         return ActionStatus.SUCCESS, 'Test completed'
-    except Exception:
+    except Exception as e:
         torch.cuda.empty_cache()
-        return ActionStatus.FAILED, 'Unknwon error occured durning training'
+        return ActionStatus.FAILED, \
+            f'Unknwon error occured durning training ({str(e)})'
 
 
 def predict(**kwargs):
@@ -87,6 +89,7 @@ def predict(**kwargs):
             dataloader=unl_loader, random=random, balance=balance)
         torch.cuda.empty_cache()
         return ActionStatus.SUCCESS, 'Prediction completed'
-    except Exception:
+    except Exception as e:
         torch.cuda.empty_cache()
-        return ActionStatus.FAILED, 'Unknwon error occured durning training'
+        return ActionStatus.FAILED, \
+            f'Unknwon error occured durning prediction: ({str(e)})'

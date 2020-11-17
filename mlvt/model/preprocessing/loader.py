@@ -6,7 +6,6 @@ from tqdm import tqdm
 from PIL import Image
 from torchvision import transforms
 
-from mlvt.model.config.config_manager import ConfigManager
 from mlvt.model.logger import LOG
 
 
@@ -68,19 +67,3 @@ class DataLoader:
         else:
             img = cv2.resize(img, (self.IMG_SIZE, self.IMG_SIZE))
         return img
-
-
-if __name__ == "__main__":
-    cm = ConfigManager('testset')
-    dl = DataLoader(cm)
-
-    dl.copy_with_transforms(cm.get_raw_unl_dir(),
-                            cm.get_unl_transformed_dir(),
-                            transforms)
-
-    # create_csv_file(cm.get_unl_annotations(),
-    #                 cm.get_processed_dir())
-    # create_csv_file(cm.get_train_annotations(),
-    #                 None, labels='abc')
-    # paths = ['.\\server\\static\\testset\\images\\4002.jpg', '.\\server\\static\\testset\\images\\4088.jpg']
-    # label_samples(cm.get_unl_annotations(), None, paths, None)
