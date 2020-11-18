@@ -9,9 +9,9 @@ from mlvt.model.datasets import UnlabelledDataset, LabelledDataset
 from mlvt.model.utils import get_resnet_test_transforms, \
     get_resnet_train_transforms
 
+from mlvt.server.config import CONFIG_NAME
 from mlvt.server.exceptions import AnnotationException, ModelException
 from mlvt.server.file_utils import is_json_empty
-from mlvt.server.config import CONFIG_NAME
 
 
 class BaseAction:
@@ -86,14 +86,29 @@ class MLAction(BaseAction):
             raise AnnotationException(
                 f'Annotation file ({path}) does not exist or is empty')
 
-    def load_model(self):
-        try:
-            model = Model.load(self.cm.get_model_trained())
-        except FileNotFoundError:
-            raise ModelException('Error while loading trained model')
-        return Model(model)
+    def load_training_model(self):
+        return self._load_model(self.cm.get_training_model())
 
-    def save_model(self, model=None, path=None):
-        model = model if model else self.load_model()
-        path = path if path else self.cm.get_model_trained()
-        torch.save(model.model_conv, path)
+    def load_best_model(self):
+        return self._load_model(self.cm.get_best_model())
+
+    def _load_model(self, path, save=True):
+        try:
+            print("[DEBUG] LOAD FROM: ", path)
+            return Model(state=Model.load(path),
+                         training_model_path=self.cm.get_training_model(),
+                         best_model_path=self.cm.get_best_model())
+        except FileNotFoundError:
+            print("[DEBUG] FILE NOT FOUND!!!")
+            if save:
+                return Model(training_model_path=self.cm.get_training_model(),
+                             best_model_path=self.cm.get_best_model())
+            raise ModelException('Error while loading trained model')
+
+    def save_training_model(self, model=None, custom_path=None):
+        training_model_path = custom_path or self.cm.get_training_model()
+        torch.save(model.model_conv, training_model_path)
+
+    def save_best_model(self, model, custom_path=None):
+        best_model_path = custom_path or self.cm.get_best_model()
+        torch.save(model.model_conv, best_model_path)

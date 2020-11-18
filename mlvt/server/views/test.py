@@ -15,13 +15,13 @@ from mlvt.server.config import (USER_IMAGE_DIR, RELATIVE_USER_IMAGE_DIR,
                                 CUT_STATIC_IDX)
 from mlvt.server.file_utils import load_json, purge_json_file, save_json
 from mlvt.server.utils import test_image_counter
-from mlvt.server.views.base import ActionView, ModelIO
+from mlvt.server.views.base import ActionView, ModelIOView
 
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 
 
-class TestView(ActionView, ModelIO):
+class TestView(ActionView, ModelIOView):
     def search(self, new_samples):
         test_results = load_json(self.cm.get_test_results_file(),
                                  parse_keys_to=int)
@@ -53,7 +53,7 @@ class TestView(ActionView, ModelIO):
                 return f'Got unsupprted file type ({filename}),' \
                     f'supported extensions: ({ALLOWED_EXTENSIONS})', 400
 
-            model = self.load_model(self.cm.get_model_trained())
+            model = self.load_training_model()
             path = os.path.join(USER_IMAGE_DIR, filename)
             uploaded.save(path)
             img = Image.open(path)

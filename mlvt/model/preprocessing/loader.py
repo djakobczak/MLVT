@@ -24,8 +24,14 @@ class DataLoader:
             ])
 
     def copy_multiple_paths(self, srcs, dsts):
+        excs = []
         for src, dst in zip(srcs, dsts):
-            self.copy_all(src, dst)
+            try:
+                self.copy_all(src, dst)
+            except FileNotFoundError:
+                print('EXCEPTION')
+                excs.append(f'{srcs}, {dsts}')
+        return excs
 
     def copy_all(self, src, dst):
         Path(dst).mkdir(parents=True, exist_ok=True)

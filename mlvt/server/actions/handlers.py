@@ -18,17 +18,17 @@ LOG = logging.getLogger('MLVT')
 def train(**kwargs):
     try:
         ml_action = MLAction()
-        model = ml_action.load_model()
+        model = ml_action.load_training_model()
         epochs = kwargs.get('epochs') or ml_action.cm.get_epochs()
         batch_size = kwargs.get('batch_size') or ml_action.cm.get_batch_size()
         accs, losses, val_accs, val_losses = model.train(
                 ml_action.get_train_loader(batch_size),
                 epochs,
                 ml_action.get_validation_loader(batch_size),
-                save_to=ml_action.cm.get_train_results_file(),
+                results_save_to=ml_action.cm.get_train_results_file(),
                 n_images=len(ml_action.train_dataset))
         LOG.info(f'losses: {losses}, accs: {accs}')
-        ml_action.save_model(model)
+        # ml_action.save_training_model(model)
 
         torch.cuda.empty_cache()
         return ActionStatus.SUCCESS, 'Training completed'
@@ -46,7 +46,7 @@ def train(**kwargs):
 def test(**kwargs):
     try:
         ml_action = MLAction()
-        model = ml_action.load_model()
+        model = ml_action.load_training_model()
         test_ds = LabelledDataset(
             ml_action.cm.get_test_annotations_path(),
             get_resnet_test_transforms(), return_paths=True)
@@ -75,24 +75,26 @@ def test(**kwargs):
 
 
 def predict(**kwargs):
-    try:
-        n_predictions = kwargs.get('n_predictions')
-        random = kwargs.get('random')
-        balance = kwargs.get('balance')
-        ml_action = MLAction()
-        model = ml_action.load_model()
-        unl_loader = ml_action.get_unl_loader()
+    # try:
+    n_predictions = kwargs.get('n_predictions')
+    random = kwargs.get('random')
+    balance = kwargs.get('balance')
+    ml_action = MLAction()
+    print('LOAD MODEL')
+    model = ml_action.load_training_model()
+    unl_loader = ml_action.get_unl_loader()
 
-        LOG.info('Start prediction with parameters: '
-                 f'random={random}, balance={balance}')
-        pm = PredictionsManager(ml_action.cm.get_n_labels(),
-                                ml_action.cm.get_predictions_file())
-        pm.get_new_predictions(
-            n_predictions, model=model,
-            dataloader=unl_loader, random=random, balance=balance)
-        torch.cuda.empty_cache()
-        return ActionStatus.SUCCESS, 'Prediction completed'
-    except Exception as e:
-        torch.cuda.empty_cache()
-        return ActionStatus.FAILED, \
-            f'Unknwon error occured durning prediction: ({str(e)})'
+    LOG.info('Start prediction with parameters: '
+                f'random={random}, balance={balance}')
+    pm = PredictionsManager(ml_action.cm.get_n_labels(),
+                            ml_action.cm.get_predictions_file())
+
+    pm.get_new_predictions(
+        n_predictions, model=model,
+        dataloader=unl_loader, random=random, balance=balance)
+    torch.cuda.empty_cache()
+    return ActionStatus.SUCCESS, 'Prediction completed'
+    # except Exception as e:
+    #     torch.cuda.empty_cache()
+    #     return ActionStatus.FAILED, \
+    #         f'Unknwon error occured durning prediction: ({str(e)})'

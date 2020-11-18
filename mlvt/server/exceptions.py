@@ -63,8 +63,3 @@ def handle_path(error):
 @errors.app_errorhandler(EmptyFileException)
 def handle_empty_file(error):
     return str(error), 400
-
-
-@errors.app_errorhandler(FileNotFoundError)
-def handle_not_found(error):
-    return str("File not found"), 404

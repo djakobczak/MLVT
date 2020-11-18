@@ -96,14 +96,14 @@ paths:
       summary: Returns all possible configuration
       tags:
           - extras
-      responses: 
+      responses:
         '200':
           description: List of configurations
           content:
             application/json:
-              schema: 
+              schema:
                 type: array
-                items: 
+                items:
                   $ref: '#/components/schemas/Config'
         '404':
           description: Configuration not found
@@ -122,14 +122,14 @@ paths:
               example: cats_vs_dogs64
             required: true
 
-      responses: 
+      responses:
         '200':
           description: Configuration
           content:
             application/json:
-              schema: 
+              schema:
                 type: object
-                items: 
+                items:
                   $ref: '#/components/schemas/Config'
         '404':
           description: Configuration with specified name not found
@@ -274,7 +274,7 @@ paths:
           schema:
             type: boolean
             default: False
-            
+
       responses:
           200:
             description: Success
@@ -329,7 +329,7 @@ paths:
               text/html:
                 schema:
                   type: string
-  
+
     post:
       summary: Start testing action
       tags:
@@ -379,6 +379,15 @@ paths:
       responses:
         200:
           description: Images have been copied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: string
         404:
           description: Source or destination file not found
 
@@ -416,31 +425,26 @@ paths:
             description: Model deleted
 
     put:
-      summary: Save current model at the specified path
-      tags:
-        - model
+      summary: Restore model to its best state
       parameters:
         - in: query
-          name: force
-          description: if set to True then force creation
-            subdirectories
+          name: clear_annotations
+          description: if set to true reset remove all training annotations
           schema:
             type: boolean
-            default: False
-      requestBody:
-        description: filesystem location where the model should
-          be saved
-        required: true
-        content:
-          text/plain:
-            schema:
-              type: string
-            example: /path/to/model/model.pt
-              
+            default: True
+        - in: query
+          name: clear_history
+          description: if set to true remove all training data
+          schema:
+            type: boolean
+            default: True
+      tags:
+        - model
       responses:
         200:
-          description: Model has been saved  
-      
+          description: Model has been saved
+
   /status/{action}:
     get:
       summary: Return True if action is ongoing

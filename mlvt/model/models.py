@@ -1,4 +1,5 @@
 import time
+import shutil
 
 import numpy as np
 import torch
@@ -19,28 +20,41 @@ LOG = logging.getLogger('MLVT')
 
 
 class Model:
-    def __init__(self, model=None, n_out=2, lr=1e-3):
+    def __init__(self, state=None, training_model_path='training_model.pt',
+                 best_model_path='best_model.pt', n_out=2, lr=1e-3,
+                 gamma=0.5, overwrite=False):
         LOG.info('Model initialization starts...')
         self.device = torch.device(
             "cuda:0" if torch.cuda.is_available() else "cpu")
         self.n_out = n_out
-        LOG.info(f'CUDA: {self.device}')
-        if model is None:
-            model = torchvision.models.resnet34(pretrained=True)
-            # freeze conv layers
-            for param in model.parameters():
-                param.requires_grad = False
-            num_ftrs = model.fc.in_features
-            model.fc = nn.Sequential(
-                nn.Linear(num_ftrs, self.n_out),
-                nn.Softmax(dim=1))
-            LOG.info('New model created')
+        self.training_model_path = training_model_path
+        self.best_model_path = best_model_path
+        LOG.info(f'Device: {self.device}')
+
+        model = torchvision.models.resnet34(pretrained=True)
+        # freeze conv layers
+        for param in model.parameters():
+            param.requires_grad = False
+        num_ftrs = model.fc.in_features
+        model.fc = nn.Sequential(
+            nn.Linear(num_ftrs, self.n_out),
+            nn.Softmax(dim=1))
+        LOG.info('New model created')
         self.model_conv = model.to(self.device)
 
         self.criterion = nn.CrossEntropyLoss().to(self.device)
         self._init_optimizer(lr)
         self.scheduler = torch.optim.lr_scheduler.MultiStepLR(
-            self.optimizer, milestones=[20, 40, 80], gamma=0.5)
+            self.optimizer, milestones=[20, 40, 80], gamma=gamma)
+
+        LOG.info('Model initialized')
+        if state:
+            print(state['acc'])
+            self.model_conv.load_state_dict(state['model'])
+            self.optimizer.load_state_dict(state['optimizer'])
+            LOG.info('Model state loaded')
+        if overwrite:
+            self.save_states(0, True, 0)
 
     def _init_optimizer(self, lr=0.001):
         self._lr = lr
@@ -81,7 +95,8 @@ class Model:
         return predictions.cpu().numpy(), np.array(paths)
 
     def train(self, train_loader, epochs, validation_loader,
-              save_to=None, n_images=0):
+              results_save_to=None, n_images=0):
+        best_acc = self.get_validation_best_acc()
         # switch to training mode
         self.model_conv.train()
 
@@ -97,9 +112,15 @@ class Model:
                         epoch+1, epochs, tloss, tacc))
 
             vacc, vloss = self.evaluate(validation_loader)
-            if save_to:
+            is_best = vacc > best_acc
+            if is_best:
+                print('Best model!')
+                best_acc = vacc
+            self.save_states(vacc, is_best, epoch)
+
+            if results_save_to:
                 append_to_train_file(
-                    save_to,
+                    results_save_to,
                     {'train_acc': [tacc],
                      'train_loss': [tloss],
                      'val_acc': [vacc],
@@ -136,6 +157,23 @@ class Model:
         acc = float(torch.mean(total_corrects.float()).cpu())
         loss = float(torch.mean(losses).cpu())
         return acc, loss
+
+    def save_states(self, acc, is_best, epoch):
+        state = {
+            'model': self.model_conv.state_dict(),
+            'optimizer': self.optimizer.state_dict(),
+            'acc': acc,
+            'epoch': epoch
+        }
+        print('[DEBUG] SAVE MODEL: ', state['acc'])
+        torch.save(state, self.training_model_path)
+        if is_best:
+            print('SAVE IS BEST')
+            shutil.copyfile(self.training_model_path, self.best_model_path)
+
+    def restore_best(self):
+        best_state = self.load(self.best_model_path)
+        torch.save(best_state, self.training_model_path)
 
     def save(self, name):
         torch.save(self.model_conv, name)
@@ -217,3 +255,9 @@ class Model:
 
     def get_lr(self):
         return self._lr
+
+    def get_validation_best_acc(self):
+        return torch.load(self.best_model_path)['acc']
+
+    def get_validation_current_acc(self):
+        return torch.load(self.training_model_path)['acc']

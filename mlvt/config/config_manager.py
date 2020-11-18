@@ -190,12 +190,12 @@ class ConfigManager:
 
     # model paths
     @server_path()
-    def get_model_raw(self):
-        return self.config['paths']['models']['raw'].get(list)
+    def get_training_model(self):
+        return self.config['paths']['models']['training'].get(list)
 
     @server_path()
-    def get_model_trained(self):
-        return self.config['paths']['models']['trained'].get(list)
+    def get_best_model(self):
+        return self.config['paths']['models']['best'].get(list)
 
     def _raw_images_path(self):
         return self.config['paths']['images']['raw']

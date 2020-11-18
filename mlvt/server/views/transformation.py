@@ -13,11 +13,11 @@ class TransformView(BaseView):
         if dataset_type == 'all':
             for dataset in DatasetType:
                 srcs, dsts = self._dataset_type_to_paths(dataset.value)
-                dl.copy_multiple_paths(srcs, dsts)
+                excs = dl.copy_multiple_paths(srcs, dsts)
         else:
             srcs, dsts = self._dataset_type_to_paths(dataset_type)
-            dl.copy_multiple_paths(srcs, dsts)
-        return '', 200
+            excs = dl.copy_multiple_paths(srcs, dsts)
+        return {'errors': excs}, 200
 
     def _dataset_type_to_paths(self, dataset_type):
         if dataset_type == DatasetType.UNLABELLED.value:

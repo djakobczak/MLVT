@@ -110,8 +110,8 @@ cars_aircrafts:
       test: test.json
       valid: validation.json
     models: # server base prefix will be added
-      raw: [cars_aircrafts, models, cars_aircrafts_raw.pt]
-      trained: [cars_aircrafts, models, cars_aircrafts_trained.pt]
+      best: [cars_aircrafts, models, cars_aircrafts_best.pt]
+      training: [cars_aircrafts, models, cars_aircrafts_training.pt]
     images:
       raw:  # data base prefix will be added
         unl: [CarsAircrafts, unlabelled]
@@ -159,8 +159,8 @@ audi_vs_bmw:
       test: test.json
       valid: validation.json
     models: # server base prefix will be added
-      raw: [audi_vs_bmw, models, audi_vs_bmw_raw.pt]
-      trained: [audi_vs_bmw, models, audi_vs_bmw_trained.pt]
+      training: [audi_vs_bmw, models, audi_vs_bmw_training.pt]
+      best: [audi_vs_bmw, models, audi_vs_bmw_best.pt]
     images:
       raw:  # data base prefix will be added
         unl: [audi_vs_bmw, unlabelled]
@@ -208,8 +208,8 @@ male_vs_famale:
       test: test.json
       valid: validation.json
     models: # server base prefix will be added
-      raw: [male_vs_famale, models, male_vs_famale_raw.pt]
-      trained: [male_vs_famale, models, male_vs_famale_trained.pt]
+      training: [male_vs_famale, models, male_vs_famale_training.pt]
+      best: [male_vs_famale, models, male_vs_famale_raw.pt]
     images:
       raw:  # data base prefix will be added
         unl: [MaleFamale, unlabelled]
