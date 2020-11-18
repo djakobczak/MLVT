@@ -8,7 +8,7 @@ from mlvt.config.config_manager import ConfigManager
 from mlvt.server.exceptions import ModelException
 from mlvt.server.exceptions import ActionLockedException
 from mlvt.server.extensions import executor
-from mlvt.server.config import CONFIG_NAME
+from mlvt.server.file_utils import get_current_config
 
 
 LOG = logging.getLogger('MLVT')
@@ -16,7 +16,10 @@ LOG = logging.getLogger('MLVT')
 
 class BaseView(MethodView):
     def __init__(self):
-        self.cm = ConfigManager(CONFIG_NAME)
+        self.init_cm()
+
+    def init_cm(self):
+        self.cm = ConfigManager(get_current_config())
 
     def _numeric_to_classname(self):
         return dict((v, k) for k, v in self.cm.get_label_mapping().items())
@@ -43,15 +46,16 @@ class ModelIOView(BaseView):
 
     def _load_model(self, path, save=True):
         try:
-            print("[DEBUG] LOAD FROM: ", path)
+            print("LOAD MODEL")
             return Model(state=Model.load(path),
                          training_model_path=self.cm.get_training_model(),
                          best_model_path=self.cm.get_best_model())
         except FileNotFoundError:
-            print("[DEBUG] FILE NOT FOUND!!!")
+            print('FILE NOT FOUND')
             if save:
                 return Model(training_model_path=self.cm.get_training_model(),
-                             best_model_path=self.cm.get_best_model())
+                             best_model_path=self.cm.get_best_model(),
+                             overwrite=True)
             raise ModelException('Error while loading trained model')
 
     def save_training_model(self, model=None, custom_path=None):

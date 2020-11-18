@@ -1,4 +1,4 @@
-testset:
+cats_vs_dogs:
   dataset: Dogs vs Cats
   description: TODO
 
@@ -10,29 +10,33 @@ testset:
     unknown: 255
 
   paths:
-    annotations:
-      dir: ./server/static/testset/annotations/
+    server_base: ['.', 'mlvt', 'server', 'static']
+    data_base: ['.', 'data']
+    annotations: # server base prefix will be added
+      dir: [cats_vs_dogs, annotations]
       unl: unl.json
       train: train.json
       test: test.json
       valid: validation.json
-    models:
-      raw: ./server/static/testset/models/testset_raw.pt
-      trained: ./server/static/testset/models/testset_trained.pt
+    models: # server base prefix will be added
+      best: [cats_vs_dogs, models, cats_vs_dogs_best.pt]
+      training: [cats_vs_dogs, models, cats_vs_dogs_training.pt]
     images:
-      raw_unl: ./data/PetImages/Unlabelled
-      transformed_unl: ./server/static/testset/images_tranformed
-      raw_test: ./data/PetImages/Test
-      transformed_test: ./server/static/testset/images_test
-      raw_train: ./data/PetImages/Train
-      transformed_train: ./server/static/testset/images_train
-      raw_validation: ./data/PetImages/Validation
-      transformed_validation: ./server/static/testset/images_validation
-    data:
-      last_predictions: ./data/last_predictions.json
-      train_results: ./data/train_results.json
-      test_results: ./data/test_results.json
-      predictions: ./data/predictions.json
+      raw:  # data base prefix will be added
+        unl: [PetImages, unlabelled]
+        test: [PetImages, test]
+        train: [PetImages, train]
+        validation: [PetImages, valid]
+      transformed:  # server base prefix will be added
+        unl: [cats_vs_dogs, images_tranformed]
+        test: [cats_vs_dogs, images_test]
+        train: [cats_vs_dogs, images_train]
+        validation: [cats_vs_dogs, images_valid]
+    data:  # server base prefix will be added
+      train_results: [cats_vs_dogs, data, train_results.json]
+      test_results: [cats_vs_dogs, data, test_results.json]
+      predictions: [cats_vs_dogs, data, predictions.json]
+      last_user_test: [json, last_user_test.json]
 
   train:
     predictions: 10

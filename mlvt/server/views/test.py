@@ -23,6 +23,7 @@ ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 
 class TestView(ActionView, ModelIOView):
     def search(self, new_samples):
+        self.init_cm()
         test_results = load_json(self.cm.get_test_results_file(),
                                  parse_keys_to=int)
         user_test = load_json(self.cm.get_last_user_test_path())
@@ -46,6 +47,7 @@ class TestView(ActionView, ModelIOView):
                                path_start_idx=CUT_STATIC_IDX), 200
 
     def post(self):
+        self.init_cm()
         if 'testImage' in request.files:
             uploaded = request.files['testImage']
             filename = secure_filename(uploaded.filename)
@@ -74,6 +76,7 @@ class TestView(ActionView, ModelIOView):
         return 202
 
     def delete(self):
+        self.init_cm()
         purge_json_file(self.cm.get_test_results_file())
         purge_json_file(self.cm.get_last_user_test_path())
         return 200

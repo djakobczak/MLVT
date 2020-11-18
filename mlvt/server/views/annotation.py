@@ -111,6 +111,7 @@ class AnnotationsView(BaseView):
         if prune:
             purge_json_file(annotation_path)
         for valid_dir, label in zip(valid_dirs, labels):
+            print("UPDATE: ", annotation_path, valid_dir)
             update_annotation_file(annotation_path,
                                    valid_dir,
                                    label)

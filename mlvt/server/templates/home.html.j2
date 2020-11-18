@@ -13,7 +13,7 @@
     </div>
 </div>
 <div class="row text-center mt-3">
-    <div class="col-lg-4">
+    <div class="col-lg-4 mb-3">
         <img class="rounded-circle" src="{{ url_for('static', filename='images/predict.png') }}" alt="Generic placeholder image" width="140" height="140">
         <h2>Annotate</h2>
         <p>You are the oracle! <br> Get model predictions and annotate proper labels to the images.</p>
@@ -32,5 +32,35 @@
         <p><a class="btn main-color" href="{{ url_for('.views_TestView_search') }}" role="button">Go to »</a></p>
     </div>
 </div>
+<hr class="featurette-divider" style="background-color: white;">
+<div class="text-center">
+    <select id="configSelector" class="selectpicker">
+        {% for config in configs %}
+        <option style="font-size: 16px">{{ config['name'] }}</option>
+        {% endfor %}
+    </select>
+
+    <button type="button" onclick="set_config()" class="btn main-color btn-lg m-3">Set config</button>
 </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    $("#configSelector").val("{{ current_config }}");
+});
+
+function set_config(){
+    config_name = $("#configSelector option:selected").text()
+    $.ajax({
+        url: "/configs/" + config_name,
+        type: "PUT",
+        success: function(){
+            showAlert(msg.OK, "Configuration changed!");
+        },
+        error: function(xhr) {
+            showAlert(msg.ERROR, "Configuration change failed");
+        }
+    });
+}
+</script>
 {% endblock content %}

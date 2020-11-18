@@ -34,7 +34,7 @@ def train(**kwargs):
         return ActionStatus.SUCCESS, 'Training completed'
     except AnnotationException as e:
         LOG.error(f'Training failed: {e}')
-        return ActionStatus.FAILED, 'Please, annote some images'
+        return ActionStatus.FAILED, 'Please, annotate some images'
     except Exception as e:
         LOG.error(f'Training failed: {e}')
         return ActionStatus.FAILED, \
@@ -75,26 +75,25 @@ def test(**kwargs):
 
 
 def predict(**kwargs):
-    # try:
-    n_predictions = kwargs.get('n_predictions')
-    random = kwargs.get('random')
-    balance = kwargs.get('balance')
-    ml_action = MLAction()
-    print('LOAD MODEL')
-    model = ml_action.load_training_model()
-    unl_loader = ml_action.get_unl_loader()
+    try:
+        n_predictions = kwargs.get('n_predictions')
+        random = kwargs.get('random')
+        balance = kwargs.get('balance')
+        ml_action = MLAction()
+        model = ml_action.load_training_model()
+        unl_loader = ml_action.get_unl_loader()
 
-    LOG.info('Start prediction with parameters: '
-                f'random={random}, balance={balance}')
-    pm = PredictionsManager(ml_action.cm.get_n_labels(),
-                            ml_action.cm.get_predictions_file())
+        LOG.info('Start prediction with parameters: '
+                 f'random={random}, balance={balance}')
+        pm = PredictionsManager(ml_action.cm.get_n_labels(),
+                                ml_action.cm.get_predictions_file())
 
-    pm.get_new_predictions(
-        n_predictions, model=model,
-        dataloader=unl_loader, random=random, balance=balance)
-    torch.cuda.empty_cache()
-    return ActionStatus.SUCCESS, 'Prediction completed'
-    # except Exception as e:
-    #     torch.cuda.empty_cache()
-    #     return ActionStatus.FAILED, \
-    #         f'Unknwon error occured durning prediction: ({str(e)})'
+        pm.get_new_predictions(
+            n_predictions, model=model,
+            dataloader=unl_loader, random=random, balance=balance)
+        torch.cuda.empty_cache()
+        return ActionStatus.SUCCESS, 'Prediction completed'
+    except Exception as e:
+        torch.cuda.empty_cache()
+        return ActionStatus.FAILED, \
+            f'Unknwon error occured durning prediction: ({str(e)})'

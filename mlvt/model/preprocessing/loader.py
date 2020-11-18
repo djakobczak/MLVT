@@ -29,7 +29,6 @@ class DataLoader:
             try:
                 self.copy_all(src, dst)
             except FileNotFoundError:
-                print('EXCEPTION')
                 excs.append(f'{srcs}, {dsts}')
         return excs
 

@@ -8,7 +8,8 @@ import torchvision
 from tqdm import tqdm
 
 import logging
-from mlvt.server.file_utils import append_to_train_file
+from mlvt.server.file_utils import append_to_train_file, \
+    create_subdirs_if_not_exist
 
 
 def init_and_save(path):
@@ -54,6 +55,8 @@ class Model:
             self.optimizer.load_state_dict(state['optimizer'])
             LOG.info('Model state loaded')
         if overwrite:
+            create_subdirs_if_not_exist(self.training_model_path)
+            create_subdirs_if_not_exist(self.best_model_path)
             self.save_states(0, True, 0)
 
     def _init_optimizer(self, lr=0.001):

@@ -12,10 +12,12 @@ LOG = logging.getLogger('MLVT')
 
 class ModelView(ModelIOView):
     def search(self):
+        self.init_cm()
         model = self.load_training_model()
         return str(model.model_conv), 200
 
     def delete(self, clear_annotations, clear_history):
+        self.init_cm()
         # overwrite trained model with new untrained and clear all history data
         Model(training_model_path=self.cm.get_training_model(),
               best_model_path=self.cm.get_best_model(), overwrite=True)
@@ -32,6 +34,7 @@ class ModelView(ModelIOView):
         return 'Model deleted', 200
 
     def put(self, clear_annotations, clear_history):
+        self.init_cm()
         model = self.load_best_model()
         model.restore_best()
         if clear_history:

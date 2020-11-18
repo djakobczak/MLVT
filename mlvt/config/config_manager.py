@@ -4,28 +4,33 @@ import os
 import numpy as np
 import confuse
 
+from mlvt.server.config import CONFIG_PATH
 
-CONFIG_PATH = CONFIG_PATH = os.path.join(
-    '.', 'mlvt', 'config', 'config.yml')
 
-config = confuse.Configuration('DRAL', __name__)
-config.set_file(CONFIG_PATH)  # !TODO change location of file path
+config = confuse.Configuration('MLVT', __name__)
+config.set_file(CONFIG_PATH)
 
 
 class ConfigManager:
     configurations = config.keys()
 
     def __init__(self, config_name):
-        if config_name not in self.configurations:
-            raise ValueError(f'({config_name}) is not defined in config file. '
-                             f'Defined configurations: {self.configurations}')
-
-        self.config = config[config_name]
-        self.config_name = config_name
+        self.set_config(config_name)
         self.preprocessing = 'preprocessing'
 
-    def get_config(self):
-        return self.config.get()
+    def get_config(self, config_name):
+        self._fail_if_config_not_exist(config_name)
+        return config[config_name].get()
+
+    def set_config(self, config_name):
+        self._fail_if_config_not_exist(config_name)
+        self.config = config[config_name]
+        self.config_name = config_name
+
+    def _fail_if_config_not_exist(self, name):
+        if name not in self.configurations:
+            raise ValueError(f'({name}) is not defined in config file. '
+                             f'Defined configurations: {self.configurations}')
 
     def get_dataset_name(self):
         return self.config['dataset'].get(str)

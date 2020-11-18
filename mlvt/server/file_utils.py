@@ -7,6 +7,7 @@ from tqdm import tqdm
 
 import logging
 from mlvt.server.exceptions import PathException
+from mlvt.server.config import CURRENT_CONFIG_FILE
 
 
 LOG = logging.getLogger('MLVT')
@@ -142,3 +143,7 @@ def is_dict_empty(d):
         if values:
             return False
     return True
+
+
+def get_current_config():
+    return open(CURRENT_CONFIG_FILE, 'r').read().strip()

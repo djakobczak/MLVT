@@ -9,14 +9,14 @@ from mlvt.model.datasets import UnlabelledDataset, LabelledDataset
 from mlvt.model.utils import get_resnet_test_transforms, \
     get_resnet_train_transforms
 
-from mlvt.server.config import CONFIG_NAME
 from mlvt.server.exceptions import AnnotationException, ModelException
-from mlvt.server.file_utils import is_json_empty
+from mlvt.server.file_utils import is_json_empty, get_current_config
 
 
 class BaseAction:
     def __init__(self):
-        self.cm = ConfigManager(CONFIG_NAME)
+        print("INIT ACTION")
+        self.cm = ConfigManager(get_current_config())
 
 
 class MLAction(BaseAction):
@@ -94,12 +94,10 @@ class MLAction(BaseAction):
 
     def _load_model(self, path, save=True):
         try:
-            print("[DEBUG] LOAD FROM: ", path)
             return Model(state=Model.load(path),
                          training_model_path=self.cm.get_training_model(),
                          best_model_path=self.cm.get_best_model())
         except FileNotFoundError:
-            print("[DEBUG] FILE NOT FOUND!!!")
             if save:
                 return Model(training_model_path=self.cm.get_training_model(),
                              best_model_path=self.cm.get_best_model())

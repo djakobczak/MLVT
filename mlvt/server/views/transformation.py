@@ -9,6 +9,7 @@ LOG = logging.getLogger('MLVT')
 
 class TransformView(BaseView):
     def put(self, dataset_type):
+        self.init_cm()
         dl = DataLoader(self.cm)
         if dataset_type == 'all':
             for dataset in DatasetType:

@@ -19,6 +19,7 @@ EMPTY_TRAIN_RESULTS = {
 class TrainView(ActionView):
 
     def search(self, nepochs, reverse):
+        self.init_cm()
         train_results = load_json(self.cm.get_train_results_file())
         if is_dict_empty(train_results):
             flash('Training history is empty, '
@@ -53,12 +54,14 @@ class TrainView(ActionView):
                         results['n_images'])), 200
 
     def post(self, epochs=None, batch_size=None, query=None):
+        self.init_cm()
         self.run_action(Action.TRAIN, train,
                         batch_size=batch_size,
                         epochs=epochs)
         return 202
 
     def delete(self):
+        self.init_cm()
         purge_json_file(self.cm.get_train_results_file(), EMPTY_TRAIN_RESULTS)
         return 200
 

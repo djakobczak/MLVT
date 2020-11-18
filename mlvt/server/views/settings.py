@@ -6,6 +6,7 @@ from mlvt.server.views.annotation import AnnotationsView
 
 class SettingsView(ModelIOView):
     def search(self):
+        self.init_cm()
         model_summary = self._get_model_summary()
         av = AnnotationsView()
         annotation_summary = av.search()[0]

@@ -133,6 +133,25 @@ paths:
                   $ref: '#/components/schemas/Config'
         '404':
           description: Configuration with specified name not found
+    put:
+      summary: Select config
+      tags:
+          - extras
+      parameters:
+          - in: path
+            name: name
+            description: Name of the configuration
+            schema:
+              type: string
+              example: cats_vs_dogs64
+            required: true
+
+      responses:
+        '200':
+          description: Selected configuration changed
+        '404':
+          description: Configuration with specified name not found
+
 
   /predictions:
     post:
