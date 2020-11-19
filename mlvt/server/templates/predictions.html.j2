@@ -37,8 +37,11 @@
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="ml-2 text-center">
-                    <span class="badge main-color-nohover"><h4>Anoteted: {{ annote_summary.total }} </h4></span>
+                <div class="ml-2">
+                    <span class="badge main-color-nohover"><h4>Annotated: {{ train_summary.total }} </h4></span>
+                </div>
+                <div class="ml-2 mt-3">
+                    <span class="badge main-color-nohover"><h4>Unlabelled: {{ unl_summary.total }} </h4></span>
                 </div>
             </div>
             <div class="col-md-4 pr-4 row">
@@ -85,7 +88,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="mt-4">
         <div class="col-sm-12 text-center">
             <button type="button" onclick="sendPredictions()" class="btn main-color btn-lg m-3">Add annotations</button>
@@ -113,7 +116,7 @@
         </div>
         </div>
     </div>
-    
+
 
     <script>
         // HTML elements
@@ -157,8 +160,8 @@
                 removeA(predictions.class1, node.getAttribute("data-path"))
             }
             else if (class2_node.contains(node)){
-                predictions.class1.push(node.getAttribute("data-path"))   
-                removeA(predictions.class2, node.getAttribute("data-path"))             
+                predictions.class1.push(node.getAttribute("data-path"))
+                removeA(predictions.class2, node.getAttribute("data-path"))
             }
             console.log(predictions)
         }
@@ -166,7 +169,7 @@
         function remove_wrong_prediction(node){
             if (class1_node.contains(node)){
                 removeA(predictions.class2, node.getAttribute("data-path"))
-                predictions.class1.push(node.getAttribute("data-path"))   
+                predictions.class1.push(node.getAttribute("data-path"))
             }
             else if (class2_node.contains(node)){
                 removeA(predictions.class1, node.getAttribute("data-path"))
@@ -295,7 +298,7 @@
             maxImages = $("#maxImagesValue").text();
             return {"random": random, "balance": balance, "maxImages": maxImages}
         }
-        
+
     </script>
- 
+
 {% endblock %}

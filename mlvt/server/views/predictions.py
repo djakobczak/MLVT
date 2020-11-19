@@ -39,7 +39,8 @@ class PredictionsView(ActionView):
             label1=self.cm.get_label_name(0),
             label2=self.cm.get_label_name(1),
             n_images=self.cm.get_n_predictions(),
-            annote_summary=av.get(DatasetType.TRAIN.value)[0]), 200
+            train_summary=av.get(DatasetType.TRAIN.value)[0],
+            unl_summary=av.get(DatasetType.UNLABELLED.value)[0]), 200
 
     def post(self):
         payload = request.json

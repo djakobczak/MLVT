@@ -1,6 +1,8 @@
 cats_vs_dogs:
   dataset: Dogs vs Cats
-  description: TODO
+  description: "This dataset contains images of Dogs and Cats.
+    Images have been splitted into 4 sets: unlabelled, validation, train
+    and test with 3998, 3988, 11496, 7817 images respectively"
 
   general:
     image_size: 256
@@ -52,50 +54,10 @@ cats_vs_dogs:
     standarization: False
     strict_balance: False
 
-sushi_sandwiches:
-  dataset: Sushi vs sandwiches
-  description: TODO
-
-  general:
-    image_size: 256
-    label_mapping:
-      Sandwich: 0
-      Sushi: 1
-    unknown: 255
-
-  paths:
-    annotations:
-      dir: ./server/static/sushi_sandwiches/annotations/
-      unl: unl.json
-      train: train.json
-      test: test.json
-      valid: validation.json
-    models:
-      raw: ./server/static/sushi_sandwiches/models/sushi_sandwiches_raw.pt
-      trained: ./server/static/sushi_sandwiches/models/sushi_sandwiches_trained.pt
-    images:
-      raw_unl: ./data/SushiSandwich/unlabelled
-      transformed_unl: ./server/static/sushi_sandwiches/images_tranformed
-      raw_test: ./data/SushiSandwich/test
-      transformed_test: ./server/static/sushi_sandwiches/images_test
-      raw_train: ./data/SushiSandwich/train
-      transformed_train: ./server/static/sushi_sandwiches/images_train
-      raw_validation: ./data/SushiSandwich/valid
-      transformed_validation: ./server/static/sushi_sandwiches/images_valid
-    data:
-      train_results: ./server/static/sushi_sandwiches/data/train_results.json
-      test_results: ./server/static/sushi_sandwiches/data/test_results.json
-      predictions: ./server/static/sushi_sandwiches/data/predictions.json
-
-  train:
-    predictions: 10
-    epochs: 10
-    batch_size: 128
-
 
 cars_aircrafts:
   dataset: Cars vs Aircrafts
-  description: TODO
+  description: Cars and Aircrafts dataset.
 
   general:
     image_size: 256
@@ -144,7 +106,7 @@ cars_aircrafts:
 
 audi_vs_bmw:
   dataset: Audi vs BMW
-  description: TODO
+  description: Dataset that contains images of BMW and Audi cars
 
   general:
     image_size: 256
@@ -193,7 +155,7 @@ audi_vs_bmw:
 
 male_vs_famale:
   dataset: Male vs Famale
-  description: TODO
+  description: Males and Famales images.
 
   general:
     image_size: 256

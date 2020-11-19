@@ -20,7 +20,7 @@ class ConfigManager:
 
     def get_config(self, config_name):
         self._fail_if_config_not_exist(config_name)
-        return config[config_name].get()
+        return dict(config[config_name].get())
 
     def set_config(self, config_name):
         self._fail_if_config_not_exist(config_name)
