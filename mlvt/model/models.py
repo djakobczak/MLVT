@@ -50,7 +50,6 @@ class Model:
 
         LOG.info('Model initialized')
         if state:
-            print(state['acc'])
             self.model_conv.load_state_dict(state['model'])
             self.optimizer.load_state_dict(state['optimizer'])
             LOG.info('Model state loaded')
@@ -117,7 +116,6 @@ class Model:
             vacc, vloss = self.evaluate(validation_loader)
             is_best = vacc > best_acc
             if is_best:
-                print('Best model!')
                 best_acc = vacc
             self.save_states(vacc, is_best, epoch)
 
@@ -168,10 +166,8 @@ class Model:
             'acc': acc,
             'epoch': epoch
         }
-        print('[DEBUG] SAVE MODEL: ', state['acc'])
         torch.save(state, self.training_model_path)
         if is_best:
-            print('SAVE IS BEST')
             shutil.copyfile(self.training_model_path, self.best_model_path)
 
     def restore_best(self):

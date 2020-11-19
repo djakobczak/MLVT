@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base.html.j2" %}
 
 {# import macros #}
 {% from 'macros.html.j2' import badge_accuracy %}
@@ -90,7 +90,7 @@
                     </div>
                 </div>
             </div>
-            
+
         </div>
         {{ header("Training history") }}
         <div class="table-wrapper-scroll-y my-custom-scrollbar">
@@ -174,7 +174,7 @@
         console.log("INIT GRAPH: " + plot_acc)
         create_plot('accGraph', plot_acc);
         create_plot('lossGraph', plot_loss);
-        
+
         CONTAINER_W = document.getElementById("lossGraph").offsetWidth;
         WINDOW_W = window.innerWidth;
         CONTAINER_H = document.getElementById("lossGraph").offsetHeight;
@@ -185,7 +185,7 @@
         window.onresize = function() {
             Plotly.relayout(lossGraph, {
                 width: window.innerWidth * rW,
-                height:  window.innerHeight * rH 
+                height:  window.innerHeight * rH
             })
             Plotly.relayout(accGraph, {
                 width: window.innerWidth * rW,
@@ -232,7 +232,7 @@
                 'y': [train_loss, val_loss, n_images]},
                 [0, 1, 2])
         }
-        
+
     }
 
     function post_train(){
@@ -266,7 +266,7 @@
             url: '/train',
             type: "DELETE",
             success: function(){
-                location.reload(); 
+                location.reload();
             },
             error: function(xhr) {
                 console.log(xhr)

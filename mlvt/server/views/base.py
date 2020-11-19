@@ -46,12 +46,10 @@ class ModelIOView(BaseView):
 
     def _load_model(self, path, save=True):
         try:
-            print("LOAD MODEL")
             return Model(state=Model.load(path),
                          training_model_path=self.cm.get_training_model(),
                          best_model_path=self.cm.get_best_model())
         except FileNotFoundError:
-            print('FILE NOT FOUND')
             if save:
                 return Model(training_model_path=self.cm.get_training_model(),
                              best_model_path=self.cm.get_best_model(),

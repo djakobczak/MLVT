@@ -2,12 +2,25 @@ import os
 
 import connexion
 from connexion.resolver import MethodViewResolver
+from flask import render_template
 
 from mlvt.server.exceptions import errors
 from mlvt.server.extensions import executor
 from mlvt.server.file_utils import clear_dir
 from mlvt.server.config import USER_IMAGE_DIR
 from mlvt.logger import Logger
+
+
+def handle_404(exception):
+    return render_template(
+        "error.html.j2", code=404,
+        msg="The page you are looking for was not found."), 404
+
+
+def handle_400(exception):
+    return render_template(
+        "error.html.j2", code=400,
+        msg=f"{exception}"), 400
 
 
 def register_extensions(app):
@@ -29,6 +42,8 @@ def create_app():
     flask_app.config['logger'] = Logger.create_logger('MLVT')
     register_extensions(flask_app)
     clear_dir(USER_IMAGE_DIR)
+    app.add_error_handler(404, handle_404)
+    app.add_error_handler(400, handle_400)
     return app
 
 

@@ -87,6 +87,7 @@ class PredictionsManager:
         paths = paths[p]
         labels = np.apply_along_axis(lambda x: np.argmax(x),
                                      1, predictions)
+        print(predictions[:10])
         if balance:
             out_idxs = self._get_balanced_predictions(labels, n)
         else:

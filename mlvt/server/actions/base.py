@@ -15,7 +15,6 @@ from mlvt.server.file_utils import is_json_empty, get_current_config
 
 class BaseAction:
     def __init__(self):
-        print("INIT ACTION")
         self.cm = ConfigManager(get_current_config())
 
 

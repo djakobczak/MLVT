@@ -43,6 +43,7 @@ class PredictionsView(ActionView):
             unl_summary=av.get(DatasetType.UNLABELLED.value)[0]), 200
 
     def post(self):
+        self.init_cm()
         payload = request.json
         for class_num, (_, paths) in enumerate(payload.items()):
             pm = PredictionsManager(self.cm.get_n_labels(),
