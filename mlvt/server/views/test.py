@@ -99,11 +99,16 @@ class TestView(ActionView, ModelIOView):
         paths = paths[idxs]
         images = []
         labels = self._numeric_to_classname()
+        test_images = load_json(self.cm.get_test_annotations_path(),
+                                parse_keys_to=int)
+
         for path, pred in zip(paths, predictions):
             images.append(
                 {'path': path,
                  'label': labels[np.argmax(pred)],
-                 'confidence': max(pred)}
+                 'confidence': max(pred),
+                 'good': True if path in test_images[np.argmax(pred)]
+                    else False}
             )
         return images
 

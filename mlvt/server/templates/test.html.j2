@@ -1,6 +1,7 @@
 {% extends "base.html.j2" %}
 
 {% from 'macros.html.j2' import header %}
+{% from 'macros.html.j2' import progress %}
 
 {% block title %}
     Train
@@ -37,8 +38,11 @@
                 {% for image in images %}
                 {% set path = image.path[path_start_idx:] %}
                 <div class="col-lg-2 col-md-3 m-0 text-center">
-                    <img class="img-fluid rounded border border-white mb-3" src="{{ path }}" alt="" width=164 height=164>
                     <div class="h5">{{ image.label}}, {{ (image.confidence*100)|round(2) }}%</div>
+                    <img class="img-fluid rounded border border-white mb-3" src="{{ path }}" alt="" width=164 height=164>
+                    <div class="mx-2">
+                        {{ progress((image.confidence*100)|round(2), image.good) }}
+                    </div>
                 </div>
                 {% endfor %}
             </div>

@@ -33,7 +33,6 @@ class LabelledDataset(Dataset):
     def __init__(self, path, transforms=None, return_paths=False):
         self.path = path
         self.load()
-        self.n_class1 = len(self.all_annotations)
         self.transforms = transforms
         self.n_labels = len(self.annotations)
         self.load_time = 0

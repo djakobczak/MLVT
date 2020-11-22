@@ -101,7 +101,7 @@ cars_aircrafts:
     batch_size: 128
 
   test:
-    outputs: 6
+    outputs: 18
 
 
 audi_vs_bmw:
@@ -150,7 +150,7 @@ audi_vs_bmw:
     batch_size: 128
 
   test:
-    outputs: 6
+    outputs: 18
 
 
 male_vs_famale:
@@ -199,4 +199,4 @@ male_vs_famale:
     batch_size: 128
 
   test:
-    outputs: 6
+    outputs: 18
