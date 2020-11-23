@@ -56,5 +56,5 @@ python ./mlvt/server/run.py
 * Test your image - you can test model against your own image
 
 ### Screenshots
-![Alt text](http://https://github.com/Infam852/MLVT/images/Predictions.jpg "Set labeles to unlabelled images")
+![Alt text](https://github.com/Infam852/MLVT/tree/master/images/Predictions.jpg "Set labeles to unlabelled images")
 
