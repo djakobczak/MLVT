@@ -56,5 +56,21 @@ python ./mlvt/server/run.py
 * Test your image - you can test model against your own image
 
 ### Screenshots
-![Alt text](https://github.com/Infam852/MLVT/tree/master/images/Predictions.jpg "Set labeles to unlabelled images")
+
+<p align="center">
+   <img src="https://github.com/Infam852/MLVT/blob/master/images/Predictions.PNG" ...>
+   <h5 align="center">Set labels to unlabelled images</h5>
+</p>
+<br>
+<p align="center">
+   <img src="https://github.com/Infam852/MLVT/blob/master/images/Trainining_loss.PNG" ...>
+   <h5 align="center">Observe training process</h5>
+</p>
+<br>
+<p align="center">
+   <img src="https://github.com/Infam852/MLVT/blob/master/images/Test.PNG" ...>
+   <h5 align="center">Test your model</h5>
+</p>
+
+
 
