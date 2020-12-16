@@ -183,7 +183,7 @@ class ConfigManager:
             self.get_validation_annotations_filename())
 
     def get_validation_annotations_filename(self):
-        return self.config['paths']['annotations']['valid'].get(str)
+        return self.config['paths']['annotations']['validation'].get(str)
 
     def get_test_annotations_path(self):
         return os.path.join(

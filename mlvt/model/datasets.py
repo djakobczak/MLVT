@@ -43,6 +43,15 @@ class LabelledDataset(Dataset):
         return len(self.all_annotations)
 
     def __getitem__(self, idx):
+        """Access data at specified from dataset.
+
+        Args:
+            idx (int): data index
+
+        Returns:
+            tuple: Contains loaded image and corresponding label with optionally added image path if class
+            has defined return_paths parameter
+        """
         start_read = time.time()
         img_path = self.all_annotations[idx]
         img = Image.open(img_path).convert('RGB')

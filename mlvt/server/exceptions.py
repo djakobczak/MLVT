@@ -5,7 +5,7 @@ class AnnotationException(Exception):
     pass
 
 
-class ActionLockedException(Exception):
+class ActionOngoingException(Exception):
     pass
 
 
@@ -25,6 +25,10 @@ class EmptyFileException(Exception):
     pass
 
 
+class ImagesException(Exception):
+    pass
+
+
 errors = Blueprint('errors', __name__)
 
 PLAIN = 'ContentType: text/plain'
@@ -36,7 +40,7 @@ def handle_annotations(error):
         "error.html.j2", code=400, msg=str(error)), 400
 
 
-@errors.app_errorhandler(ActionLockedException)
+@errors.app_errorhandler(ActionOngoingException)
 def handle_lock(error):
     return render_template(
         "error.html.j2", code=409, msg=str(error)), 409
@@ -63,3 +67,9 @@ def handle_path(error):
 @errors.app_errorhandler(EmptyFileException)
 def handle_empty_file(error):
     return str(error), 400
+
+
+@errors.app_errorhandler(ImagesException)
+def handle_images_error(error):
+    return render_template(
+        "error.html.j2", code=400, msg=str(error)), 400

@@ -7,8 +7,9 @@ from flask import render_template
 from mlvt.server.exceptions import errors
 from mlvt.server.extensions import executor
 from mlvt.server.file_utils import clear_dir
-from mlvt.server.config import USER_IMAGE_DIR
+from mlvt.server.config import USER_IMAGE_DIR, PORT
 from mlvt.logger import Logger
+from connexion.exceptions import ExtraParameterProblem, BadRequestProblem
 
 
 def handle_404(exception):
@@ -23,12 +24,25 @@ def handle_400(exception):
         msg=f"{exception}"), 400
 
 
+def bad_request_error_handler(error):
+    return render_template(
+        "error.html.j2", code=400,
+        msg="Bad request"), 400
+
+
 def register_extensions(app):
     executor.init_app(app)
 
 
+def register_errors(app):
+    app.add_error_handler(404, handle_404)
+    app.add_error_handler(400, handle_400)
+    app.add_error_handler(ExtraParameterProblem, bad_request_error_handler)
+    app.add_error_handler(BadRequestProblem, bad_request_error_handler)
+
+
 def create_app():
-    app = connexion.FlaskApp(__name__, port=5000, specification_dir='openapi/')
+    app = connexion.FlaskApp(__name__, port=PORT, specification_dir='openapi/')
     app.add_api('openapi.yml', strict_validation=True, validate_responses=True,
                 resolver=MethodViewResolver('views'))
     flask_app = app.app
@@ -42,8 +56,7 @@ def create_app():
     flask_app.config['logger'] = Logger.create_logger('MLVT')
     register_extensions(flask_app)
     clear_dir(USER_IMAGE_DIR)
-    app.add_error_handler(404, handle_404)
-    app.add_error_handler(400, handle_400)
+    register_errors(app)
     return app
 
 

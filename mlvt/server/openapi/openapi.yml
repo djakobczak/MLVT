@@ -82,7 +82,7 @@ paths:
     get:
       summary: Home page
       tags:
-        - general
+        - extras
       responses:
         200:
           description: OK
@@ -95,7 +95,7 @@ paths:
     get:
       summary: Returns all possible configuration
       tags:
-          - extras
+          - configuration
       responses:
         '200':
           description: List of configurations
@@ -112,7 +112,7 @@ paths:
     get:
       summary: Returns configuration with specified name
       tags:
-          - extras
+          - configuration
       parameters:
           - in: path
             name: name
@@ -136,7 +136,7 @@ paths:
     put:
       summary: Select config
       tags:
-          - extras
+          - configuration
       parameters:
           - in: path
             name: name
@@ -157,7 +157,7 @@ paths:
     post:
       summary: Post labels annoted by the user.
       tags:
-        - model
+        - actions
       requestBody:
         description: pass
         required: true
@@ -245,7 +245,7 @@ paths:
     put:
       summary: Create or update existing annotation json files
       tags:
-        - config
+        - configuration
       parameters:
         - in: query
           name: force
@@ -303,9 +303,9 @@ paths:
                   type: string
 
     post:
-      summary: Train model and save training summary results
+      summary: Train model and save training summary results. It starts run lonning action
       tags:
-        - model
+        - actions
       parameters:
         - in: query
           name: epochs
@@ -350,9 +350,9 @@ paths:
                   type: string
 
     post:
-      summary: Start testing action
+      summary: Start testing long running action
       tags:
-        - model
+        - actions
       responses:
         202:
           description: Test action started
@@ -384,7 +384,7 @@ paths:
     put:
       summary: Copy and transform images
       tags:
-        - config
+        - configuration
       description: Copy images from temporary directory to the
         server file structure. Additionally apply initial
         preprocessing on images in order to speed up further
@@ -466,9 +466,9 @@ paths:
 
   /status/{action}:
     get:
-      summary: Return True if action is ongoing
+      summary: Return action status.
       tags:
-        - action
+        - actions
       parameters:
         - in: path
           name: action
@@ -477,7 +477,7 @@ paths:
           required: true
       responses:
         200:
-          description: Returns True if specified type of action is finished
+          description: State of the action with optional description. Possible status values are ongoing, failed, success
           content:
               application/json:
                 schema:
@@ -486,10 +486,16 @@ paths:
                     status:
                       type: string
                       enum: [ongoing, failed, success]
+                      example: ongoing
                     data:
                       type: string
+                      example: Actions is not finshed yet.
+                  required:
+                    - status
         404:
           description: Action not found
+        400:
+          description: Bad request
 
   /data/{datatype}:
     get:

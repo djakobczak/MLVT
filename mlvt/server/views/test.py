@@ -13,6 +13,7 @@ from mlvt.server.actions.handlers import test
 from mlvt.server.actions.main import Action
 from mlvt.server.config import (USER_IMAGE_DIR, RELATIVE_USER_IMAGE_DIR,
                                 CUT_STATIC_IDX)
+from mlvt.server.exceptions import ImagesException
 from mlvt.server.file_utils import load_json, purge_json_file, save_json
 from mlvt.server.utils import test_image_counter
 from mlvt.server.views.base import ActionView, ModelIOView
@@ -84,6 +85,10 @@ class TestView(ActionView, ModelIOView):
     def _get_test_images(self, predictions, paths, n_images=None,
                          increment=False):
         n_images = n_images or self.cm.get_test_n_outputs()
+
+        if n_images > len(predictions):
+            raise ImagesException("Not enough test results, "
+                                  "please reset test history in settings")
 
         # lock gloabal counter
         with test_image_counter.get_lock():

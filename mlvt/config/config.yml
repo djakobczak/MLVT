@@ -1,61 +1,55 @@
-cats_vs_dogs:
+Cats_vs_Dogs:
   dataset: Dogs vs Cats
   description: "This dataset contains images of Dogs and Cats.
     Images have been splitted into 4 sets: unlabelled, validation, train
     and test with 3998, 3988, 11496, 7817 images respectively"
 
   general:
-    image_size: 256
-    label_mapping:
+    image_size: 256   # wielkość obrazów po zastosowaniu wstępnego przetwarzania
+    label_mapping:    # odwzorowanie pomiędzy nazwą klasy a ich numeryczną wartością
       Cat: 0
       Dog: 1
-    unknown: 255
+    unknown: 255      # etykieta nieużywana przez model, określa obraz nieetykietowany w plikach zawierających etykiety
 
   paths:
-    server_base: ['.', 'mlvt', 'server', 'static']
-    data_base: ['.', 'data']
-    annotations: # server base prefix will be added
-      dir: [cats_vs_dogs, annotations]
-      unl: unl.json
-      train: train.json
-      test: test.json
-      valid: validation.json
-    models: # server base prefix will be added
-      best: [cats_vs_dogs, models, cats_vs_dogs_best.pt]
-      training: [cats_vs_dogs, models, cats_vs_dogs_training.pt]
+    server_base: ['.', 'mlvt', 'server', 'static']   # ścieżka bazowa serwera
+    data_base: ['.', 'data']                         # ścieżka bazowa nieprzetworzonego zbioru obrazów
+    annotations: # prefix server_base będzie dodany do poniższych ścieżek
+      dir: [cats_vs_dogs, annotations]               # katalog bazowy plików zawierających etykiety
+      unl: unl.json                                  # plik zawierający ścieżki do obrazów nieetykietowanych
+      train: train.json                              # plik zawierający ścieżki do zbioru uczącego
+      validation: validation.json                    # plik zawierający ścieżki do zbioru walidacyjnego
+      test: test.json                                # plik zawierający ścieżki do zbioru testowego
+    models: # prefix server_base będzie dodany do poniższych ścieżek
+      best: [cats_vs_dogs, models, cats_vs_dogs_best.pt]          # ścieżka pod którą zapisywany będzie "najlepszy" model
+      training: [cats_vs_dogs, models, cats_vs_dogs_training.pt]  # ścieżka pod którą zapisywany będzie ostatni stan modelu
     images:
-      raw:  # data base prefix will be added
-        unl: [PetImages, unlabelled]
-        test: [PetImages, test]
-        train: [PetImages, train]
-        validation: [PetImages, valid]
-      transformed:  # server base prefix will be added
-        unl: [cats_vs_dogs, images_tranformed]
-        test: [cats_vs_dogs, images_test]
-        train: [cats_vs_dogs, images_train]
-        validation: [cats_vs_dogs, images_valid]
-    data:  # server base prefix will be added
-      train_results: [cats_vs_dogs, data, train_results.json]
-      test_results: [cats_vs_dogs, data, test_results.json]
-      predictions: [cats_vs_dogs, data, predictions.json]
-      last_user_test: [json, last_user_test.json]
+      raw:  # prefix data_base będzie dodany do poniższych ścieżek, katalogi zawierający nieprzetworzone obrazy
+        unl: [PetImages, unlabelled]                 # nieetykietowane
+        train: [PetImages, train]                    # ze zbioru uczącego
+        validation: [PetImages, valid]               # ze zbioru walidacyjnego
+        test: [PetImages, test]                      # ze zbioru testowego
+      transformed:  # prefix server_base będzie dodany do poniższych ścieżek, katalogi zawierający przetworzone obrazy
+        unl: [cats_vs_dogs, images_tranformed]       # nieetykietowane
+        train: [cats_vs_dogs, images_train]          # ze zbioru uczącego
+        validation: [cats_vs_dogs, images_valid]     # ze zbioru walidacyjnego
+        test: [cats_vs_dogs, images_test]            # ze zbioru testowego
+    data:  # prefix server_base będzie dodany do poniższych ścieżek
+      train_results: [cats_vs_dogs, data, train_results.json]     # plik zawierający wyniki procesu trenowania
+      test_results: [cats_vs_dogs, data, test_results.json]       # plik zawierający wyniki procesu testowania
+      predictions: [cats_vs_dogs, data, predictions.json]         # plik zawierający ostatni proces predykcji modelu
+      last_user_test: [json, last_user_test.json]                 # plik zawierający wyniki testów użytkownika z użyciem jego własnych obrazów
 
   train:
-    predictions: 10
-    epochs: 10
-    batch_size: 128
+    predictions: 10   # domyślna ilośc obrazów wyświetlana ożytkownikowi
+    epochs: 10        # domyślna ilośc epok
+    batch_size: 128   # domyślna wielkość paczki danych
 
-  # currently not used
-  preprocessing:
-    grayscale: False
-    rescale_with_crop: False
-    normalization: False
-    centering: False
-    standarization: False
-    strict_balance: False
+  test:
+    outputs: 18       # ilość obrazów wyświetlana użytkownikowi podczas testowania
 
 
-cars_aircrafts:
+Cars_vs_Aircrafts:
   dataset: Cars vs Aircrafts
   description: Cars and Aircrafts dataset.
 
@@ -67,36 +61,36 @@ cars_aircrafts:
     unknown: 255
 
   paths:
-    server_base: ['.', 'mlvt', 'server', 'static']
-    data_base: ['.', 'data']
+    server_base: ['.', 'mlvt', 'server', 'static', 'cars_aircrafts']
+    data_base: ['.', 'data', CarsAircrafts]
     annotations: # server base prefix will be added
-      dir: [cars_aircrafts, annotations]
+      dir: [annotations]
       unl: unl.json
       train: train.json
       test: test.json
-      valid: validation.json
+      validation: validation.json
     models: # server base prefix will be added
-      best: [cars_aircrafts, models, cars_aircrafts_best.pt]
-      training: [cars_aircrafts, models, cars_aircrafts_training.pt]
+      best: [models, cars_aircrafts_best.pt]
+      training: [models, cars_aircrafts_training.pt]
     images:
       raw:  # data base prefix will be added
-        unl: [CarsAircrafts, unlabelled]
-        test: [CarsAircrafts, test]
-        train: [CarsAircrafts, train]
-        validation: [CarsAircrafts, valid]
+        unl: [unlabelled]
+        test: [test]
+        train: [train]
+        validation: [valid]
       transformed:  # server base prefix will be added
-        unl: [cars_aircrafts, images_tranformed]
-        test: [cars_aircrafts, images_test]
-        train: [cars_aircrafts, images_train]
-        validation: [cars_aircrafts, images_valid]
+        unl: [images_tranformed]
+        test: [images_test]
+        train: [images_train]
+        validation: [images_valid]
     data:  # server base prefix will be added
-      train_results: [cars_aircrafts, data, train_results.json]
-      test_results: [cars_aircrafts, data, test_results.json]
-      predictions: [cars_aircrafts, data, predictions.json]
-      last_user_test: [json, last_user_test.json]
+      train_results: [data, train_results.json]
+      test_results: [data, test_results.json]
+      predictions: [data, predictions.json]
+      last_user_test: [data, last_user_test.json]
 
   train:
-    predictions: 10
+    predictions: 12
     epochs: 10
     batch_size: 128
 
@@ -104,7 +98,7 @@ cars_aircrafts:
     outputs: 18
 
 
-audi_vs_bmw:
+Audi_vs_BMW:
   dataset: Audi vs BMW
   description: Dataset that contains images of BMW and Audi cars
 
@@ -123,7 +117,7 @@ audi_vs_bmw:
       unl: unl.json
       train: train.json
       test: test.json
-      valid: validation.json
+      validation: validation.json
     models: # server base prefix will be added
       training: [audi_vs_bmw, models, audi_vs_bmw_training.pt]
       best: [audi_vs_bmw, models, audi_vs_bmw_best.pt]
@@ -153,7 +147,7 @@ audi_vs_bmw:
     outputs: 18
 
 
-male_vs_famale:
+Male_vs_Famale:
   dataset: Male vs Famale
   description: Males and Famales images.
 
@@ -172,7 +166,7 @@ male_vs_famale:
       unl: unl.json
       train: train.json
       test: test.json
-      valid: validation.json
+      validation: validation.json
     models: # server base prefix will be added
       training: [male_vs_famale, models, male_vs_famale_training.pt]
       best: [male_vs_famale, models, male_vs_famale_raw.pt]

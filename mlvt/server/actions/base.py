@@ -29,7 +29,6 @@ class MLAction(BaseAction):
         self.train_loader = None
         self.test_loader = None
 
-    # csv with annotations can not be empty
     def get_unl_loader(self):
         annotation_path = self.cm.get_unl_annotations_path()
         self._fail_if_file_is_empty(annotation_path)
@@ -91,15 +90,14 @@ class MLAction(BaseAction):
     def load_best_model(self):
         return self._load_model(self.cm.get_best_model())
 
-    def _load_model(self, path, save=True):
+    def _load_model(self, path):
         try:
             return Model(state=Model.load(path),
                          training_model_path=self.cm.get_training_model(),
                          best_model_path=self.cm.get_best_model())
         except FileNotFoundError:
-            if save:
-                return Model(training_model_path=self.cm.get_training_model(),
-                             best_model_path=self.cm.get_best_model())
+            return Model(training_model_path=self.cm.get_training_model(),
+                         best_model_path=self.cm.get_best_model())
             raise ModelException('Error while loading trained model')
 
     def save_training_model(self, model=None, custom_path=None):

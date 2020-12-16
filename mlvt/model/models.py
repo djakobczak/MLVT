@@ -1,3 +1,4 @@
+from enum import Enum
 import time
 import shutil
 
@@ -18,12 +19,20 @@ def init_and_save(path):
 
 
 LOG = logging.getLogger('MLVT')
+DEFAULT_MILESTONES = [20, 40, 80]
 
 
 class Model:
-    def __init__(self, state=None, training_model_path='training_model.pt',
-                 best_model_path='best_model.pt', n_out=2, lr=1e-3,
-                 gamma=0.5, overwrite=False):
+    def __init__(self,
+                 training_model_path,
+                 best_model_path,
+                 state=None,
+                 n_out=2,
+                 lr=1e-3,
+                 gamma=0.5,
+                 dropout=0.2,
+                 overwrite=False,
+                 milestones=None):
         LOG.info('Model initialization starts...')
         self.device = torch.device(
             "cuda:0" if torch.cuda.is_available() else "cpu")
@@ -38,30 +47,38 @@ class Model:
             param.requires_grad = False
         num_ftrs = model.fc.in_features
         model.fc = nn.Sequential(
-            nn.Linear(num_ftrs, self.n_out),
-            nn.Softmax(dim=1))
+            nn.Dropout(dropout),
+            nn.Linear(num_ftrs, self.n_out))
         LOG.info('New model created')
         self.model_conv = model.to(self.device)
 
         self.criterion = nn.CrossEntropyLoss().to(self.device)
-        self._init_optimizer(lr)
+        self.init_optimizer(lr)
+        milestones = DEFAULT_MILESTONES if not milestones else milestones
         self.scheduler = torch.optim.lr_scheduler.MultiStepLR(
-            self.optimizer, milestones=[20, 40, 80], gamma=gamma)
+            self.optimizer, milestones=milestones, gamma=gamma)
 
-        LOG.info('Model initialized')
-        if state:
-            self.model_conv.load_state_dict(state['model'])
-            self.optimizer.load_state_dict(state['optimizer'])
-            LOG.info('Model state loaded')
         if overwrite:
-            create_subdirs_if_not_exist(self.training_model_path)
-            create_subdirs_if_not_exist(self.best_model_path)
-            self.save_states(0, True, 0)
+            self.reset_model()
+            return
 
-    def _init_optimizer(self, lr=0.001):
+        if state:
+            self.load_states(state)
+
+    def init_optimizer(self, lr):
         self._lr = lr
         self.optimizer = torch.optim.Adam(
             self.model_conv.parameters(), lr=lr, amsgrad=True)
+
+    def load_states(self, state):
+        self.model_conv.load_state_dict(state['model'])
+        self.optimizer.load_state_dict(state['optimizer'])
+        LOG.info('Model state loaded')
+
+    def reset_model(self):
+        create_subdirs_if_not_exist(self.training_model_path)
+        create_subdirs_if_not_exist(self.best_model_path)
+        self.save_state(0, True, 0)
 
     def __call__(self, batch_x):
         return self.model_conv(batch_x)
@@ -70,16 +87,16 @@ class Model:
         self.model_conv.eval()
         with torch.no_grad():
             batch_x = batch_x.to(self.device)
-            return self(batch_x)
+            return torch.nn.Softmax(dim=1)(self(batch_x))
 
-    def predict_all(self, dataloader):
+    def predict_all(self, unl_loader):
         self.model_conv.eval()
         transforms_time = 0
         feedforward_time = 0
         predictions = torch.empty((0, 2), device=self.device)
         paths = []
         with torch.no_grad():
-            for batch_x, img_paths in tqdm(dataloader):
+            for batch_x, img_paths in tqdm(unl_loader):
                 batch_x = batch_x.to(self.device)
 
                 start_pred = time.time()
@@ -117,7 +134,7 @@ class Model:
             is_best = vacc > best_acc
             if is_best:
                 best_acc = vacc
-            self.save_states(vacc, is_best, epoch)
+            self.save_state(vacc, is_best, epoch)
 
             if results_save_to:
                 append_to_train_file(
@@ -159,7 +176,14 @@ class Model:
         loss = float(torch.mean(losses).cpu())
         return acc, loss
 
-    def save_states(self, acc, is_best, epoch):
+    def save_state(self, acc, is_best, epoch):
+        """Save state of the model and optimizer.
+
+        Args:
+            acc (float): current model accuracy
+            is_best (bool): True if model achieved its best accuracy
+            epoch (int): training epoch
+        """
         state = {
             'model': self.model_conv.state_dict(),
             'optimizer': self.optimizer.state_dict(),
@@ -250,6 +274,7 @@ class Model:
             acc = float(torch.mean(total_corrects.float()).cpu().numpy())
             loss = float(torch.mean(losses).cpu())
             LOG.info(f"Evaluation stats: acc: {acc}, loss: {loss}")
+            predictions = torch.nn.Softmax(dim=1)(predictions)
         return acc, loss, predictions.cpu().numpy(), np.array(paths)
 
     def get_lr(self):

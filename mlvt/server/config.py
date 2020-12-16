@@ -1,6 +1,6 @@
 import os
 
-
+# Default config
 # CONFIG_NAME = 'testset'
 CONFIG_NAME = 'cars_aircrafts'
 # CONFIG_NAME = 'sushi_sandwiches'
@@ -15,3 +15,5 @@ CUT_STATIC_IDX = USER_IMAGE_DIR.index('static')
 
 CONFIG_PATH = os.path.join('.', 'mlvt', 'config', 'config.yml')
 CURRENT_CONFIG_FILE = os.path.join('.', 'mlvt', 'config', 'current_config.txt')
+
+PORT = 5000
