@@ -158,6 +158,13 @@ paths:
       summary: Post labels annoted by the user.
       tags:
         - actions
+      parameters:
+        - in: query
+          description: if set to true then use predictions.json file to annotate all images
+          name: annotate_all
+          schema:
+            type: boolean
+            default: False
       requestBody:
         description: pass
         required: true
@@ -187,7 +194,7 @@ paths:
             type: boolean
             default: False
         - in: query
-          name: maxImages
+          name: n_images
           description: Number of images to show
           schema:
             type: integer

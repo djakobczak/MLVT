@@ -75,7 +75,9 @@ def is_json_empty(path):  # path must contain iterable keys
         int: sum of all values lengths
     """
     dict_ = load_json(path)
-    return sum(len(dict_[value]) for value in dict_)
+    if not dict_:
+        return True
+    return not bool(sum(len(dict_[value]) for value in dict_))
 
 
 def update_annotation_file(path, data_dir, label):

@@ -12,7 +12,7 @@ LOG = logging.getLogger('MLVT')
 
 
 class DataLoader:
-    def __init__(self, cm, resize_without_ratio=False):
+    def __init__(self, cm, resize_without_ratio=False, img_size=224):
         self.cm = cm
         self.IMG_SIZE = cm.get_img_size()
         if resize_without_ratio:
@@ -20,7 +20,7 @@ class DataLoader:
         else:
             self.transforms = transforms.Compose([
                 transforms.Resize(self.IMG_SIZE),
-                transforms.CenterCrop(224),
+                transforms.CenterCrop(img_size),
             ])
 
     def copy_multiple_paths(self, srcs, dsts):

@@ -1,4 +1,5 @@
 import json
+import numpy as np
 
 from flask import render_template, request
 
@@ -14,9 +15,9 @@ from mlvt.server.utils import DatasetType
 
 
 class PredictionsView(ActionView):
-    def search(self, new_predictions, random, balance, maxImages=None):
+    def search(self, new_predictions, random, balance, n_images=None):
         self.init_cm()
-        n_predictions = maxImages if maxImages else \
+        n_predictions = n_images if n_images else \
             self.cm.get_number_of_predictions()
 
         try:
@@ -42,8 +43,12 @@ class PredictionsView(ActionView):
             train_summary=av.get(DatasetType.TRAIN.value)[0],
             unl_summary=av.get(DatasetType.UNLABELLED.value)[0]), 200
 
-    def post(self):
+    def post(self, annotate_all=False):
         self.init_cm()
+        if annotate_all:
+            self._annotate_all()
+            return '', 200
+
         payload = request.json
         for class_num, (_, paths) in enumerate(payload.items()):
             pm = PredictionsManager(self.cm.get_n_labels(),
@@ -53,3 +58,16 @@ class PredictionsView(ActionView):
                           paths, class_num, pm)
 
         return '', 200
+
+    def _annotate_all(self):
+        pm = PredictionsManager(self.cm.get_n_labels(),
+                                self.cm.get_predictions_file())
+        predictions, paths = pm.get_predictions_from_file(get_all=True)
+        annotated_paths = {0: [], 1: []}
+        for prediction, path in zip(predictions, paths):
+            annotated_paths[np.argmax(prediction)].append(path)
+
+        for class_num, paths in annotated_paths.items():
+            label_samples(self.cm.get_unl_annotations_path(),
+                          self.cm.get_train_annotations_path(),
+                          paths, class_num, pm)

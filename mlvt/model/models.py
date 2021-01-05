@@ -6,6 +6,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torchvision
+from torchvision import models
 from tqdm import tqdm
 
 import logging
@@ -19,13 +20,23 @@ def init_and_save(path):
 
 
 LOG = logging.getLogger('MLVT')
-DEFAULT_MILESTONES = [20, 40, 80]
+DEFAULT_MILESTONES = [50, 100]
+
+
+class ModelType(Enum):
+    ALEXNET = 'alexnet'
+    RESNET_18 = 'resnet18'
+    RESNET_34 = 'resnet34'
+    RESNET_50 = 'resnet50'
+    RESNET_101 = 'resnet101'
+    MobileNetV2 = 'mobilenet_v2'
 
 
 class Model:
     def __init__(self,
                  training_model_path,
                  best_model_path,
+                 model_name=ModelType.RESNET_34.value,
                  state=None,
                  n_out=2,
                  lr=1e-3,
@@ -37,38 +48,59 @@ class Model:
         self.device = torch.device(
             "cuda:0" if torch.cuda.is_available() else "cpu")
         self.n_out = n_out
+        self.dropout = dropout
         self.training_model_path = training_model_path
         self.best_model_path = best_model_path
         LOG.info(f'Device: {self.device}')
-
-        model = torchvision.models.resnet34(pretrained=True)
-        # freeze conv layers
-        for param in model.parameters():
-            param.requires_grad = False
-        num_ftrs = model.fc.in_features
-        model.fc = nn.Sequential(
-            nn.Dropout(dropout),
-            nn.Linear(num_ftrs, self.n_out))
+        model = self._get_pretreined_model(model_name)
         LOG.info('New model created')
         self.model_conv = model.to(self.device)
 
         self.criterion = nn.CrossEntropyLoss().to(self.device)
         self.init_optimizer(lr)
+
+        self.last_epoch = 0
+        if state:
+            self.load_states(state)
+            self.last_epoch = state['epoch']
         milestones = DEFAULT_MILESTONES if not milestones else milestones
         self.scheduler = torch.optim.lr_scheduler.MultiStepLR(
-            self.optimizer, milestones=milestones, gamma=gamma)
+            self.optimizer, milestones=milestones, gamma=gamma,
+            last_epoch=self.last_epoch if self.last_epoch else -1)
 
         if overwrite:
             self.reset_model()
             return
 
-        if state:
-            self.load_states(state)
-
     def init_optimizer(self, lr):
         self._lr = lr
         self.optimizer = torch.optim.Adam(
             self.model_conv.parameters(), lr=lr, amsgrad=True)
+
+    def _get_pretreined_model(self, model_name):
+        model = getattr(models, f'{model_name}')(pretrained=True)
+
+        # freeze conv layers
+        for param in model.parameters():
+            param.requires_grad = False
+
+        last_layer = lambda num_ftrs: nn.Sequential(
+            nn.Dropout(self.dropout),
+            nn.Linear(num_ftrs, self.n_out))
+
+        if 'mobilenet' in model_name:
+            model.classifier[1] = last_layer(model.classifier[1].in_features)
+
+        elif 'resnet' in model_name:
+            model.fc = last_layer(model.fc.in_features)
+
+        elif model_name == "alexnet":
+            model.classifier[6] = last_layer(model.classifier[6].in_features)
+
+        else:
+            raise ValueError(f'Model ({model_name}) is not supported')
+
+        return model
 
     def load_states(self, state):
         self.model_conv.load_state_dict(state['model'])
@@ -134,7 +166,7 @@ class Model:
             is_best = vacc > best_acc
             if is_best:
                 best_acc = vacc
-            self.save_state(vacc, is_best, epoch)
+            self.save_state(vacc, is_best, epoch + 1)
 
             if results_save_to:
                 append_to_train_file(
@@ -188,7 +220,7 @@ class Model:
             'model': self.model_conv.state_dict(),
             'optimizer': self.optimizer.state_dict(),
             'acc': acc,
-            'epoch': epoch
+            'epoch': self.last_epoch + epoch
         }
         torch.save(state, self.training_model_path)
         if is_best:

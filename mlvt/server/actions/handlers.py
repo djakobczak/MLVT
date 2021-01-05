@@ -35,10 +35,10 @@ def train(**kwargs):
     except AnnotationException as e:
         LOG.error(f'Training failed: {e}')
         return ActionStatus.FAILED, 'Please, annotate some images'
-    except Exception as e:
-        LOG.error(f'Training failed: {e}')
-        return ActionStatus.FAILED, \
-            f'Unknwon error occured durning training ({str(e)})'
+    # except Exception as e:
+    #     LOG.error(f'Training failed: {e}')
+    #     return ActionStatus.FAILED, \
+    #         f'Unknwon error occured durning training ({str(e)})'
     finally:
         torch.cuda.empty_cache()
 

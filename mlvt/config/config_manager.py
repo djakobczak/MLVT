@@ -35,6 +35,9 @@ class ConfigManager:
     def get_dataset_name(self):
         return self.config['dataset'].get(str)
 
+    def get_model_name(self):
+        return self.config['general']['model_name'].get(str)
+
     def get_img_size(self):
         return self.config['general']['image_size'].get(int)
 

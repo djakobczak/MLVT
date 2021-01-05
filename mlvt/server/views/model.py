@@ -20,7 +20,8 @@ class ModelView(ModelIOView):
         self.init_cm()
         # overwrite trained model with new untrained and clear all history data
         Model(training_model_path=self.cm.get_training_model(),
-              best_model_path=self.cm.get_best_model(), overwrite=True)
+              best_model_path=self.cm.get_best_model(),
+              model_name=self.cm.get_model_name(), overwrite=True)
 
         save_json(self.cm.get_predictions_file(), {})
         purge_json_file(self.cm.get_last_user_test_path())

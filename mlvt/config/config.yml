@@ -1,10 +1,11 @@
-Cats_vs_Dogs:
+Cats_vs_Dogs_resnet34:
   dataset: Dogs vs Cats
   description: "This dataset contains images of Dogs and Cats.
     Images have been splitted into 4 sets: unlabelled, validation, train
     and test with 3998, 3988, 11496, 7817 images respectively"
 
   general:
+    model_name: resnet34
     image_size: 256   # wielkość obrazów po zastosowaniu wstępnego przetwarzania
     label_mapping:    # odwzorowanie pomiędzy nazwą klasy a ich numeryczną wartością
       Cat: 0
@@ -21,8 +22,60 @@ Cats_vs_Dogs:
       validation: validation.json                    # plik zawierający ścieżki do zbioru walidacyjnego
       test: test.json                                # plik zawierający ścieżki do zbioru testowego
     models: # prefix server_base będzie dodany do poniższych ścieżek
-      best: [cats_vs_dogs, models, cats_vs_dogs_best.pt]          # ścieżka pod którą zapisywany będzie "najlepszy" model
-      training: [cats_vs_dogs, models, cats_vs_dogs_training.pt]  # ścieżka pod którą zapisywany będzie ostatni stan modelu
+      best: [cats_vs_dogs, models, 'resnet34', cats_vs_dogs_best.pt]          # ścieżka pod którą zapisywany będzie "najlepszy" model
+      training: [cats_vs_dogs, models, 'resnet34', cats_vs_dogs_training.pt]  # ścieżka pod którą zapisywany będzie ostatni stan modelu
+    images:
+      raw:  # prefix data_base będzie dodany do poniższych ścieżek, katalogi zawierający nieprzetworzone obrazy
+        unl: [PetImages, unlabelled]                 # nieetykietowane
+        train: [PetImages, train]                    # ze zbioru uczącego
+        validation: [PetImages, valid]               # ze zbioru walidacyjnego
+        test: [PetImages, test]                      # ze zbioru testowego
+      transformed:  # prefix server_base będzie dodany do poniższych ścieżek, katalogi zawierający przetworzone obrazy
+        unl: [cats_vs_dogs, images_tranformed]       # nieetykietowane
+        train: [cats_vs_dogs, images_train]          # ze zbioru uczącego
+        validation: [cats_vs_dogs, images_valid]     # ze zbioru walidacyjnego
+        test: [cats_vs_dogs, images_test]            # ze zbioru testowego
+    data:  # prefix server_base będzie dodany do poniższych ścieżek
+      train_results: [cats_vs_dogs, data, resnet34, train_results.json]     # plik zawierający wyniki procesu trenowania
+      test_results: [cats_vs_dogs, data, resnet34, test_results.json]       # plik zawierający wyniki procesu testowania
+      predictions: [cats_vs_dogs, data, resnet34, predictions.json]         # plik zawierający ostatni proces predykcji modelu
+      last_user_test: [json, resnet34, last_user_test.json]                 # plik zawierający wyniki testów użytkownika z użyciem jego własnych obrazów
+
+  train:
+    predictions: 10   # domyślna ilośc obrazów wyświetlana ożytkownikowi
+    epochs: 10        # domyślna ilośc epok
+    batch_size: 128   # domyślna wielkość paczki danych
+
+  test:
+    outputs: 18       # ilość obrazów wyświetlana użytkownikowi podczas testowania
+
+
+Cats_vs_Dogs_resnet18:
+  dataset: Dogs vs Cats
+  description: "This dataset contains images of Dogs and Cats.
+    Images have been splitted into 4 sets: unlabelled, validation, train
+    and test with 3998, 3988, 11496, 7817 images respectively"
+
+  general:
+    model_name: resnet18
+    image_size: 256   # wielkość obrazów po zastosowaniu wstępnego przetwarzania
+    label_mapping:    # odwzorowanie pomiędzy nazwą klasy a ich numeryczną wartością
+      Cat: 0
+      Dog: 1
+    unknown: 255      # etykieta nieużywana przez model, określa obraz nieetykietowany w plikach zawierających etykiety
+
+  paths:
+    server_base: ['.', 'mlvt', 'server', 'static']   # ścieżka bazowa serwera
+    data_base: ['.', 'data']                         # ścieżka bazowa nieprzetworzonego zbioru obrazów
+    annotations: # prefix server_base będzie dodany do poniższych ścieżek
+      dir: [cats_vs_dogs, annotations]               # katalog bazowy plików zawierających etykiety
+      unl: unl.json                                  # plik zawierający ścieżki do obrazów nieetykietowanych
+      train: train.json                              # plik zawierający ścieżki do zbioru uczącego
+      validation: validation.json                    # plik zawierający ścieżki do zbioru walidacyjnego
+      test: test.json                                # plik zawierający ścieżki do zbioru testowego
+    models: # prefix server_base będzie dodany do poniższych ścieżek
+      best: [cats_vs_dogs, models, cats_vs_dogs_r18_best.pt]          # ścieżka pod którą zapisywany będzie "najlepszy" model
+      training: [cats_vs_dogs, models, cats_vs_dogs_r18_training.pt]  # ścieżka pod którą zapisywany będzie ostatni stan modelu
     images:
       raw:  # prefix data_base będzie dodany do poniższych ścieżek, katalogi zawierający nieprzetworzone obrazy
         unl: [PetImages, unlabelled]                 # nieetykietowane
@@ -49,11 +102,115 @@ Cats_vs_Dogs:
     outputs: 18       # ilość obrazów wyświetlana użytkownikowi podczas testowania
 
 
+Cats_vs_Dogs_mobilenet:
+  dataset: Dogs vs Cats
+  description: "This dataset contains images of Dogs and Cats.
+    Images have been splitted into 4 sets: unlabelled, validation, train
+    and test with 3998, 3988, 11496, 7817 images respectively"
+
+  general:
+    model_name: mobilenet_v2
+    image_size: 256   # wielkość obrazów po zastosowaniu wstępnego przetwarzania
+    label_mapping:    # odwzorowanie pomiędzy nazwą klasy a ich numeryczną wartością
+      Cat: 0
+      Dog: 1
+    unknown: 255      # etykieta nieużywana przez model, określa obraz nieetykietowany w plikach zawierających etykiety
+
+  paths:
+    server_base: ['.', 'mlvt', 'server', 'static', 'cats_vs_dogs']   # ścieżka bazowa serwera
+    data_base: ['.', 'data']                         # ścieżka bazowa nieprzetworzonego zbioru obrazów
+    annotations: # prefix server_base będzie dodany do poniższych ścieżek
+      dir: [annotations]               # katalog bazowy plików zawierających etykiety
+      unl: unl.json                                  # plik zawierający ścieżki do obrazów nieetykietowanych
+      train: train.json                              # plik zawierający ścieżki do zbioru uczącego
+      validation: validation.json                    # plik zawierający ścieżki do zbioru walidacyjnego
+      test: test.json                                # plik zawierający ścieżki do zbioru testowego
+    models: # prefix server_base będzie dodany do poniższych ścieżek
+      best: [cats_vs_dogs, models, mobilenet, cats_vs_dogs_r18_best.pt]          # ścieżka pod którą zapisywany będzie "najlepszy" model
+      training: [cats_vs_dogs, models, mobilenet, cats_vs_dogs_r18_training.pt]  # ścieżka pod którą zapisywany będzie ostatni stan modelu
+    images:
+      raw:  # prefix data_base będzie dodany do poniższych ścieżek, katalogi zawierający nieprzetworzone obrazy
+        unl: [PetImages, unlabelled]                 # nieetykietowane
+        train: [PetImages, train]                    # ze zbioru uczącego
+        validation: [PetImages, valid]               # ze zbioru walidacyjnego
+        test: [PetImages, test]                      # ze zbioru testowego
+      transformed:  # prefix server_base będzie dodany do poniższych ścieżek, katalogi zawierający przetworzone obrazy
+        unl: [images_tranformed]       # nieetykietowane
+        train: [images_train]          # ze zbioru uczącego
+        validation: [images_valid]     # ze zbioru walidacyjnego
+        test: [images_test]            # ze zbioru testowego
+    data:  # prefix server_base będzie dodany do poniższych ścieżek
+      train_results: [data, mobilenet, train_results.json]     # plik zawierający wyniki procesu trenowania
+      test_results: [data, mobilenet, test_results.json]       # plik zawierający wyniki procesu testowania
+      predictions: [data, mobilenet, predictions.json]         # plik zawierający ostatni proces predykcji modelu
+      last_user_test: [json, mobilenet, last_user_test.json]                 # plik zawierający wyniki testów użytkownika z użyciem jego własnych obrazów
+
+  train:
+    predictions: 10   # domyślna ilośc obrazów wyświetlana ożytkownikowi
+    epochs: 10        # domyślna ilośc epok
+    batch_size: 128   # domyślna wielkość paczki danych
+
+  test:
+    outputs: 18       # ilość obrazów wyświetlana użytkownikowi podczas testowania
+
+
+Cats_vs_Dogs_alexnet:
+  dataset: Dogs vs Cats
+  description: "This dataset contains images of Dogs and Cats.
+    Images have been splitted into 4 sets: unlabelled, validation, train
+    and test with 3998, 3988, 11496, 7817 images respectively"
+
+  general:
+    model_name: alexnet
+    image_size: 256   # wielkość obrazów po zastosowaniu wstępnego przetwarzania
+    label_mapping:    # odwzorowanie pomiędzy nazwą klasy a ich numeryczną wartością
+      Cat: 0
+      Dog: 1
+    unknown: 255      # etykieta nieużywana przez model, określa obraz nieetykietowany w plikach zawierających etykiety
+
+  paths:
+    server_base: ['.', 'mlvt', 'server', 'static', 'cats_vs_dogs']   # ścieżka bazowa serwera
+    data_base: ['.', 'data']                         # ścieżka bazowa nieprzetworzonego zbioru obrazów
+    annotations: # prefix server_base będzie dodany do poniższych ścieżek
+      dir: [annotations]               # katalog bazowy plików zawierających etykiety
+      unl: unl.json                                  # plik zawierający ścieżki do obrazów nieetykietowanych
+      train: train.json                              # plik zawierający ścieżki do zbioru uczącego
+      validation: validation.json                    # plik zawierający ścieżki do zbioru walidacyjnego
+      test: test.json                                # plik zawierający ścieżki do zbioru testowego
+    models: # prefix server_base będzie dodany do poniższych ścieżek
+      best: [cats_vs_dogs, models, alexnet, cats_vs_dogs_best.pt]          # ścieżka pod którą zapisywany będzie "najlepszy" model
+      training: [cats_vs_dogs, models, alexnet, cats_vs_dogs_training.pt]  # ścieżka pod którą zapisywany będzie ostatni stan modelu
+    images:
+      raw:  # prefix data_base będzie dodany do poniższych ścieżek, katalogi zawierający nieprzetworzone obrazy
+        unl: [PetImages, unlabelled]                 # nieetykietowane
+        train: [PetImages, train]                    # ze zbioru uczącego
+        validation: [PetImages, valid]               # ze zbioru walidacyjnego
+        test: [PetImages, test]                      # ze zbioru testowego
+      transformed:  # prefix server_base będzie dodany do poniższych ścieżek, katalogi zawierający przetworzone obrazy
+        unl: [images_tranformed]       # nieetykietowane
+        train: [images_train]          # ze zbioru uczącego
+        validation: [images_valid]     # ze zbioru walidacyjnego
+        test: [images_test]            # ze zbioru testowego
+    data:  # prefix server_base będzie dodany do poniższych ścieżek
+      train_results: [data, alexnet, train_results.json]     # plik zawierający wyniki procesu trenowania
+      test_results: [data, alexnet, test_results.json]       # plik zawierający wyniki procesu testowania
+      predictions: [data, alexnet, predictions.json]         # plik zawierający ostatni proces predykcji modelu
+      last_user_test: [json, alexnet, last_user_test.json]                 # plik zawierający wyniki testów użytkownika z użyciem jego własnych obrazów
+
+  train:
+    predictions: 10   # domyślna ilośc obrazów wyświetlana ożytkownikowi
+    epochs: 10        # domyślna ilośc epok
+    batch_size: 128   # domyślna wielkość paczki danych
+
+  test:
+    outputs: 18       # ilość obrazów wyświetlana użytkownikowi podczas testowania
+
 Cars_vs_Aircrafts:
   dataset: Cars vs Aircrafts
   description: Cars and Aircrafts dataset.
 
   general:
+    model_name: resnet34
     image_size: 256
     label_mapping:
       Aircraft: 0
@@ -103,6 +260,7 @@ Audi_vs_BMW:
   description: Dataset that contains images of BMW and Audi cars
 
   general:
+    model_name: resnet34
     image_size: 256
     label_mapping:
       audi: 0
@@ -152,6 +310,7 @@ Male_vs_Famale:
   description: Males and Famales images.
 
   general:
+    model_name: resnet34
     image_size: 256
     label_mapping:
       famale: 0

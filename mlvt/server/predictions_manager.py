@@ -2,7 +2,7 @@ import logging
 
 import numpy as np
 
-from mlvt.server.file_utils import load_json, save_json
+from mlvt.server.file_utils import load_json, save_json, is_json_empty
 
 
 LOG = logging.getLogger('MLVT')
@@ -21,15 +21,20 @@ class PredictionsManager:
         return self._get_predictions(
             predictions, paths, n_predictions, random, balance)
 
-    def get_predictions_from_file(self, n_predictions,
-                                  random, balance=True):
+    def get_predictions_from_file(self, n_predictions=0, random=False,
+                                  balance=True, get_all=False):
         LOG.info('Load predictions from file.')
-        json_data = load_json(self.predictions_path)
-        if not json_data:
+        print('[DEBUG]', is_json_empty(self.predictions_path))
+        if is_json_empty(self.predictions_path):
             return {}
+        json_data = load_json(self.predictions_path)
 
         predictions, paths = np.array(json_data.get('predictions')), \
             np.array(json_data.get('paths'))
+
+        if get_all:
+            return predictions, paths
+
         return self._get_predictions(
             predictions, paths, n_predictions, random, balance)
 
@@ -87,11 +92,11 @@ class PredictionsManager:
         paths = paths[p]
         labels = np.apply_along_axis(lambda x: np.argmax(x),
                                      1, predictions)
-        print(predictions[:10])
+
         if balance:
             out_idxs = self._get_balanced_predictions(labels, n)
         else:
-            out_idxs = np.random.choice(0, len(labels), replace=False)
+            out_idxs = np.random.choice(len(labels), n, replace=False)
 
         out_labels = labels[out_idxs]
         out_paths = paths[out_idxs]

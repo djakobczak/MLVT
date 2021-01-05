@@ -80,7 +80,7 @@ class MLAction(BaseAction):
         return self.validation_loader
 
     def _fail_if_file_is_empty(self, path):
-        if not os.path.isfile(path) or not is_json_empty(path):
+        if not os.path.isfile(path) or is_json_empty(path):
             raise AnnotationException(
                 f'Annotation file ({path}) does not exist or is empty')
 
@@ -94,10 +94,12 @@ class MLAction(BaseAction):
         try:
             return Model(state=Model.load(path),
                          training_model_path=self.cm.get_training_model(),
-                         best_model_path=self.cm.get_best_model())
+                         best_model_path=self.cm.get_best_model(),
+                         model_name=self.cm.get_model_name())
         except FileNotFoundError:
             return Model(training_model_path=self.cm.get_training_model(),
-                         best_model_path=self.cm.get_best_model())
+                         best_model_path=self.cm.get_best_model(),
+                         model_name=self.cm.get_model_name())
             raise ModelException('Error while loading trained model')
 
     def save_training_model(self, model=None, custom_path=None):

@@ -59,7 +59,7 @@ class TestView(ActionView, ModelIOView):
             model = self.load_training_model()
             path = os.path.join(USER_IMAGE_DIR, filename)
             uploaded.save(path)
-            img = Image.open(path)
+            img = Image.open(path).convert('RGB')
             # tranform image to tensor and normalize
             img = get_resnet_test_transforms()(img)
             frame = torch.unsqueeze(img, 0)

@@ -63,10 +63,12 @@ class ModelIOView(BaseView):
         try:
             return Model(state=Model.load(path),
                          training_model_path=self.cm.get_training_model(),
-                         best_model_path=self.cm.get_best_model())
+                         best_model_path=self.cm.get_best_model(),
+                         model_name=self.cm.get_model_name())
         except FileNotFoundError:
             return Model(training_model_path=self.cm.get_training_model(),
                          best_model_path=self.cm.get_best_model(),
+                         model_name=self.cm.get_model_name(),
                          overwrite=True)
             raise ModelException('Error while loading trained model')
 
