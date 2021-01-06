@@ -1,6 +1,7 @@
-{% extends "base.html" %}
+{% extends "base.html.j2" %}
 
 {% from 'macros.html.j2' import header %}
+{% from 'macros.html.j2' import progress %}
 
 {% block title %}
     Train
@@ -37,12 +38,15 @@
                 {% for image in images %}
                 {% set path = image.path[path_start_idx:] %}
                 <div class="col-lg-2 col-md-3 m-0 text-center">
-                    <img class="img-fluid rounded border border-white mb-3" src="{{ path }}" alt="" width=164 height=164>
                     <div class="h5">{{ image.label}}, {{ (image.confidence*100)|round(2) }}%</div>
+                    <img class="img-fluid rounded border border-white mb-3" src="{{ path }}" alt="" width=164 height=164>
+                    <div class="mx-2">
+                        {{ progress((image.confidence*100)|round(2), image.good) }}
+                    </div>
                 </div>
                 {% endfor %}
             </div>
-            
+
             <div class="row text-center justify-content-center">
                 <div class='col-3'></div>
                 <div class="col-6 row justify-content-center">
@@ -189,13 +193,13 @@
             }
         });
     }
-    
+
     function get_new_images(){
         $.ajax({
             url: '/test?new_samples=True',
             type: "GET",
             success: function(){
-                location.reload(); 
+                location.reload();
             },
             error: function(xhr) {
                 console.log(xhr)
@@ -203,13 +207,13 @@
             }
         });
     }
-    
+
     function delete_test(){
         $.ajax({
             url: '/test',
             type: "DELETE",
             success: function(){
-                location.reload(); 
+                location.reload();
             },
             error: function(xhr) {
                 console.log(xhr)
@@ -236,11 +240,13 @@
                     targetImg.src = data.path;
                      $("#yourImage").show();
                     label = document.getElementById("userLabel");
-                    label.innerHTML = "Label: " + data.label + " with " + data.acc * 100 + "% accuracy";
+                    label.innerHTML = "Label: " + data.label + " with " + (data.acc * 100).toFixed(2) + "% accuracy";
                     console.log('Success!');
                 },
                 error: function(xhr) {
-                    console.log(xhr)
+                    console.log(xhr);
+                    console.log(xhr.responseText);
+                    showAlert(msg.FAILED, xhr.responseText);
                 },
             });
         });

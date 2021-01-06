@@ -1,7 +1,10 @@
+import logging   # !TODO split into 2 loggers
 from contextlib import ContextDecorator
 
-from mlvt.model.logger import LOG   # !TODO split into 2 loggers
-from mlvt.server.exceptions import ActionLockedException
+from mlvt.server.exceptions import ActionOngoingException
+
+
+LOG = logging.getLogger('MLVT')
 
 
 class lock(ContextDecorator):
@@ -9,7 +12,7 @@ class lock(ContextDecorator):
 
     def __enter__(self):
         if self.locked:
-            raise ActionLockedException(
+            raise ActionOngoingException(
                 "There is ongoing action, please wait until is finished")
         self.locked = True
         LOG.info("Server locked")

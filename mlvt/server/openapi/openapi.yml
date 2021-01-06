@@ -82,7 +82,7 @@ paths:
     get:
       summary: Home page
       tags:
-        - general
+        - extras
       responses:
         200:
           description: OK
@@ -95,15 +95,15 @@ paths:
     get:
       summary: Returns all possible configuration
       tags:
-          - extras
-      responses: 
+          - configuration
+      responses:
         '200':
           description: List of configurations
           content:
             application/json:
-              schema: 
+              schema:
                 type: array
-                items: 
+                items:
                   $ref: '#/components/schemas/Config'
         '404':
           description: Configuration not found
@@ -112,7 +112,7 @@ paths:
     get:
       summary: Returns configuration with specified name
       tags:
-          - extras
+          - configuration
       parameters:
           - in: path
             name: name
@@ -122,23 +122,49 @@ paths:
               example: cats_vs_dogs64
             required: true
 
-      responses: 
+      responses:
         '200':
           description: Configuration
           content:
             application/json:
-              schema: 
+              schema:
                 type: object
-                items: 
+                items:
                   $ref: '#/components/schemas/Config'
         '404':
           description: Configuration with specified name not found
+    put:
+      summary: Select config
+      tags:
+          - configuration
+      parameters:
+          - in: path
+            name: name
+            description: Name of the configuration
+            schema:
+              type: string
+              example: cats_vs_dogs64
+            required: true
+
+      responses:
+        '200':
+          description: Selected configuration changed
+        '404':
+          description: Configuration with specified name not found
+
 
   /predictions:
     post:
       summary: Post labels annoted by the user.
       tags:
-        - model
+        - actions
+      parameters:
+        - in: query
+          description: if set to true then use predictions.json file to annotate all images
+          name: annotate_all
+          schema:
+            type: boolean
+            default: False
       requestBody:
         description: pass
         required: true
@@ -168,7 +194,7 @@ paths:
             type: boolean
             default: False
         - in: query
-          name: maxImages
+          name: n_images
           description: Number of images to show
           schema:
             type: integer
@@ -226,7 +252,7 @@ paths:
     put:
       summary: Create or update existing annotation json files
       tags:
-        - config
+        - configuration
       parameters:
         - in: query
           name: force
@@ -274,7 +300,7 @@ paths:
           schema:
             type: boolean
             default: False
-            
+
       responses:
           200:
             description: Success
@@ -284,9 +310,9 @@ paths:
                   type: string
 
     post:
-      summary: Train model and save training summary results
+      summary: Train model and save training summary results. It starts run lonning action
       tags:
-        - model
+        - actions
       parameters:
         - in: query
           name: epochs
@@ -329,11 +355,11 @@ paths:
               text/html:
                 schema:
                   type: string
-  
+
     post:
-      summary: Start testing action
+      summary: Start testing long running action
       tags:
-        - model
+        - actions
       responses:
         202:
           description: Test action started
@@ -365,7 +391,7 @@ paths:
     put:
       summary: Copy and transform images
       tags:
-        - config
+        - configuration
       description: Copy images from temporary directory to the
         server file structure. Additionally apply initial
         preprocessing on images in order to speed up further
@@ -379,6 +405,15 @@ paths:
       responses:
         200:
           description: Images have been copied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: string
         404:
           description: Source or destination file not found
 
@@ -416,36 +451,31 @@ paths:
             description: Model deleted
 
     put:
-      summary: Save current model at the specified path
-      tags:
-        - model
+      summary: Restore model to its best state
       parameters:
         - in: query
-          name: force
-          description: if set to True then force creation
-            subdirectories
+          name: clear_annotations
+          description: if set to true reset remove all training annotations
           schema:
             type: boolean
-            default: False
-      requestBody:
-        description: filesystem location where the model should
-          be saved
-        required: true
-        content:
-          text/plain:
-            schema:
-              type: string
-            example: /path/to/model/model.pt
-              
+            default: True
+        - in: query
+          name: clear_history
+          description: if set to true remove all training data
+          schema:
+            type: boolean
+            default: True
+      tags:
+        - model
       responses:
         200:
-          description: Model has been saved  
-      
+          description: Model has been saved
+
   /status/{action}:
     get:
-      summary: Return True if action is ongoing
+      summary: Return action status.
       tags:
-        - action
+        - actions
       parameters:
         - in: path
           name: action
@@ -454,7 +484,7 @@ paths:
           required: true
       responses:
         200:
-          description: Returns True if specified type of action is finished
+          description: State of the action with optional description. Possible status values are ongoing, failed, success
           content:
               application/json:
                 schema:
@@ -463,10 +493,16 @@ paths:
                     status:
                       type: string
                       enum: [ongoing, failed, success]
+                      example: ongoing
                     data:
                       type: string
+                      example: Actions is not finshed yet.
+                  required:
+                    - status
         404:
           description: Action not found
+        400:
+          description: Bad request
 
   /data/{datatype}:
     get:

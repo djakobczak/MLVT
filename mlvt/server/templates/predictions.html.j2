@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base.html.j2" %}
 
 {% from 'macros.html.j2' import header %}
 {% set show_predictions = class1 or class2 %}
@@ -29,16 +29,19 @@
                 <div class="form-group m-1 p-2">
                     <div class="pr-2">
                         Number of images to show:
-                        <span class="font-weight-bold ml-2 p-0" id="maxImagesValue"></span>
+                        <span class="font-weight-bold ml-2 p-0" id="n_imagesValue"></span>
                     </div>
                     <div class="slidecontainer pt-2">
-                        <input type="range" class="custom-range p-1 slider" id="maxImagesSlider" min="0" max="100" value="{{ n_images }}">
+                        <input type="range" class="custom-range p-1 slider" id="n_imagesSlider" min="0" max="100" value="{{ n_images }}">
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="ml-2 text-center">
-                    <span class="badge main-color-nohover"><h4>Anoteted: {{ annote_summary.total }} </h4></span>
+                <div class="ml-2">
+                    <span class="badge main-color-nohover"><h4>Labelled: {{ train_summary.total }} </h4></span>
+                </div>
+                <div class="ml-2 mt-3">
+                    <span class="badge main-color-nohover"><h4>Unlabelled: {{ unl_summary.total }} </h4></span>
                 </div>
             </div>
             <div class="col-md-4 pr-4 row">
@@ -56,7 +59,7 @@
 
 {% if show_predictions %}
 <div class="container mt-3 col-sm-10 border rounded border-secondary p-3 mb-5">
-    {{ header("Select wrong predicted images") }}
+    {{ header("Select wrongly predicted images") }}
     <div class="row" id="images">
         <div class="col-sm-6 pr-4">
             <h1 class="font-weight-light text-center text-lg-left mt-4 mb-0">{{ label1 }}</h1>
@@ -85,10 +88,11 @@
             </div>
         </div>
     </div>
-    
+
     <div class="mt-4">
         <div class="col-sm-12 text-center">
-            <button type="button" onclick="sendPredictions()" class="btn main-color btn-lg m-3">Add annotations</button>
+            <button type="button" onclick="sendPredictions()" class="btn main-color btn-lg m-3">Add labels</button>
+            <button type="button" onclick="labelAll()" class="btn btn-warning btn-lg m-3">Label all</button>
             <button type="button" onclick="train()" class="btn btn-lg main-color m-3">Train</button>
         </div>
     </div>
@@ -113,7 +117,7 @@
         </div>
         </div>
     </div>
-    
+
 
     <script>
         // HTML elements
@@ -157,8 +161,8 @@
                 removeA(predictions.class1, node.getAttribute("data-path"))
             }
             else if (class2_node.contains(node)){
-                predictions.class1.push(node.getAttribute("data-path"))   
-                removeA(predictions.class2, node.getAttribute("data-path"))             
+                predictions.class1.push(node.getAttribute("data-path"))
+                removeA(predictions.class2, node.getAttribute("data-path"))
             }
             console.log(predictions)
         }
@@ -166,7 +170,7 @@
         function remove_wrong_prediction(node){
             if (class1_node.contains(node)){
                 removeA(predictions.class2, node.getAttribute("data-path"))
-                predictions.class1.push(node.getAttribute("data-path"))   
+                predictions.class1.push(node.getAttribute("data-path"))
             }
             else if (class2_node.contains(node)){
                 removeA(predictions.class1, node.getAttribute("data-path"))
@@ -184,6 +188,23 @@
                 contentType: "application/json; charset=utf-8",
                 success: function(){
                     reload();
+                }
+            });
+        }
+
+        function labelAll(){
+            console.log('POST /predictions?annotate_all=true')
+            $.ajax({
+                url: '/predictions?annotate_all=true',
+                type: "POST",
+                data: JSON.stringify(predictions),
+                contentType: "application/json; charset=utf-8",
+                success: function(){
+                    console.log('reload');
+                    reload();
+                },
+                error: function(err){
+                    alert("Error: " + err);
                 }
             });
         }
@@ -259,7 +280,7 @@
                     new_predictions: $("#newPredictionsCheckbox").is(":checked"),
                     random: $("#randomCheckbox").is(":checked"),
                     balance: $("#balanceCheckbox").is(":checked"),
-                    maxImages: $("#maxImagesValue").text()
+                    n_images: $("#n_imagesValue").text()
                 },
                 contentType: "application/json; charset=utf-8",
                 success: function(){
@@ -280,8 +301,8 @@
         }
 
         $(document).ready(function() {
-            const $valueSpan = $('#maxImagesValue');
-            const $value = $('#maxImagesSlider');
+            const $valueSpan = $('#n_imagesValue');
+            const $value = $('#n_imagesSlider');
             $valueSpan.html($value.val());
             $value.on('input change', () => {
                 $valueSpan.html($value.val());
@@ -292,10 +313,10 @@
             random = $("#randomCheckbox").is(":checked");
             balance = $("#balanceCheckbox").is(":checked");
             console.log(random + " " + typeof(random))
-            maxImages = $("#maxImagesValue").text();
-            return {"random": random, "balance": balance, "maxImages": maxImages}
+            n_images = $("#n_imagesValue").text();
+            return {"random": random, "balance": balance, "n_images": n_images}
         }
-        
+
     </script>
- 
+
 {% endblock %}

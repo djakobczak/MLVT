@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 
@@ -6,11 +7,12 @@ from tqdm import tqdm
 from PIL import Image
 from torchvision import transforms
 
-from mlvt.model.logger import LOG
+
+LOG = logging.getLogger('MLVT')
 
 
 class DataLoader:
-    def __init__(self, cm, resize_without_ratio=False):
+    def __init__(self, cm, resize_without_ratio=False, img_size=224):
         self.cm = cm
         self.IMG_SIZE = cm.get_img_size()
         if resize_without_ratio:
@@ -18,12 +20,17 @@ class DataLoader:
         else:
             self.transforms = transforms.Compose([
                 transforms.Resize(self.IMG_SIZE),
-                transforms.CenterCrop(224),
+                transforms.CenterCrop(img_size),
             ])
 
     def copy_multiple_paths(self, srcs, dsts):
+        excs = []
         for src, dst in zip(srcs, dsts):
-            self.copy_all(src, dst)
+            try:
+                self.copy_all(src, dst)
+            except FileNotFoundError:
+                excs.append(f'{srcs}, {dsts}')
+        return excs
 
     def copy_all(self, src, dst):
         Path(dst).mkdir(parents=True, exist_ok=True)

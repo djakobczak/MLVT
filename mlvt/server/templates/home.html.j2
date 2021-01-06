@@ -1,13 +1,89 @@
-{% extends "base.html" %}
+{% extends "base.html.j2" %}
 
 {% block title %}
     Home page
 {% endblock title %}
 
-{% block header %}
-    <h1>Simple visualization of CNN training process</h1>
-{% endblock header %}
 
 {% block content %}
-<h1 style="text-align: center;"> TODO </h1>
+<div class="container col-sm-10 mt-3 mb-4 p-3">
+<div class="jumbotron main-header">
+    <div class="container">
+    <h1 class="display-4 text-center">Machine Learning Visualization Tool</h1>
+    </div>
+</div>
+<div class="row text-center mt-3">
+    <div class="col-lg-4 mb-3">
+        <img class="rounded-circle" src="{{ url_for('static', filename='images/predict.png') }}" alt="Generic placeholder image" width="140" height="140">
+        <h2>Annotate</h2>
+        <p>You are the oracle! <br> Get model predictions and annotate proper labels to the images.</p>
+        <p><a class="btn main-color" href="{{ url_for('.views_PredictionsView_search') }}" role="button">Go to »</a></p>
+    </div>
+    <div class="col-lg-4">
+        <img class="rounded-circle" src="{{ url_for('static', filename='images/train.png') }}" alt="Generic placeholder image" width="140" height="140">
+        <h2>Train</h2>
+        <p>Train your model with annotated images and observe how the training process on the loss and accuracy graphs.</p>
+        <p><a class="btn main-color" href="{{ url_for('.views_TrainView_search') }}" role="button">Go to »</a></p>
+    </div>
+    <div class="col-lg-4">
+        <img class="rounded-circle" src="{{ url_for('static', filename='images/test.png') }}" alt="Generic placeholder image" width="140" height="140">
+        <h2>Test</h2>
+        <p>Test trained model on a dataset that the model has never seen before. You can also upload your image and test the model against it.</p>
+        <p><a class="btn main-color" href="{{ url_for('.views_TestView_search') }}" role="button">Go to »</a></p>
+    </div>
+</div>
+<hr class="featurette-divider" style="background-color: white;">
+<div class="text-center">
+    <select id="configSelector" class="selectpicker">
+        {% for config in configs %}
+        <option style="font-size: 16px">{{ config['name'] }}</option>
+        {% endfor %}
+    </select>
+
+    <button type="button" onclick="set_config()" class="btn main-color btn-lg m-3">Set config</button>
+    <div class="row mt-2">
+        <div class='col-3'></div>
+        <div class='col-6 border rounded p-3'>
+            <h4>Dataset description:</h4>
+            <p id="selectDescription">
+            </p>
+        </div>
+        <div class='col-3'></div>
+    </div>
+</div>
+</div>
+
+<script>
+CONFIG_DESCRIPTION = []
+{% for config in configs %}
+    CONFIG_DESCRIPTION.push("{{ config.description }}")
+{% endfor %}
+
+$(document).ready(function() {
+    $("#configSelector").val("{{ current_config }}");
+    var idx = $("#configSelector").prop('selectedIndex')
+    $("#selectDescription").text(CONFIG_DESCRIPTION[idx]);
+});
+
+
+$('#configSelector').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+    console.log(CONFIG_DESCRIPTION)
+    $("#selectDescription").text(CONFIG_DESCRIPTION[clickedIndex])
+});
+
+
+function set_config(){
+    config_name = $("#configSelector option:selected").text()
+    $.ajax({
+        url: "/configs/" + config_name,
+        type: "PUT",
+        success: function(){
+            showAlert(msg.OK, "Configuration changed!");
+        },
+        error: function(xhr) {
+            showAlert(msg.ERROR, "Configuration change failed");
+        }
+    });
+}
+</script>
 {% endblock content %}

@@ -17,8 +17,13 @@ a {
 }
 
 .normal {
-    background-color: #2b2b2b;
+    background-color: #2b2b2b !important;
     color: whitesmoke;
+}
+
+.main-header {
+  background-color: #3b3b3b !important;
+  color: whitesmoke;
 }
 
 .dark-blue {
@@ -82,12 +87,12 @@ hr.common-light {
     -webkit-transition: .2s; /* 0.2 seconds transition on hover */
     transition: opacity .2s;
   }
-  
+
   /* Mouse-over effects */
   .slider:hover {
     opacity: 1; /* Fully shown on mouse-over */
   }
-  
+
   /* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
   .slider::-webkit-slider-thumb {
     border-radius: 5px;
@@ -98,7 +103,7 @@ hr.common-light {
     background: #4CAF50; /* Green background */
     cursor: pointer; /* Cursor on hover */
   }
-  
+
   .slider::-moz-range-thumb {
     border-radius: 5px;
     width: 25px; /* Set a specific slider handle width */
@@ -151,4 +156,15 @@ dt::after {
 
 .text-md {
   font-size: 16px;
+}
+
+.progress-bar-title {
+  position: absolute;
+  text-align: center;
+  line-height: 20px; /* line-height should be equal to bar height */
+  overflow: hidden;
+  color: #fff;
+  right: 0;
+  left: 0;
+  top: 0;
 }

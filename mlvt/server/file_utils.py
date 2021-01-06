@@ -5,8 +5,12 @@ import shutil
 
 from tqdm import tqdm
 
-from mlvt.model.logger import LOG
+import logging
 from mlvt.server.exceptions import PathException
+from mlvt.server.config import CURRENT_CONFIG_FILE
+
+
+LOG = logging.getLogger('MLVT')
 
 
 def save_json(path, data, force=True):
@@ -71,7 +75,9 @@ def is_json_empty(path):  # path must contain iterable keys
         int: sum of all values lengths
     """
     dict_ = load_json(path)
-    return sum(len(dict_[value]) for value in dict_)
+    if not dict_:
+        return True
+    return not bool(sum(len(dict_[value]) for value in dict_))
 
 
 def update_annotation_file(path, data_dir, label):
@@ -139,3 +145,7 @@ def is_dict_empty(d):
         if values:
             return False
     return True
+
+
+def get_current_config():
+    return open(CURRENT_CONFIG_FILE, 'r').read().strip()

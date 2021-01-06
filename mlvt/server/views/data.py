@@ -10,6 +10,7 @@ class DataType(Enum):
 
 class DataView(BaseView):
     def get(self, datatype):
+        self.init_cm()
         if datatype == DataType.TRAIN_RESULTS.value:
             return self._get_train_results()
 

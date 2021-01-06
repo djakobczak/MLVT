@@ -1,3 +1,4 @@
+import logging
 import time
 import os
 
@@ -6,8 +7,10 @@ import torch
 from torch.utils.data import Dataset
 from PIL import Image
 
-from mlvt.model.logger import LOG
 from mlvt.server.file_utils import load_json
+
+
+LOG = logging.getLogger('MLVT')
 
 
 def remove_corrupted_images(path):
@@ -30,7 +33,6 @@ class LabelledDataset(Dataset):
     def __init__(self, path, transforms=None, return_paths=False):
         self.path = path
         self.load()
-        self.n_class1 = len(self.all_annotations)
         self.transforms = transforms
         self.n_labels = len(self.annotations)
         self.load_time = 0
@@ -41,6 +43,15 @@ class LabelledDataset(Dataset):
         return len(self.all_annotations)
 
     def __getitem__(self, idx):
+        """Access data at specified from dataset.
+
+        Args:
+            idx (int): data index
+
+        Returns:
+            tuple: Contains loaded image and corresponding label with optionally added image path if class
+            has defined return_paths parameter
+        """
         start_read = time.time()
         img_path = self.all_annotations[idx]
         img = Image.open(img_path).convert('RGB')

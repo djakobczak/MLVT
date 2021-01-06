@@ -1,15 +1,28 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-{% block header %}
-    {% block title %}
-        Error
-    {% endblock title %}
-{% endblock header %}
-
-{% block content %}
-    <div class="m-4" style="text-align: center;">
-        <h2>
-            {{ code }} : {{ msg }}
-        </h2>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+</head>
+<body class="normal">
+<div class="page-wrap d-flex flex-row align-items-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-12 text-center">
+                <span class="display-1 d-block">{{ code }}</span>
+                <div class="mb-4 lead">{{ msg }}</div>
+                <a onclick=redirect() href="#" class="btn btn-link">Back to Home</a>
+            </div>
+        </div>
     </div>
-{% endblock content %}
+    <script>
+    function redirect() {
+        window.location.href = "/home";
+    }
+    </script>
+</div>
+</body>

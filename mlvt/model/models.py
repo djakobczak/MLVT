@@ -1,13 +1,17 @@
+from enum import Enum
 import time
+import shutil
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torchvision
+from torchvision import models
 from tqdm import tqdm
 
-from mlvt.model.logger import LOG
-from mlvt.server.file_utils import append_to_train_file
+import logging
+from mlvt.server.file_utils import append_to_train_file, \
+    create_subdirs_if_not_exist
 
 
 def init_and_save(path):
@@ -15,34 +19,98 @@ def init_and_save(path):
     model.save(path)
 
 
+LOG = logging.getLogger('MLVT')
+DEFAULT_MILESTONES = [50, 100]
+
+
+class ModelType(Enum):
+    ALEXNET = 'alexnet'
+    RESNET_18 = 'resnet18'
+    RESNET_34 = 'resnet34'
+    RESNET_50 = 'resnet50'
+    RESNET_101 = 'resnet101'
+    MobileNetV2 = 'mobilenet_v2'
+
+
 class Model:
-    def __init__(self, model=None, n_out=2, lr=1e-3):
+    def __init__(self,
+                 training_model_path,
+                 best_model_path,
+                 model_name=ModelType.RESNET_34.value,
+                 state=None,
+                 n_out=2,
+                 lr=1e-3,
+                 gamma=0.5,
+                 dropout=0.2,
+                 overwrite=False,
+                 milestones=None):
         LOG.info('Model initialization starts...')
         self.device = torch.device(
             "cuda:0" if torch.cuda.is_available() else "cpu")
         self.n_out = n_out
-        LOG.info(f'CUDA: {self.device}')
-        if model is None:
-            model = torchvision.models.resnet34(pretrained=True)
-            # freeze conv layers
-            for param in model.parameters():
-                param.requires_grad = False
-            num_ftrs = model.fc.in_features
-            model.fc = nn.Sequential(
-                nn.Linear(num_ftrs, self.n_out),
-                nn.Softmax(dim=1))
-            LOG.info('New model created')
+        self.dropout = dropout
+        self.training_model_path = training_model_path
+        self.best_model_path = best_model_path
+        LOG.info(f'Device: {self.device}')
+        model = self._get_pretreined_model(model_name)
+        LOG.info('New model created')
         self.model_conv = model.to(self.device)
 
         self.criterion = nn.CrossEntropyLoss().to(self.device)
-        self._init_optimizer(lr)
-        self.scheduler = torch.optim.lr_scheduler.MultiStepLR(
-            self.optimizer, milestones=[20, 40, 80], gamma=0.5)
+        self.init_optimizer(lr)
 
-    def _init_optimizer(self, lr=0.001):
+        self.last_epoch = 0
+        if state:
+            self.load_states(state)
+            self.last_epoch = state['epoch']
+        milestones = DEFAULT_MILESTONES if not milestones else milestones
+        self.scheduler = torch.optim.lr_scheduler.MultiStepLR(
+            self.optimizer, milestones=milestones, gamma=gamma,
+            last_epoch=self.last_epoch if self.last_epoch else -1)
+
+        if overwrite:
+            self.reset_model()
+            return
+
+    def init_optimizer(self, lr):
         self._lr = lr
         self.optimizer = torch.optim.Adam(
             self.model_conv.parameters(), lr=lr, amsgrad=True)
+
+    def _get_pretreined_model(self, model_name):
+        model = getattr(models, f'{model_name}')(pretrained=True)
+
+        # freeze conv layers
+        for param in model.parameters():
+            param.requires_grad = False
+
+        last_layer = lambda num_ftrs: nn.Sequential(
+            nn.Dropout(self.dropout),
+            nn.Linear(num_ftrs, self.n_out))
+
+        if 'mobilenet' in model_name:
+            model.classifier[1] = last_layer(model.classifier[1].in_features)
+
+        elif 'resnet' in model_name:
+            model.fc = last_layer(model.fc.in_features)
+
+        elif model_name == "alexnet":
+            model.classifier[6] = last_layer(model.classifier[6].in_features)
+
+        else:
+            raise ValueError(f'Model ({model_name}) is not supported')
+
+        return model
+
+    def load_states(self, state):
+        self.model_conv.load_state_dict(state['model'])
+        self.optimizer.load_state_dict(state['optimizer'])
+        LOG.info('Model state loaded')
+
+    def reset_model(self):
+        create_subdirs_if_not_exist(self.training_model_path)
+        create_subdirs_if_not_exist(self.best_model_path)
+        self.save_state(0, True, 0)
 
     def __call__(self, batch_x):
         return self.model_conv(batch_x)
@@ -51,16 +119,16 @@ class Model:
         self.model_conv.eval()
         with torch.no_grad():
             batch_x = batch_x.to(self.device)
-            return self(batch_x)
+            return torch.nn.Softmax(dim=1)(self(batch_x))
 
-    def predict_all(self, dataloader):
+    def predict_all(self, unl_loader):
         self.model_conv.eval()
         transforms_time = 0
         feedforward_time = 0
         predictions = torch.empty((0, 2), device=self.device)
         paths = []
         with torch.no_grad():
-            for batch_x, img_paths in tqdm(dataloader):
+            for batch_x, img_paths in tqdm(unl_loader):
                 batch_x = batch_x.to(self.device)
 
                 start_pred = time.time()
@@ -78,7 +146,8 @@ class Model:
         return predictions.cpu().numpy(), np.array(paths)
 
     def train(self, train_loader, epochs, validation_loader,
-              save_to=None, n_images=0):
+              results_save_to=None, n_images=0):
+        best_acc = self.get_validation_best_acc()
         # switch to training mode
         self.model_conv.train()
 
@@ -94,9 +163,14 @@ class Model:
                         epoch+1, epochs, tloss, tacc))
 
             vacc, vloss = self.evaluate(validation_loader)
-            if save_to:
+            is_best = vacc > best_acc
+            if is_best:
+                best_acc = vacc
+            self.save_state(vacc, is_best, epoch + 1)
+
+            if results_save_to:
                 append_to_train_file(
-                    save_to,
+                    results_save_to,
                     {'train_acc': [tacc],
                      'train_loss': [tloss],
                      'val_acc': [vacc],
@@ -133,6 +207,28 @@ class Model:
         acc = float(torch.mean(total_corrects.float()).cpu())
         loss = float(torch.mean(losses).cpu())
         return acc, loss
+
+    def save_state(self, acc, is_best, epoch):
+        """Save state of the model and optimizer.
+
+        Args:
+            acc (float): current model accuracy
+            is_best (bool): True if model achieved its best accuracy
+            epoch (int): training epoch
+        """
+        state = {
+            'model': self.model_conv.state_dict(),
+            'optimizer': self.optimizer.state_dict(),
+            'acc': acc,
+            'epoch': self.last_epoch + epoch
+        }
+        torch.save(state, self.training_model_path)
+        if is_best:
+            shutil.copyfile(self.training_model_path, self.best_model_path)
+
+    def restore_best(self):
+        best_state = self.load(self.best_model_path)
+        torch.save(best_state, self.training_model_path)
 
     def save(self, name):
         torch.save(self.model_conv, name)
@@ -210,7 +306,14 @@ class Model:
             acc = float(torch.mean(total_corrects.float()).cpu().numpy())
             loss = float(torch.mean(losses).cpu())
             LOG.info(f"Evaluation stats: acc: {acc}, loss: {loss}")
+            predictions = torch.nn.Softmax(dim=1)(predictions)
         return acc, loss, predictions.cpu().numpy(), np.array(paths)
 
     def get_lr(self):
         return self._lr
+
+    def get_validation_best_acc(self):
+        return torch.load(self.best_model_path)['acc']
+
+    def get_validation_current_acc(self):
+        return torch.load(self.training_model_path)['acc']

@@ -4,19 +4,18 @@ import torch
 from torch.utils.data import DataLoader
 
 from mlvt.model.models import Model
-from mlvt.model.config.config_manager import ConfigManager
+from mlvt.config.config_manager import ConfigManager
 from mlvt.model.datasets import UnlabelledDataset, LabelledDataset
 from mlvt.model.utils import get_resnet_test_transforms, \
     get_resnet_train_transforms
 
 from mlvt.server.exceptions import AnnotationException, ModelException
-from mlvt.server.file_utils import is_json_empty
-from mlvt.server.config import CONFIG_NAME
+from mlvt.server.file_utils import is_json_empty, get_current_config
 
 
 class BaseAction:
     def __init__(self):
-        self.cm = ConfigManager(CONFIG_NAME)
+        self.cm = ConfigManager(get_current_config())
 
 
 class MLAction(BaseAction):
@@ -30,7 +29,6 @@ class MLAction(BaseAction):
         self.train_loader = None
         self.test_loader = None
 
-    # csv with annotations can not be empty
     def get_unl_loader(self):
         annotation_path = self.cm.get_unl_annotations_path()
         self._fail_if_file_is_empty(annotation_path)
@@ -82,18 +80,32 @@ class MLAction(BaseAction):
         return self.validation_loader
 
     def _fail_if_file_is_empty(self, path):
-        if not os.path.isfile(path) or not is_json_empty(path):
+        if not os.path.isfile(path) or is_json_empty(path):
             raise AnnotationException(
                 f'Annotation file ({path}) does not exist or is empty')
 
-    def load_model(self):
-        try:
-            model = Model.load(self.cm.get_model_trained())
-        except FileNotFoundError:
-            raise ModelException('Error while loading trained model')
-        return Model(model)
+    def load_training_model(self):
+        return self._load_model(self.cm.get_training_model())
 
-    def save_model(self, model=None, path=None):
-        model = model if model else self.load_model()
-        path = path if path else self.cm.get_model_trained()
-        torch.save(model.model_conv, path)
+    def load_best_model(self):
+        return self._load_model(self.cm.get_best_model())
+
+    def _load_model(self, path):
+        try:
+            return Model(state=Model.load(path),
+                         training_model_path=self.cm.get_training_model(),
+                         best_model_path=self.cm.get_best_model(),
+                         model_name=self.cm.get_model_name())
+        except FileNotFoundError:
+            return Model(training_model_path=self.cm.get_training_model(),
+                         best_model_path=self.cm.get_best_model(),
+                         model_name=self.cm.get_model_name())
+            raise ModelException('Error while loading trained model')
+
+    def save_training_model(self, model=None, custom_path=None):
+        training_model_path = custom_path or self.cm.get_training_model()
+        torch.save(model.model_conv, training_model_path)
+
+    def save_best_model(self, model, custom_path=None):
+        best_model_path = custom_path or self.cm.get_best_model()
+        torch.save(model.model_conv, best_model_path)

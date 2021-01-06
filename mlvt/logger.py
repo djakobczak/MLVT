@@ -8,12 +8,12 @@ CONF = {
 
 
 class Logger:
-    logger = None
+    LOG = None
 
-    @classmethod
-    def create_logger(cls, level=logging.INFO):
+    @staticmethod
+    def create_logger(name, level=logging.INFO):
         # Create a custom logger
-        logger = logging.getLogger('DRAL')
+        logger = logging.getLogger(name)
         logger.setLevel(level)
 
         # Create handlers
@@ -34,14 +34,5 @@ class Logger:
         logger.addHandler(c_handler)
         logger.addHandler(f_handler)
 
-        cls.logger = logger
         logger.info('Logger created')
-
-    @classmethod
-    def get_logger(cls):
-        if not cls.logger:
-            cls.create_logger()
-        return cls.logger
-
-
-LOG = Logger.get_logger()
+        return logger

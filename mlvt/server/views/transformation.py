@@ -1,20 +1,24 @@
-from mlvt.model.logger import LOG
+import logging
 from mlvt.model.preprocessing.loader import DataLoader
 from mlvt.server.views.base import BaseView
 from mlvt.server.utils import DatasetType
 
 
+LOG = logging.getLogger('MLVT')
+
+
 class TransformView(BaseView):
     def put(self, dataset_type):
+        self.init_cm()
         dl = DataLoader(self.cm)
         if dataset_type == 'all':
             for dataset in DatasetType:
                 srcs, dsts = self._dataset_type_to_paths(dataset.value)
-                dl.copy_multiple_paths(srcs, dsts)
+                excs = dl.copy_multiple_paths(srcs, dsts)
         else:
             srcs, dsts = self._dataset_type_to_paths(dataset_type)
-            dl.copy_multiple_paths(srcs, dsts)
-        return '', 200
+            excs = dl.copy_multiple_paths(srcs, dsts)
+        return {'errors': excs}, 200
 
     def _dataset_type_to_paths(self, dataset_type):
         if dataset_type == DatasetType.UNLABELLED.value:

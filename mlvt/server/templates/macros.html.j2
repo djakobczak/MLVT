@@ -23,3 +23,20 @@
         {{ text }}
     </div>
 {% endmacro %}
+
+{% macro progress(filled, good) %}
+    {% if good %}
+        {% set green_filled = filled %}
+        {% set red_filled = 100 - green_filled %}
+    {% else %}
+        {% set red_filled = filled %}
+        {% set green_filled = 100 - red_filled %}
+    {% endif %}
+
+    <div class="progress mb-4">
+        <div class="progress-bar bg-success" role="progressbar" style="width:{{ green_filled }}%">
+        </div>
+        <div class="progress-bar bg-danger" role="progressbar" style="width:{{ red_filled }}%">
+        </div>
+    </div>
+{% endmacro %}

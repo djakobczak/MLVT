@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base.html.j2" %}
 
 {% from 'macros.html.j2' import header %}
 
@@ -32,7 +32,7 @@
     <div class="col-md-8">
         <div class="tab-content">
         <div class="tab-pane show active" id="model" role="tabpanel">
-            {{ header("Model informations") }}
+            {{ header("Model summary") }}
             <div class="m-4">
                 <dl class="row">
                 {% for name, value in model.items() %}
@@ -65,9 +65,14 @@
                         </div>
                     </div>
                     <div class="col-md-6 text-right">
-                        <button type="button" class="btn btn-danger btn-lg" data-toggle="modal" data-target="#delete">
-                            Delete model
-                        </button>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-danger btn-lg" data-toggle="modal" data-target="#delete">
+                                Delete model
+                            </button>
+                            <button type="button" class="btn main-color btn-lg" data-toggle="modal" data-target="#restore">
+                                Restore best
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -102,7 +107,7 @@
                     </select>
                     </div>
                     <div class="col-md-6 text-right mt-4">
-                        <button type="button" class="btn main-color btn-lg" onclick=tranform_images()>
+                        <button type="button" class="btn main-color btn-lg" data-toggle="modal" data-target="#transform">
                             Apply
                         </button>
                     </div>
@@ -155,6 +160,46 @@
         </div>
     </div>
     </div>
+
+    <div class="modal fade" id="restore" tabindex="-1" role="dialog" aria-labelledby="restoreLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content text-dark">
+        <div class="modal-header">
+            <h5 class="modal-title" id="restoreLabel">Alert</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            Do you really want to restore best model?
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button"  onclick="restore_model()" data-dismiss="modal" class="btn btn-warning">Restore</button>
+        </div>
+        </div>
+    </div>
+    </div>
+
+    <div class="modal fade" id="transform" tabindex="-1" role="dialog" aria-labelledby="transformLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content text-dark">
+        <div class="modal-header">
+            <h5 class="modal-title" id="transformLabel">Alert</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            This operation can take a while, are you sure you want to continue?
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button"  onclick=tranform_images() data-dismiss="modal" class="btn btn-warning">Transform</button>
+        </div>
+        </div>
+    </div>
+    </div>
 </div>
 
 <script>
@@ -175,14 +220,37 @@ function delete_model(){
     });
 }
 
+function restore_model(){
+    clear_annotation = "clear_annotations=" + $("#clearAnnotCheckbox").is(":checked");
+    clear_history = "clear_history=" + $("#clearHistoryCheckbox").is(":checked");
+    $.ajax({
+        url: '/model?' +  clear_annotation + "&" + clear_history,
+        type: "PUT",
+        success: function(){
+            console.log("Success: model restored");
+            showAlert(msg.OK, "Model restored!");
+        },
+        error: function(xhr) {
+            console.log(xhr)
+            showAlert(msg.FAILED, "Model retoration: failed");
+        }
+    });
+}
+
 function tranform_images(){
     datatype = $("#transformDatatype option:selected").text()
     showAlert(msg.ACCEPTED, "Copy images for " + datatype + " images: started")
     $.ajax({
         url: '/transform' + "?dataset_type=" + datatype,
         type: "PUT",
-        success: function(){
-            showAlert(msg.OK, "Transform images: success");
+        success: function(data){
+            console.log(data)
+            if (data['errors'].length > 0) {
+                showAlert(msg.WARNING, "Transform images: One of the paths not found");
+            }
+            else {
+                showAlert(msg.OK, "Transform images: success");
+            }
         },
         error: function(xhr) {
             console.log(xhr)

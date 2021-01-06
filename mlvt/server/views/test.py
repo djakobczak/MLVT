@@ -13,16 +13,18 @@ from mlvt.server.actions.handlers import test
 from mlvt.server.actions.main import Action
 from mlvt.server.config import (USER_IMAGE_DIR, RELATIVE_USER_IMAGE_DIR,
                                 CUT_STATIC_IDX)
+from mlvt.server.exceptions import ImagesException
 from mlvt.server.file_utils import load_json, purge_json_file, save_json
 from mlvt.server.utils import test_image_counter
-from mlvt.server.views.base import ActionView, ModelIO
+from mlvt.server.views.base import ActionView, ModelIOView
 
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 
 
-class TestView(ActionView, ModelIO):
+class TestView(ActionView, ModelIOView):
     def search(self, new_samples):
+        self.init_cm()
         test_results = load_json(self.cm.get_test_results_file(),
                                  parse_keys_to=int)
         user_test = load_json(self.cm.get_last_user_test_path())
@@ -46,6 +48,7 @@ class TestView(ActionView, ModelIO):
                                path_start_idx=CUT_STATIC_IDX), 200
 
     def post(self):
+        self.init_cm()
         if 'testImage' in request.files:
             uploaded = request.files['testImage']
             filename = secure_filename(uploaded.filename)
@@ -53,10 +56,10 @@ class TestView(ActionView, ModelIO):
                 return f'Got unsupprted file type ({filename}),' \
                     f'supported extensions: ({ALLOWED_EXTENSIONS})', 400
 
-            model = self.load_model(self.cm.get_model_trained())
+            model = self.load_training_model()
             path = os.path.join(USER_IMAGE_DIR, filename)
             uploaded.save(path)
-            img = Image.open(path)
+            img = Image.open(path).convert('RGB')
             # tranform image to tensor and normalize
             img = get_resnet_test_transforms()(img)
             frame = torch.unsqueeze(img, 0)
@@ -74,6 +77,7 @@ class TestView(ActionView, ModelIO):
         return 202
 
     def delete(self):
+        self.init_cm()
         purge_json_file(self.cm.get_test_results_file())
         purge_json_file(self.cm.get_last_user_test_path())
         return 200
@@ -81,6 +85,10 @@ class TestView(ActionView, ModelIO):
     def _get_test_images(self, predictions, paths, n_images=None,
                          increment=False):
         n_images = n_images or self.cm.get_test_n_outputs()
+
+        if n_images > len(predictions):
+            raise ImagesException("Not enough test results, "
+                                  "please reset test history in settings")
 
         # lock gloabal counter
         with test_image_counter.get_lock():
@@ -96,11 +104,16 @@ class TestView(ActionView, ModelIO):
         paths = paths[idxs]
         images = []
         labels = self._numeric_to_classname()
+        test_images = load_json(self.cm.get_test_annotations_path(),
+                                parse_keys_to=int)
+
         for path, pred in zip(paths, predictions):
             images.append(
                 {'path': path,
                  'label': labels[np.argmax(pred)],
-                 'confidence': max(pred)}
+                 'confidence': max(pred),
+                 'good': True if path in test_images[np.argmax(pred)]
+                    else False}
             )
         return images
 
